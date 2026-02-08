@@ -1,0 +1,7 @@
+services:
+  kokoro-ui:
+    build: .
+    container_name: kokoro-ui
+    ports:
+      - "8889:80"
+    restart: unless-stopped
