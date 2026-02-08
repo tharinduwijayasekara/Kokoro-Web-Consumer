@@ -1,266 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Kokoro TTS Streaming</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>Kokoro TTS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-:root {
-  --bg: #0b0f19;
-  --panel: #111827;
-  --panel-soft: #0f172a;
-  --accent: #60a5fa;
-  --accent-hover: #3b82f6;
-  --success: #22c55e;
-  --error: #ef4444;
-  --border: #1f2933;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --radius: 14px;
-  --shadow: 0 20px 50px rgba(0,0,0,0.6);
-  --font: "Segoe UI", system-ui;
-}
+  <!-- WaveSurfer -->
+  <script src="https://unpkg.com/wavesurfer.js@7"></script>
 
-* {
-  box-sizing: border-box;
-  font-family: var(--font);
-}
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #111827;
+      --panel-soft: #0f172a;
+      --accent: #60a5fa;
+      --accent-hover: #3b82f6;
+      --success: #22c55e;
+      --error: #ef4444;
+      --border: #1f2933;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --radius: 14px;
+      --shadow: 0 20px 50px rgba(0,0,0,0.6);
+      --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont;
+      height: 100%;
+    }
 
-body {
-  margin: 0;
-  padding: 32px;
-  background: radial-gradient(circle at top, #111827, #020617);
-  color: var(--text);
-}
+    * {
+      box-sizing: border-box;
+      font-family: var(--font);
+    }
 
-.app {
-  max-width: 900px;
-  margin: auto;
-  background: var(--panel);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
+    body {
+      margin: 0;
+      padding: 32px;
+      background: radial-gradient(circle at top, #111827, #020617);
+      color: var(--text);
+    }
 
-.header {
-  padding: 24px 28px;
-  background: linear-gradient(135deg,#0f172a,#020617);
-  border-bottom: 1px solid var(--border);
-}
+    .app {
+      max-width: 900px;
+      margin: auto;
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
-.header h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
+    /* HEADER */
+    .header {
+      padding: 24px 28px;
+      background: linear-gradient(
+        135deg,
+        #0f172a,
+        #020617
+      );
+      border-bottom: 1px solid var(--border);
+    }
 
-.header p {
-  margin: 6px 0 0;
-  font-size: 13px;
-  color: var(--muted);
-}
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
 
-.content {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
+    .header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
 
-textarea {
-  width: 100%;
-  min-height: 220px;
-  resize: vertical;
-  padding: 16px;
-  font-size: 15px;
-  color: var(--text);
-  background: var(--panel-soft);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  outline: none;
-}
+    /* CONTENT */
+    .content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
 
-textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(96,165,250,0.25);
-}
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      padding: 16px;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--panel-soft);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
 
-button {
-  align-self: flex-start;
-  padding: 12px 30px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg,var(--accent),#7dd3fc);
-  color: #020617;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-right: 10px;
-}
+    textarea::placeholder {
+      color: var(--muted);
+    }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.25);
+    }
 
-.status {
-  font-size: 14px;
-  font-weight: 500;
-}
+    button {
+      align-self: flex-start;
+      padding: 12px 30px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(
+        135deg,
+        var(--accent),
+        #7dd3fc
+      );
+      color: #020617;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.1s, filter 0.2s;
+    }
 
-.success { color: var(--success); }
-.error { color: var(--error); }
-.muted { color: var(--muted); }
+    button:hover {
+      filter: brightness(1.1);
+    }
 
-audio {
-  width: 100%;
-  margin-top: 12px;
-  filter: invert(1) hue-rotate(180deg);
-}
-</style>
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .status {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .success {
+      color: var(--success);
+    }
+
+    .error {
+      color: var(--error);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    /* PLAYER */
+    .player {
+      margin-top: 6px;
+      padding: 16px;
+      background: var(--panel-soft);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    #waveform {
+      height: 140px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 12px;
+      filter: invert(1) hue-rotate(180deg);
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="app">
-  <div class="header">
-    <h1>Kokoro Text-to-Speech</h1>
-    <p>Streaming playback with download after completion</p>
-  </div>
-
-  <div class="content">
-
-    <textarea id="textInput" placeholder="Type or paste your text here…"></textarea>
-
-    <div>
-      <button id="playBtn">▶ Generate & Stream</button>
-      <button id="downloadBtn" disabled>⬇ Download</button>
+  <div class="app">
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Kokoro Text-to-Speech</h1>
+      <p>Paste text, generate speech, and preview audio instantly</p>
     </div>
 
-    <div id="status" class="status muted">Ready.</div>
+    <!-- CONTENT -->
+    <div class="content">
+      <textarea id="textInput" placeholder="Type or paste your text here…"></textarea>
 
-    <audio id="audio" controls></audio>
+      <button id="playBtn">▶ Generate & Play</button>
 
+      <div id="status" class="status muted">
+        Ready.
+      </div>
+
+      <div class="player">
+        <div id="waveform"></div>
+        <audio id="audio" controls></audio>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-const playBtn = document.getElementById("playBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-const textInput = document.getElementById("textInput");
-const statusEl = document.getElementById("status");
-const audioEl = document.getElementById("audio");
+  <script>
+    const playBtn = document.getElementById("playBtn");
+    const textInput = document.getElementById("textInput");
+    const statusEl = document.getElementById("status");
+    const audioEl = document.getElementById("audio");
 
-let finalBlob = null;
-
-const API_URL =
-  window.location.hostname === "kokoroapp.orator-audio.com"
-    ? "https://kokoro.orator-audio.com/v1/audio/speech"
-    : "http://192.168.8.100:8888/v1/audio/speech";
-
-playBtn.addEventListener("click", async () => {
-
-  const text = textInput.value.trim();
-  if (!text) {
-    setStatus("Please enter text first.", "error");
-    return;
-  }
-
-  downloadBtn.disabled = true;
-  finalBlob = null;
-
-  setStatus("Streaming audio…", "muted");
-
-  try {
-
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "kokoro",
-        input: text,
-        voice: "af_heart(2)+af_sky(1)+bm_lewis(1)",
-        response_format: "mp3",
-        stream: true
-      })
+    const waveSurfer = WaveSurfer.create({
+      container: "#waveform",
+      waveColor: "#1e293b",
+      progressColor: "#60a5fa",
+      cursorColor: "#e5e7eb",
+      barWidth: 2,
+      barRadius: 2,
+      height: 140,
+      normalize: true
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    // Determine API URL dynamically
+    const API_URL = window.location.hostname === "kokoroapp.orator-audio.com"
+      ? "https://kokoro.orator-audio.com/v1/audio/speech"
+      : "http://192.168.8.100:8888/v1/audio/speech";
 
-    const mediaSource = new MediaSource();
-    audioEl.src = URL.createObjectURL(mediaSource);
-
-    const reader = response.body.getReader();
-    const chunks = [];
-
-    mediaSource.addEventListener("sourceopen", async () => {
-
-      const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-      let started = false;
-
-      async function pump() {
-
-        const { done, value } = await reader.read();
-
-        if (done) {
-
-          mediaSource.endOfStream();
-
-          finalBlob = new Blob(chunks, { type: "audio/mpeg" });
-          downloadBtn.disabled = false;
-
-          setStatus("Streaming complete ✔", "success");
-          return;
-        }
-
-        chunks.push(value);
-
-        await new Promise(resolve => {
-          if (!sourceBuffer.updating) {
-            sourceBuffer.appendBuffer(value);
-            resolve();
-          } else {
-            sourceBuffer.addEventListener("updateend", resolve, { once: true });
-          }
-        });
-
-        if (!started) {
-          audioEl.play().catch(()=>{});
-          started = true;
-        }
-
-        pump();
+    playBtn.addEventListener("click", async () => {
+      const text = textInput.value.trim();
+      if (!text) {
+        setStatus("Please enter some text first.", "error");
+        return;
       }
 
-      pump();
+      setStatus("Generating audio…", "muted");
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "kokoro",
+            input: text,
+            voice: "af_heart(2)+af_sky(1)+bm_lewis(1)",
+            response_format: "mp3",
+            download_format: "mp3",
+            speed: 1.2,
+            stream: false,
+            return_download_link: false,
+            lang_code: "a",
+            volume_multiplier: 1,
+            normalization_options: {
+              normalize: true,
+              unit_normalization: false,
+              url_normalization: true,
+              email_normalization: true,
+              optional_pluralization_normalization: true,
+              phone_normalization: true,
+              replace_remaining_symbols: true
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        audioEl.src = url;
+        waveSurfer.load(url);
+
+        setStatus("Audio generated successfully ✔", "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to generate audio ✖", "error");
+      }
     });
 
-  } catch (err) {
-    console.error(err);
-    setStatus("Streaming failed ✖", "error");
-  }
-});
-
-downloadBtn.addEventListener("click", () => {
-
-  if (!finalBlob) return;
-
-  const url = URL.createObjectURL(finalBlob);
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = "kokoro-speech.mp3";
-  a.click();
-
-  URL.revokeObjectURL(url);
-});
-
-function setStatus(text, type) {
-  statusEl.textContent = text;
-  statusEl.className = `status ${type}`;
-}
-</script>
+    function setStatus(text, type) {
+      statusEl.textContent = text;
+      statusEl.className = `status ${type}`;
+    }
+  </script>
 
 </body>
 </html>
