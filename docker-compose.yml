@@ -4,4 +4,7 @@ services:
     container_name: kokoro-ui
     ports:
       - "8889:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+      - ./epubreader.html:/usr/share/nginx/html/epubreader.html
     restart: unless-stopped

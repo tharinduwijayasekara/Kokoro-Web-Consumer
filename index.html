@@ -5,25 +5,22 @@
   <title>Kokoro TTS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- WaveSurfer -->
   <script src="https://unpkg.com/wavesurfer.js@7"></script>
 
   <style>
     :root {
-      --bg: #0b0f19;
+      --bg: #030712;
       --panel: #111827;
-      --panel-soft: #0f172a;
+      --panel-soft: #1f2937;
       --accent: #60a5fa;
       --accent-hover: #3b82f6;
-      --success: #22c55e;
+      --success: #10b981;
       --error: #ef4444;
-      --border: #1f2933;
-      --text: #e5e7eb;
+      --border: #374151;
+      --text: #f3f4f6;
       --muted: #9ca3af;
-      --radius: 14px;
-      --shadow: 0 20px 50px rgba(0,0,0,0.6);
-      --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont;
-      height: 100%;
+      --radius: 16px;
+      --font: "Inter", system-ui, -apple-system, sans-serif;
     }
 
     * {
@@ -33,159 +30,205 @@
 
     body {
       margin: 0;
-      padding: 32px;
-      background: radial-gradient(circle at top, #111827, #020617);
+      padding: 0;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(147, 51, 234, 0.15) 0px, transparent 50%);
       color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .app {
-      max-width: 900px;
-      margin: auto;
+      width: 100%;
+      max-width: 1000px;
+      min-height: 100vh;
       background: var(--panel);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
     }
 
-    /* HEADER */
+    /* Header Styling */
     .header {
-      padding: 24px 28px;
-      background: linear-gradient(
-        135deg,
-        #0f172a,
-        #020617
-      );
+      padding: 2rem;
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
     }
 
     .header h1 {
       margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #60a5fa, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .header p {
-      margin: 6px 0 0;
-      font-size: 13px;
+      margin: 0.5rem 0 0;
+      font-size: 0.875rem;
       color: var(--muted);
     }
 
-    /* CONTENT */
+    /* Content Layout */
     .content {
-      padding: 24px;
+      padding: 1.5rem;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 1.5rem;
+    }
+
+    .voice-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    input[type="text"], textarea {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.875rem;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
     }
 
     textarea {
-      width: 100%;
-      min-height: 220px;
-      resize: vertical;
-      padding: 16px;
-      font-size: 15px;
-      color: var(--text);
-      background: var(--panel-soft);
-      border-radius: var(--radius);
+      flex: 1;
+      min-height: 200px;
+      line-height: 1.6;
+    }
+
+    .btn-reset {
+      background: transparent;
       border: 1px solid var(--border);
-      outline: none;
-      transition: border 0.2s, box-shadow 0.2s;
-    }
-
-    textarea::placeholder {
       color: var(--muted);
+      padding: 0 1.25rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.2s;
     }
 
-    textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(96,165,250,0.25);
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
     }
 
-    button {
-      align-self: flex-start;
-      padding: 12px 30px;
-      border-radius: 999px;
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    button#playBtn {
+      background: var(--accent);
+      color: #fff;
       border: none;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        #7dd3fc
-      );
-      color: #020617;
-      font-size: 15px;
+      padding: 0.875rem 2rem;
+      border-radius: 50px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transition: transform 0.1s, filter 0.2s;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      transition: 0.2s transform;
     }
 
-    button:hover {
-      filter: brightness(1.1);
+    button#playBtn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
     }
 
-    button:active {
-      transform: scale(0.97);
+    button#playBtn:active {
+      transform: translateY(0);
     }
 
     .status {
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.2);
     }
 
-    .success {
-      color: var(--success);
-    }
-
-    .error {
-      color: var(--error);
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    /* PLAYER */
+    /* Player Section */
     .player {
-      margin-top: 6px;
-      padding: 16px;
-      background: var(--panel-soft);
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1.5rem;
       border-radius: var(--radius);
       border: 1px solid var(--border);
     }
 
     #waveform {
-      height: 140px;
-      border-radius: 10px;
-      overflow: hidden;
+      height: 100px;
+      margin-bottom: 1rem;
     }
 
     audio {
       width: 100%;
-      margin-top: 12px;
-      filter: invert(1) hue-rotate(180deg);
+      height: 40px;
+      filter: invert(0.9) hue-rotate(180deg) brightness(1.5);
     }
+
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      body { padding: 2rem; }
+      .app {
+        min-height: auto;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      .header h1 { font-size: 1.75rem; }
+      #waveform { height: 140px; }
+      textarea { min-height: 300px; }
+    }
+
+    .success { color: var(--success); border-left: 3px solid var(--success); padding-left: 10px; }
+    .error { color: var(--error); border-left: 3px solid var(--error); padding-left: 10px; }
+    .muted { color: var(--muted); }
   </style>
 </head>
 <body>
 
   <div class="app">
-    <!-- HEADER -->
     <div class="header">
       <h1>Kokoro Text-to-Speech</h1>
       <p>Paste text, generate speech, and preview audio instantly</p>
     </div>
 
-    <!-- CONTENT -->
     <div class="content">
+      <div class="voice-controls">
+        <input type="text" id="voiceInput" placeholder="Enter voice ID (e.g. af_heart)">
+        <button class="btn-reset" id="resetVoiceBtn">↺ Reset to Default</button>
+      </div>
+
       <textarea id="textInput" placeholder="Type or paste your text here…"></textarea>
 
-      <button id="playBtn">▶ Generate & Play</button>
-
-      <div id="status" class="status muted">
-        Ready.
+      <div class="actions">
+        <button id="playBtn">▶ Generate & Play</button>
+        <div id="status" class="status muted">Ready.</div>
       </div>
 
       <div class="player">
@@ -196,29 +239,40 @@
   </div>
 
   <script>
+    const DEFAULT_VOICE = "af_heart(1)+af_aoede(1)";
     const playBtn = document.getElementById("playBtn");
     const textInput = document.getElementById("textInput");
+    const voiceInput = document.getElementById("voiceInput");
+    const resetVoiceBtn = document.getElementById("resetVoiceBtn");
     const statusEl = document.getElementById("status");
     const audioEl = document.getElementById("audio");
 
+    voiceInput.value = DEFAULT_VOICE;
+
     const waveSurfer = WaveSurfer.create({
       container: "#waveform",
-      waveColor: "#1e293b",
+      waveColor: "#4b5563",
       progressColor: "#60a5fa",
       cursorColor: "#e5e7eb",
-      barWidth: 2,
-      barRadius: 2,
-      height: 140,
+      barWidth: 3,
+      barGap: 3,
+      barRadius: 4,
+      height: 'auto',
       normalize: true
     });
 
-    // Determine API URL dynamically
     const API_URL = window.location.hostname === "kokoroapp.orator-audio.com"
       ? "https://kokoro.orator-audio.com/v1/audio/speech"
       : "http://192.168.8.100:8888/v1/audio/speech";
 
+    resetVoiceBtn.addEventListener("click", () => {
+        voiceInput.value = DEFAULT_VOICE;
+    });
+
     playBtn.addEventListener("click", async () => {
       const text = textInput.value.trim();
+      const voice = voiceInput.value.trim() || DEFAULT_VOICE;
+
       if (!text) {
         setStatus("Please enter some text first.", "error");
         return;
@@ -229,13 +283,11 @@
       try {
         const response = await fetch(API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "kokoro",
             input: text,
-            voice: "af_heart(2)+af_sky(1)+bm_lewis(1)",
+            voice: voice,
             response_format: "mp3",
             download_format: "mp3",
             speed: 1.2,
@@ -255,16 +307,13 @@
           })
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
 
         audioEl.src = url;
         waveSurfer.load(url);
-
         setStatus("Audio generated successfully ✔", "success");
       } catch (err) {
         console.error(err);
