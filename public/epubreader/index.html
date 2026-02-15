@@ -204,10 +204,10 @@
 
     let book, rendition, currentHowl = null, isPlaying = false, currentParagraph = null;
     let wakeLock = null;
+    let autoPlayNext = false; // Flag to handle chapter transitions
     
-    // BUFFERING LOGIC
-    const audioCache = new Map(); // Stores text -> Blob URL
-    const pendingRequests = new Set(); // Prevents duplicate API calls
+    const audioCache = new Map();
+    const pendingRequests = new Set();
     const BUFFER_SIZE = 5;
 
     async function requestWakeLock() {
@@ -249,6 +249,13 @@
             rendition.on("rendered", async (section) => {
                 const doc = await book.load(section.href);
                 renderCleanText(doc.body.innerText);
+                
+                // If we reached here via readNext(), start playing the first paragraph
+                if (autoPlayNext) {
+                    autoPlayNext = false;
+                    const firstP = customViewer.querySelector('p');
+                    if (firstP) startReading(firstP);
+                }
             });
             rendition.display();
         };
@@ -261,7 +268,10 @@
         text.split(/\r?\n/).filter(l => l.trim()).forEach(line => {
             const p = document.createElement("p");
             p.textContent = line.trim();
-            p.onclick = () => startReading(p);
+            p.onclick = () => {
+                autoPlayNext = false;
+                startReading(p);
+            };
             customViewer.appendChild(p);
         });
         status.innerText = "Chapter Loaded";
@@ -318,7 +328,7 @@
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
         nowReading.innerText = el.innerText;
-        fillBuffer(el); // Start filling buffer for upcoming lines
+        fillBuffer(el);
 
         const cachedUrl = audioCache.get(el.innerText);
         if (cachedUrl) {
@@ -326,7 +336,6 @@
         } else {
             el.classList.add('buffering');
             status.innerText = "Generating...";
-            // If not in cache, fetch immediately
             await fetchAndCache(el.innerText);
             const freshUrl = audioCache.get(el.innerText);
             if (freshUrl) playAudio(freshUrl);
@@ -377,17 +386,14 @@
             startReading(next);
         } else {
             status.innerText = "Next Chapter...";
+            autoPlayNext = true; // Set flag to play first paragraph when new section renders
             await rendition.next();
-            setTimeout(() => { 
-                const firstP = customViewer.querySelector('p'); 
-                if (firstP) startReading(firstP); 
-            }, 800);
         }
     }
 
     playPauseBtn.onclick = () => isPlaying ? stopAudio(true) : (currentParagraph && startReading(currentParagraph));
-    document.getElementById("next").onclick = () => rendition.next();
-    document.getElementById("prev").onclick = () => rendition.prev();
+    document.getElementById("next").onclick = () => { autoPlayNext = false; rendition.next(); };
+    document.getElementById("prev").onclick = () => { autoPlayNext = false; rendition.prev(); };
 </script>
 </body>
 </html>
