@@ -5,6 +5,5 @@ services:
     ports:
       - "8889:80"
     volumes:
-      - ./index.html:/usr/share/nginx/html/index.html
-      - ./epubreader.html:/usr/share/nginx/html/epubreader.html
+      - ./public:/usr/share/nginx/html
     restart: unless-stopped

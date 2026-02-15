@@ -204,13 +204,16 @@
 
     let book, rendition, currentHowl = null, isPlaying = false, currentParagraph = null;
     let wakeLock = null;
+    
+    // BUFFERING LOGIC
+    const audioCache = new Map(); // Stores text -> Blob URL
+    const pendingRequests = new Set(); // Prevents duplicate API calls
+    const BUFFER_SIZE = 5;
 
-    // --- Wake Lock Logic ---
     async function requestWakeLock() {
         try {
             if ('wakeLock' in navigator) {
                 wakeLock = await navigator.wakeLock.request('screen');
-                console.log("Screen Wake Lock active");
             }
         } catch (err) {
             console.error(`${err.name}, ${err.message}`);
@@ -219,19 +222,9 @@
 
     function releaseWakeLock() {
         if (wakeLock !== null) {
-            wakeLock.release().then(() => {
-                wakeLock = null;
-                console.log("Screen Wake Lock released");
-            });
+            wakeLock.release().then(() => { wakeLock = null; });
         }
     }
-
-    // Re-acquire lock if tab is switched back
-    document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') {
-            await requestWakeLock();
-        }
-    });
 
     menuToggle.onclick = () => sidebar.classList.toggle("active");
 
@@ -264,6 +257,7 @@
 
     function renderCleanText(text) {
         customViewer.innerHTML = "";
+        audioCache.clear(); 
         text.split(/\r?\n/).filter(l => l.trim()).forEach(line => {
             const p = document.createElement("p");
             p.textContent = line.trim();
@@ -274,6 +268,43 @@
         document.getElementById("viewer").scrollTop = 0;
     }
 
+    async function fillBuffer(startEl) {
+        let next = startEl;
+        let count = 0;
+        while (next && count < BUFFER_SIZE) {
+            const text = next.innerText;
+            if (!audioCache.has(text) && !pendingRequests.has(text)) {
+                fetchAndCache(text);
+            }
+            next = next.nextElementSibling;
+            count++;
+        }
+    }
+
+    async function fetchAndCache(text) {
+        pendingRequests.add(text);
+        try {
+            const response = await fetch("https://kokoro.orator-audio.com/v1/audio/speech", {
+                method: "POST", 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    model: "tts-1-hd", 
+                    voice: "af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)", 
+                    input: text, 
+                    speed: 1.2,
+                })
+            });
+            if (!response.ok) throw new Error("Fetch failed");
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            audioCache.set(text, url);
+        } catch (e) {
+            console.error("Cache error:", e);
+        } finally {
+            pendingRequests.delete(text);
+        }
+    }
+
     async function startReading(el) {
         if (!el) return;
         stopAudio(false);
@@ -281,16 +312,47 @@
         playPauseBtn.innerText = "Stop TTS";
         currentParagraph = el;
         
-        await requestWakeLock(); // Request lock when starting
+        await requestWakeLock();
         
         document.querySelectorAll('.speaking, .buffering').forEach(s => s.classList.remove('speaking', 'buffering'));
-        el.classList.add('buffering');
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        status.innerText = "Generating Audio...";
         nowReading.innerText = el.innerText;
-        
-        await streamTTS(el.innerText);
+        fillBuffer(el); // Start filling buffer for upcoming lines
+
+        const cachedUrl = audioCache.get(el.innerText);
+        if (cachedUrl) {
+            playAudio(cachedUrl);
+        } else {
+            el.classList.add('buffering');
+            status.innerText = "Generating...";
+            // If not in cache, fetch immediately
+            await fetchAndCache(el.innerText);
+            const freshUrl = audioCache.get(el.innerText);
+            if (freshUrl) playAudio(freshUrl);
+        }
+    }
+
+    function playAudio(url) {
+        currentHowl = new Howl({
+            src: [url],
+            format: ['mp3'],
+            html5: true,
+            onplay: () => {
+                if (currentParagraph) {
+                    currentParagraph.classList.remove('buffering');
+                    currentParagraph.classList.add('speaking');
+                }
+                status.innerText = "Playing";
+            },
+            onend: () => {
+                if (isPlaying) {
+                    currentParagraph.classList.remove('speaking');
+                    readNext();
+                }
+            }
+        });
+        currentHowl.play();
     }
 
     function stopAudio(resetUI = true) {
@@ -304,60 +366,6 @@
             if (currentParagraph) currentParagraph.classList.remove('speaking', 'buffering'); 
             playPauseBtn.innerText = "Resume TTS"; 
             status.innerText = "Paused";
-            releaseWakeLock(); // Release lock when explicitly stopped
-        }
-    }
-
-    async function streamTTS(text) {
-        try {
-            const response = await fetch("https://kokoro.orator-audio.com/v1/audio/speech", {
-                method: "POST", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    model: "tts-1-hd", 
-                    voice: "af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)", 
-                    input: text, 
-                    speed: 1.2,
-                    stream: true,
-                })
-            });
-
-            if (!response.ok) throw new Error("TTS Fetch Failed");
-
-            const blob = await response.blob();
-            const reader = new FileReader();
-            
-            reader.onload = function() {
-                const base64data = reader.result;
-                
-                currentHowl = new Howl({
-                    src: [base64data],
-                    format: ['mp3'],
-                    html5: true,
-                    onplay: () => {
-                        if (currentParagraph) {
-                            currentParagraph.classList.remove('buffering');
-                            currentParagraph.classList.add('speaking');
-                        }
-                        status.innerText = "Playing";
-                    },
-                    onend: () => {
-                        if (isPlaying) {
-                            currentParagraph.classList.remove('speaking');
-                            readNext();
-                        }
-                    },
-                    onloaderror: () => releaseWakeLock()
-                });
-
-                if (isPlaying) currentHowl.play();
-            };
-            
-            reader.readAsDataURL(blob);
-            
-        } catch (err) { 
-            status.innerText = "Error"; 
-            console.error(err);
             releaseWakeLock();
         }
     }
@@ -368,12 +376,11 @@
         if (next) {
             startReading(next);
         } else {
-            status.innerText = "Loading Next Chapter...";
+            status.innerText = "Next Chapter...";
             await rendition.next();
             setTimeout(() => { 
                 const firstP = customViewer.querySelector('p'); 
                 if (firstP) startReading(firstP); 
-                else releaseWakeLock(); // Release if reached end of book
             }, 800);
         }
     }
