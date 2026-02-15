@@ -75,7 +75,7 @@
         #viewer {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 10% 120px 10%;
+            padding: 10px 10px 120px 10px;
             scroll-behavior: smooth;
         }
 
@@ -203,6 +203,35 @@
           customViewer = document.getElementById("custom-content");
 
     let book, rendition, currentHowl = null, isPlaying = false, currentParagraph = null;
+    let wakeLock = null;
+
+    // --- Wake Lock Logic ---
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log("Screen Wake Lock active");
+            }
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+        }
+    }
+
+    function releaseWakeLock() {
+        if (wakeLock !== null) {
+            wakeLock.release().then(() => {
+                wakeLock = null;
+                console.log("Screen Wake Lock released");
+            });
+        }
+    }
+
+    // Re-acquire lock if tab is switched back
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    });
 
     menuToggle.onclick = () => sidebar.classList.toggle("active");
 
@@ -252,6 +281,8 @@
         playPauseBtn.innerText = "Stop TTS";
         currentParagraph = el;
         
+        await requestWakeLock(); // Request lock when starting
+        
         document.querySelectorAll('.speaking, .buffering').forEach(s => s.classList.remove('speaking', 'buffering'));
         el.classList.add('buffering');
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -273,6 +304,7 @@
             if (currentParagraph) currentParagraph.classList.remove('speaking', 'buffering'); 
             playPauseBtn.innerText = "Resume TTS"; 
             status.innerText = "Paused";
+            releaseWakeLock(); // Release lock when explicitly stopped
         }
     }
 
@@ -282,10 +314,11 @@
                 method: "POST", 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    model: "kokoro", 
-                    voice: "af_heart(1)+af_aoede(1)+af_nicole(1)", 
+                    model: "tts-1-hd", 
+                    voice: "af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)", 
                     input: text, 
-                    speed: 1.2 
+                    speed: 1.2,
+                    stream: true,
                 })
             });
 
@@ -313,7 +346,8 @@
                             currentParagraph.classList.remove('speaking');
                             readNext();
                         }
-                    }
+                    },
+                    onloaderror: () => releaseWakeLock()
                 });
 
                 if (isPlaying) currentHowl.play();
@@ -324,6 +358,7 @@
         } catch (err) { 
             status.innerText = "Error"; 
             console.error(err);
+            releaseWakeLock();
         }
     }
 
@@ -338,6 +373,7 @@
             setTimeout(() => { 
                 const firstP = customViewer.querySelector('p'); 
                 if (firstP) startReading(firstP); 
+                else releaseWakeLock(); // Release if reached end of book
             }, 800);
         }
     }
