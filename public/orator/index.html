@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orator Reader</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="manifest" href="images/site.webmanifest">
+
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -18,14 +24,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.2.15/epub.min.js"></script>
 </head>
-<body class="body">
+<body class="body bg-dark text-light">
 
 
 <div id="app" class="container-fluid">
 
     <div id="view-splash" class="orator-view orator-view-splash">
         <div class="text-center w-100">
+            <img src="images/android-chrome-192x192.png" width="72" class="mb-4">
             <h1>ORATOR WEB</h1>
+            <p class="mb-4">Getting things ready...</p>
             <div class="d-flex justify-content-center">
                 <div class="spinner-border" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -36,7 +44,7 @@
 
     <div id="view-library" class="orator-view orator-view-library">
         <nav class="navbar navbar-dark bg-dark px-3 shadow">
-            <span class="navbar-brand mb-0 h1">ORATOR Web</span>
+            <span class="navbar-brand mb-0 h1">ORATOR WEB</span>
             <button id="btn-settings" class="btn btn-outline-light btn-sm">⚙️</button>
         </nav>
 
