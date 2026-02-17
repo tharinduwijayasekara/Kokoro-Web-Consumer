@@ -1,11 +1,10 @@
 const App = {
 
-    db: undefined,
-    orator: {},
     $app: $('#app'),
 
     dependencies: [
-        'js/default/defaults.js'
+        'js/default/defaults.js',
+        'js/utils/storageService.js'
     ],
 
     async init() {
@@ -18,16 +17,15 @@ const App = {
 
             this.showView('splash');
 
-            this.db = await this.initDB();
-            await this.seedDefaults();
+            await StorageService.init();
 
-            console.log("Fetched orator configuration json", this.orator);
+            console.log("Fetched orator configuration json", StorageService.orator);
 
             this.setEventHandlers();
 
             setTimeout(() => {
                 this.renderLibrary();
-            }, 1000);
+            }, 1500);
 
         } catch (e) {
             console.log("Initialization failed.", e);
@@ -51,45 +49,9 @@ const App = {
         this.$app.find(`.orator-view-${viewName}`).addClass('active');
     },
 
-    async initDB() {
-        const db = new Dexie("OratorDB");
-        db.version(1).stores({
-            books: "id, title, importedAt",
-            data: 'key'
-        });
-        return db;
-    },
-
-    async seedDefaults() {
-        const orator = await this.getOratorJson();
-
-        if (!orator) {
-            await this.writeOratorJson(DEFAULT_ORATOR_JSON);
-            console.log("Default orator json updated");
-        }
-    },
-
-    async getOratorJson() {
-        const orator = await this.db.data.get('orator');
-        if (!orator || !orator.orator) return {};
-
-        this.orator = orator.orator;
-        return this.orator;
-    },
-
-    async writeOratorJson(orator) {
-        await this.db.data.add({
-            key: "orator",
-            ...orator
-        });
-
-        console.log("Orator json updated");
-        this.orator = this.getOratorJson();
-    },
-
     async renderLibrary() {
-        this.getOratorJson();
-        const books = await this.db.books.toArray();
+        await StorageService.getOratorJson();
+        const books = await StorageService.getBooks();
         const $list = $('#library-list').empty();
 
         if (!books || books.length === 0) {
@@ -121,13 +83,13 @@ const App = {
 
     setEventHandlers() {
         this.$app.on('click', '.orator-btn-delete-book', async (e) => {
-           e.stopPropagation();
-           const id = $(e.currentTarget).data('id');
+            e.stopPropagation();
+            const id = $(e.currentTarget).data('id');
 
-           if (confirm("Delete this book?")) {
-               await this.db.books.delete(id);
-               this.renderLibrary();
-           }
+            if (confirm("Delete this book?")) {
+                await StorageService.db.books.delete(id);
+                this.renderLibrary();
+            }
         });
 
         this.$app.find('#epub-input').on('change', (e) => {
@@ -143,7 +105,7 @@ const App = {
         const reader = new FileReader();
 
         reader.onload = async (e) => {
-            const book = ePub(e.target.result, { restore: false });
+            const book = ePub(e.target.result, {restore: false});
 
             try {
                 await book.ready;
@@ -153,18 +115,34 @@ const App = {
                 // 1. Get all filenames, sort them to keep book order
                 const fileKeys = Object.keys(zipFiles)
                     .filter(key => key.endsWith('.xhtml') || key.endsWith('.html'))
-                    .sort();
+                    .sort((a, b) => {
+                        return a.localeCompare(b, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        });
+                    });
 
                 // 2. Iterate and extract
                 fileKeys.forEach(key => {
-                    const htmlString = zipFiles[key].asText();
-                    const $doc = $($.parseHTML(htmlString));
+                    let htmlString = zipFiles[key].asText();
+                    htmlString = htmlString
+                        .replaceAll('\r\n', '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    const bodyMatch = htmlString.match(/<body[^>]*>([\s\S.]*)<\/body>/i);
+                    const contentToParse = bodyMatch ? bodyMatch[1] : htmlString;
+
+                    const $doc = $($.parseHTML(`<div>${contentToParse}</div>`));
 
                     const paragraphs = [];
-                    $doc.find('p, h1, h2, h3').each((i, el) => {
-                        const txt = $(el).text().trim();
-                        if (txt.length > 0) {
-                            paragraphs.push(txt.replace(/\s+/g, ' '));
+                    // Use '*' and filter to avoid namespace/selector issues
+                    $doc.find('*').each((i, el) => {
+                        if (['P', 'H1', 'H2', 'H3'].includes(el.tagName.toUpperCase())) {
+                            const txt = $(el).text().trim();
+                            if (txt.length > 0) {
+                                paragraphs.push(txt.replace(/\s+/g, ' '));
+                            }
                         }
                     });
 
@@ -178,7 +156,7 @@ const App = {
                 const coverUrl = await book.coverUrl();
                 const base64Cover = await this.urlToBase64(coverUrl);
 
-                await this.db.books.add({
+                await StorageService.db.books.add({
                     id: Date.now(),
                     title: meta.bookTitle || file.name,
                     cover: base64Cover,
