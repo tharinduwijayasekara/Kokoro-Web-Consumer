@@ -3,8 +3,8 @@ const App = {
     $app: $('#app'),
 
     dependencies: [
-        'js/default/defaults.js',
-        'js/utils/storageService.js'
+        'js/default/defaults.js?v=' + Date.now(),
+        'js/utils/storageService.js?v=' + Date.now(),
     ],
 
     async init() {
@@ -25,7 +25,7 @@ const App = {
 
             setTimeout(() => {
                 this.renderLibrary();
-            }, 1500);
+            }, 500);
 
         } catch (e) {
             console.log("Initialization failed.", e);
@@ -56,7 +56,7 @@ const App = {
 
         if (!books || books.length === 0) {
             $('<div>')
-                .addClass('p-5 text-center text-muted')
+                .addClass('p-5 text-center text-light')
                 .text("No books available. Tap + to import")
                 .appendTo($list);
 
@@ -66,13 +66,19 @@ const App = {
 
         books.forEach(book => {
             $(`
-                <div class="book-item">
+                <div class="book-item" xmlns="http://www.w3.org/1999/html">
                     <img src="${book.cover}" class="book-cover-thumb">
                     <div class="book-details">
                         <div class="fw-bold">${book.title}</div>
-                        <small class="text-muted">${book.importedAt}</small>
+                        <small class="text-muted">
+                            ${book.author}
+                            </br>
+                            ${book.importedAt}
+                        </small>
                     </div>
-                    <button class="btn btn-outline-danger btn-sm orator-btn-delete-book" data-id="${book.id}">X</button>
+                    <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
+                        <i class="text-danger bi bi-trash3-fill" style="font-size: 20px"></i>
+                    </button>
                 </div>
             `)
                 .appendTo($list);
@@ -159,6 +165,7 @@ const App = {
                 await StorageService.db.books.add({
                     id: Date.now(),
                     title: meta.bookTitle || file.name,
+                    author: meta.creator || "",
                     cover: base64Cover,
                     chapters: chapters,
                     importedAt: new Date().toLocaleDateString()
