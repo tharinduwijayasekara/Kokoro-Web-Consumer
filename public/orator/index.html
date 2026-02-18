@@ -79,6 +79,58 @@
         </label>
     </div>
 
+    <div id="view-reader" class="orator-view orator-view-reader" data-orator-book-id="">
+        <nav class="navbar navbar-dark bg-black px-3 shadow flex-nowrap">
+            <div class="left-buttons d-flex flex-row justify-content-start overflow-hidden">
+                <button id="btn-reader-back" class="btn btn-sm flex-shrink-0">
+                    <i class="bi bi-arrow-left text-light" style="font-size: 20px"></i>
+                </button>
+                <div class="navbar-book-cover-container flex-shrink-0">
+                    <img src="" id="book-cover-navbar-thumb">
+                </div>
+                <div id="navbar-book-name" class="m-auto text-truncate">Book Name</div>
+            </div>
+
+            <button id="btn-reader-settings" class="btn btn-sm">
+                <i class="bi bi-gear-fill text-light" style="font-size: 20px"></i>
+            </button>
+        </nav>
+
+        <div class="reader-container-wrapper flex-grow-1 overflow-auto">
+            <div class="reader-container">
+            </div>
+            <div class="reader-container-padding"></div>
+        </div>
+
+        <div id="playback-controls" class="position-fixed bg-white d-flex flex-column justify-content-end">
+            <div class="player-track">
+                <div class="progress chapter-progress">
+                    <div class="progress-bar bg-black w-75" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="progress book-progress">
+                    <div class="progress-bar bg-black w-75" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="player-controls d-flex flex-row justify-content-between text-black">
+                <button id="btn-reader-chapters" class="btn btn-sm">
+                    <i class="bi bi-list-ol"></i>
+                </button>
+                <button id="btn-reader-previous" class="btn btn-sm">
+                    <i class="bi bi-skip-backward-fill"></i>
+                </button>
+                <button id="btn-reader-playpause" class="btn btn-sm">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+                <button id="btn-reader-next" class="btn btn-sm">
+                    <i class="bi bi-skip-forward-fill"></i>
+                </button>
+                <button id="btn-reader-recenter" class="btn btn-sm">
+                    <i class="bi bi-crosshair"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>

@@ -32,8 +32,13 @@ html, body {
     background-color: #05052b !important;
 }
 
-nav.navbar.navbar-dark {
+.orator-view-library nav.navbar.navbar-dark {
     background-color: #00000000 !important;
+    box-shadow: none !important;
+}
+
+.orator-view-reader nav.navbar.navbar-dark {
+    background-color: #000000 !important;
     box-shadow: none !important;
 }
 
@@ -90,4 +95,60 @@ label.btn-import-books {
     justify-content: center;
     font-size: 24px;
     background-color: #6f1a8d;
+}
+
+#playback-controls {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    height: 140px;
+    padding: 5px 20px;
+    border-radius: 10px;
+}
+
+.player-track .progress {
+    margin-bottom: 5px;
+    height: 5px;
+}
+
+.player-controls {
+    padding: 0 30px;
+    padding-top: 3px;
+}
+.player-controls i {
+    font-size: 25px;
+    color: black !important;
+}
+.player-controls #btn-reader-playpause i {
+    font-size: 45px;
+}
+
+.navbar-book-cover-container {
+    height: 42px;
+    width: 52px;
+    text-align: center;
+}
+
+.navbar-book-cover-container img {
+    height: 100%;
+}
+
+.reader-container-wrapper {
+    padding: 5px;
+    background: #cfcfcf;
+}
+
+.reader-container-padding {
+    height: 500px;
+}
+
+.reader-container p {
+    padding: 10px;
+    color: #222222;
+    margin: 0;
+    border-radius: 7px;
+}
+
+.reader-container p.active {
+    background-color: #ffaa3350;
 }

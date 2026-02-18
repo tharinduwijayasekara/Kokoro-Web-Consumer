@@ -5,6 +5,7 @@ const App = {
     dependencies: [
         'js/default/defaults.js?v=' + Date.now(),
         'js/utils/storageService.js?v=' + Date.now(),
+        'js/utils/readerService.js?v=' + Date.now(),
     ],
 
     async init() {
@@ -66,7 +67,7 @@ const App = {
 
         books.forEach(book => {
             $(`
-                <div class="book-item" xmlns="http://www.w3.org/1999/html">
+                <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}">
                     <img src="${book.cover}" class="book-cover-thumb">
                     <div class="book-details">
                         <div class="fw-bold">${book.title}</div>
@@ -103,6 +104,14 @@ const App = {
             const file = e.target.files[0];
             console.log("New file selected for import", file);
             if (file) this.handleImport(file);
+        });
+
+        this.$app.on('click', '.book-item', async (e) => {
+            e.stopPropagation();
+            const id = $(e.currentTarget).data('id');
+
+            console.log("About to load book for reading", id);
+            ReaderService.init(id);
         });
     },
 

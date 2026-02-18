@@ -18,6 +18,8 @@ const DEFAULT_ORATOR_JSON = {
                 highlight: "#eeddbb"
             }
         },
-        reading: {} // Empty initially
+        reading: {
+            bookId: "chapterid::paragraphid::book-progress-percent"
+        } // Empty initially
     }
 };

@@ -17,9 +17,8 @@ const StorageService = {
     },
 
     async seedDefaults() {
-        const orator = await this.getOratorJson();
-
-        if (!orator) {
+        const orator = await this.db.data.get('orator');
+        if (!orator || !orator.orator) {
             await this.writeOratorJson(DEFAULT_ORATOR_JSON);
             console.log("Default orator json updated");
         }
@@ -27,14 +26,16 @@ const StorageService = {
 
     async getOratorJson() {
         const orator = await this.db.data.get('orator');
-        if (!orator || !orator.orator) return {};
+        if (!orator || !orator.orator) {
+            return DEFAULT_ORATOR_JSON;
+        }
 
         this.orator = orator.orator;
         return this.orator;
     },
 
     async writeOratorJson(orator) {
-        await this.db.data.add({
+        await this.db.data.put({
             key: "orator",
             ...orator
         });
