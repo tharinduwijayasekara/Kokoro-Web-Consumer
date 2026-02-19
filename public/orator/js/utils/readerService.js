@@ -16,6 +16,7 @@ const ReaderService = {
 
     currentBuffer: [],
     isBuffering: false,
+    bufferrer: undefined,
     isPlaying: false,
 
     async init(bookId) {
@@ -64,6 +65,10 @@ const ReaderService = {
         await this.renderChaptersList();
         await this.renderChapterOnScreen(progressTracker[0]);
 
+        if (!this.bufferrer) {
+            this.setBufferrer();
+        }
+
         App.showView('reader');
     },
 
@@ -92,6 +97,7 @@ const ReaderService = {
 
         chapter.forEach((paragraph, paragraphId) => {
             $paragraph = $('<p></p>')
+                .attr('id', `reader-paragraph-${chapterId}-${paragraphId}`)
                 .addClass('reader-paragraph')
                 .attr('data-paragraph-identifier', `${chapterIdToRender}-${paragraphId}`)
                 .text(paragraph)
@@ -151,7 +157,7 @@ const ReaderService = {
 
         this.isBuffering = true;
 
-        let maxBatchSize = size < 10 ? size : 10;
+        let maxBatchSize = 5;
         if (this.currentBuffer.length < 5 && size >= 10) {
             maxBatchSize = 2;
         }
@@ -186,6 +192,27 @@ const ReaderService = {
         }
 
         this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
+    },
+
+    async setBufferrer() {
+        if (this.bufferrer) return;
+
+        this.bufferrer = setInterval(() => {
+
+            if (!this.isPlaying || this.isBuffering) return;
+            if (this.currentBuffer.length > 100) return;
+
+            const current = this.currentBuffer[0];
+            const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
+
+            console.log("Inside bufferrer: last available audio in current buffer", last);
+
+            let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
+
+            console.log("About to call fill buffer with", nextC, nextP);
+            this.fillBuffer(nextC, nextP, 200);
+
+        }, 2000)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -264,14 +291,18 @@ const ReaderService = {
         console.log("About to play next, current buffer length", this.currentBuffer.length);
 
         const current = this.currentBuffer.shift();
+        this.progressTracker = `${current.cIdx}::${current.pIdx}::0`;
+
+        this.$container.find('.reader-paragraph').removeClass('active');
+        this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
+
         this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
         current.sound.play();
 
         const orator = await StorageService.getOratorJson();
-        this.progressTracker = `${current.cIdx}::${current.pIdx}::0`;
         orator.reading[this.book.id] = this.progressTracker;
-        console.log("Progress tracker moved to", this.progressTracker);
         await StorageService.writeOratorJson(orator);
+        console.log("Progress tracker moved to", this.progressTracker);
 
         const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
 
@@ -283,9 +314,9 @@ const ReaderService = {
 
     stop() {
         this.isPlaying = false;
-        this.$playPauseButton.removeClass('playing');
-
         Howler.stop();
+
+        this.$playPauseButton.removeClass('playing');
 
         this.currentBuffer.forEach(item => {
             URL.revokeObjectURL(item.url);

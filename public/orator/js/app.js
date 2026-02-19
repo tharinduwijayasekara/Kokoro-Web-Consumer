@@ -1,6 +1,6 @@
 const App = {
 
-    isProd: true,
+    isProd: false,
 
     $app: $('#app'),
 
@@ -158,14 +158,14 @@ const App = {
                 return;
             }
 
-            ReaderService.play(-10, -12, 5);
+            ReaderService.play(-10, -12, 3);
         });
 
         this.$app.on('click', '.reader-paragraph', async (e) => {
             e.stopPropagation();
             const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
             const [cIdx, pIdx] = paragraphIdentifier.split('-');
-            ReaderService.play(parseInt(cIdx), parseInt(pIdx), 5);
+            ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
         });
 
         this.$app.on('click', '.orator-backdrop', async (e) => {
