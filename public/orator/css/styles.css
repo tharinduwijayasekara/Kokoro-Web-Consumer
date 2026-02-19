@@ -44,8 +44,8 @@ html, body {
 
 .book-details .text-muted {
     color: #bebebe !important;
-    font-size: .675em;
-    line-height: 1.5em;
+    font-size: 0.6em;
+    line-height: 1.3em;
 }
 
 .library-top-image {
@@ -53,19 +53,29 @@ html, body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    padding: 40px 10px;
     height: 250px;
+}
+
+.library-top-text {
+    backdrop-filter: blur(10px);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }
 
 /* Library List Styling */
 #library-list {
     padding: 0px 10px;
     padding-bottom: 400px;
+    padding-top: 20px;
 }
 
 .book-item {
     display: flex;
-    /* align-items: center; */
+    align-items: center;
     padding: 10px;
     margin: 0px auto;
     margin-bottom: 10px;
@@ -85,6 +95,12 @@ html, body {
 .book-details {
     flex: 1;
     padding-left: 15px;
+}
+
+.book-details .fw-bold {
+    font-size: 0.8em;
+    line-height: 1.2em;
+    padding-bottom: 0.5em;
 }
 
 label.btn-import-books {
@@ -114,6 +130,8 @@ label.btn-import-books {
 .player-controls {
     padding: 0 30px;
     padding-top: 3px;
+    width: 320px;
+    margin: 0 auto;
 }
 .player-controls i {
     font-size: 25px;

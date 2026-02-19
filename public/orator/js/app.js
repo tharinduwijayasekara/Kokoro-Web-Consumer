@@ -71,11 +71,11 @@ const App = {
                     <img src="${book.cover}" class="book-cover-thumb">
                     <div class="book-details">
                         <div class="fw-bold">${book.title}</div>
-                        <small class="text-muted">
+                        <p class="text-muted">
                             ${book.author}
                             </br>
                             ${book.importedAt}
-                        </small>
+                        </p>
                     </div>
                     <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
                         <i class="text-danger bi bi-trash3-fill" style="font-size: 20px"></i>
