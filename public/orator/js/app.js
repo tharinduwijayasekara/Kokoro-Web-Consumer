@@ -1,6 +1,6 @@
 const App = {
 
-    isProd: false,
+    isProd: true,
 
     $app: $('#app'),
 
