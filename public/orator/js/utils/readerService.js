@@ -1,18 +1,22 @@
 const ReaderService = {
 
     book: undefined,
-    progressTracker: [0,0,0],
+    progressTracker: [0, 0, 0],
+
+    currentChapterOnScreen: undefined,
 
     $app: undefined,
     $container: undefined,
-    $bookCover: undefined,
     $bookName: undefined,
+    $chaptersListHeader: undefined,
+    $chaptersList: undefined,
 
     async init(bookId) {
         this.$app = App.$app;
         this.$container = this.$app.find('.reader-container');
-        this.$bookCover = this.$app.find('#book-cover-navbar-thumb');
         this.$bookName = this.$app.find('#navbar-book-name');
+        this.$chaptersListHeader = this.$app.find('.playback-chapter-header');
+        this.$chaptersList = this.$app.find('.playback-chapters-list');
 
         const books = await StorageService.getBooks();
         const book = books.find(b => b.id == bookId);
@@ -45,11 +49,27 @@ const ReaderService = {
         console.log("Progress tracker checked", progressTracker);
 
         this.$bookName.text(book.title);
-        this.$bookCover.attr('src', book.cover);
 
+        await this.renderChaptersList();
         await this.renderChapterOnScreen();
 
         App.showView('reader');
+    },
+
+    async renderChaptersList() {
+        this.$chaptersListHeader.css('background-image', `url(${this.book.cover})`)
+        this.$chaptersList.empty();
+
+        this.book.chapters.forEach((paragraphs, chapterId) => {
+            let chapterTitle = "¤\n" + (paragraphs[0] ?? '-');
+            if (chapterTitle.length > 70) chapterTitle = chapterTitle.substring(0, 70) + '...';
+
+            $('<div></div>')
+                .text(chapterTitle)
+                .addClass('playback-chapter-item')
+                .attr('data-id', chapterId)
+                .appendTo(this.$chaptersList);
+        })
     },
 
     async renderChapterOnScreen(chapterId) {
@@ -66,6 +86,26 @@ const ReaderService = {
                 .text(paragraph)
                 .appendTo(this.$container);
         });
+
+        this.currentChapterOnScreen = chapterIdToRender;
+    },
+
+    async goToPreviousChapter() {
+        const currentChapter = this.currentChapterOnScreen;
+        if (currentChapter === 0) {
+            return;
+        }
+
+        this.renderChapterOnScreen(currentChapter - 1);
+    },
+
+    async goToNextChapter() {
+        const currentChapter = this.currentChapterOnScreen;
+        if (currentChapter >= this.book.chapters.length - 1) {
+            return;
+        }
+
+        this.renderChapterOnScreen(currentChapter + 1);
     }
 
 };

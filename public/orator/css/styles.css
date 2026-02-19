@@ -23,18 +23,29 @@ html, body {
 }
 
 /* Vertically center the splash when active */
-.orator-view-splash.active {
+.orator-view-splash {
     align-items: center;
     justify-content: center;
+    background-color: black;
+}
+
+.orator-view-splash h1 {
+    font-family: 'Crimson Pro';
 }
 
 .bg-dark, .navbar-dark {
     background-color: #05052b !important;
 }
 
+#view-library .navbar-toggler-icon {
+    width: 3rem;
+    height: 3rem;
+}
+
 .orator-view-library nav.navbar.navbar-dark {
     background-color: #00000000 !important;
     box-shadow: none !important;
+    font-family: "Crimson Pro";
 }
 
 .orator-view-reader nav.navbar.navbar-dark {
@@ -64,6 +75,7 @@ html, body {
     justify-content: center;
     align-items: center;
     margin: 0;
+    font-family: 'Crimson Pro';
 }
 
 /* Library List Styling */
@@ -82,6 +94,7 @@ html, body {
     border-radius: 10px;
     cursor: pointer;
     background-color: #22222250;
+    cursor: pointer;
 }
 
 .book-cover-thumb {
@@ -98,9 +111,9 @@ html, body {
 }
 
 .book-details .fw-bold {
-    font-size: 0.8em;
-    line-height: 1.2em;
-    padding-bottom: 0.5em;
+    font-size: 0.9rem;
+    line-height: 1.2rem;
+    padding-bottom: 0.5rem;
 }
 
 label.btn-import-books {
@@ -169,4 +182,87 @@ label.btn-import-books {
 
 .reader-container p.active {
     background-color: #ffaa3350;
+}
+
+#playback-chapters {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    bottom: 0;
+    transition: all .25s;
+}
+
+#playback-chapters.active {
+    left: 0;
+}
+
+.orator-backdrop {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: flex;
+    z-index: 0;
+}
+
+.orator-backdrop.darken {
+    background-color: #00000020;
+}
+
+.playback-chapters-list-container {
+    width: 80%;
+    height: 100%;
+    background-color: white;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.playback-chapter-item {
+    padding: 10px 10px;
+    border-bottom: 2px solid #f1f1f1;
+    width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    color: black;
+    cursor: pointer;
+}
+
+.playback-chapter-header {
+    padding: 0;
+    margin: 0;
+    font-family: "Crimson Pro";
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    margin-bottom: 10px;
+    background: black;
+    height: 100px;
+    min-height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.playback-chapter-header h1 {
+    backdrop-filter: blur(10px);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+}
+
+.playback-chapters-list {
+    overflow: auto;
+    flex-grow: 1;
+    padding-bottom: 100px;
 }

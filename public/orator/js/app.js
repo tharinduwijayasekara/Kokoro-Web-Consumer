@@ -113,6 +113,41 @@ const App = {
             console.log("About to load book for reading", id);
             ReaderService.init(id);
         });
+
+        this.$app.on('click', '#btn-reader-back', async (e) => {
+            e.stopPropagation();
+            //Readerservice.stop;
+
+            this.showView('library');
+        });
+
+        this.$app.on('click', '.playback-chapter-item', async (e) => {
+            e.stopPropagation();
+            const id = $(e.currentTarget).data('id');
+
+            console.log("About to load up chapter index", id);
+            ReaderService.renderChapterOnScreen(id);
+        });
+
+        this.$app.on('click', '#btn-reader-chapters', async (e) => {
+            e.stopPropagation();
+            this.$app.find('#playback-chapters').addClass('active');
+        });
+
+        this.$app.on('click', '#btn-reader-previous', async (e) => {
+            e.stopPropagation();
+            ReaderService.goToPreviousChapter();
+        });
+
+        this.$app.on('click', '#btn-reader-next', async (e) => {
+            e.stopPropagation();
+            ReaderService.goToNextChapter();
+        });
+
+        this.$app.on('click', '.orator-backdrop', async (e) => {
+            e.stopPropagation();
+            $(e.currentTarget).parent().removeClass('active');
+        });
     },
 
     async handleImport(file) {
