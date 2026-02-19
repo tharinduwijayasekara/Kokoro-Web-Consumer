@@ -1,13 +1,9 @@
 const DEFAULT_ORATOR_JSON = {
     orator: {
         config: {
-            tts: {
-                url: "http://localhost:8888/v1/audio/speech",
-                params: {
-                    voice: "af_heart",
-                    speed: 1.1
-                }
-            },
+            ttsUrl: "http://localhost:8888/v1/audio/speech",
+            voice: "af_heart",
+            speed: 1.25,
             appearance: {
                 font: "serif",
                 size: 18,

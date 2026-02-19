@@ -1,11 +1,13 @@
 const App = {
 
+    isProd: true,
+
     $app: $('#app'),
 
     dependencies: [
-        'js/default/defaults.js?v=' + Date.now(),
-        'js/utils/storageService.js?v=' + Date.now(),
-        'js/utils/readerService.js?v=' + Date.now(),
+        'js/default/defaults.js',
+        'js/utils/storageService.js',
+        'js/utils/readerService.js',
     ],
 
     async init() {
@@ -34,10 +36,15 @@ const App = {
     },
 
     loadDependencies() {
+        let suffix = '';
+        if (this.isProd) {
+            suffix = '?v=' + Date.now();
+        }
+
         return Promise.all(this.dependencies.map(src => {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = src;
+                script.src = src + suffix;
                 script.onload = resolve;
                 script.onerror = () => reject(`Failed to load ${src}`);
                 document.head.appendChild(script);
@@ -142,6 +149,23 @@ const App = {
         this.$app.on('click', '#btn-reader-next', async (e) => {
             e.stopPropagation();
             ReaderService.goToNextChapter();
+        });
+
+        this.$app.on('click', '#btn-reader-playpause', async (e) => {
+            e.stopPropagation();
+            if (ReaderService.isPlaying) {
+                ReaderService.stop();
+                return;
+            }
+
+            ReaderService.play(-10, -12, 5);
+        });
+
+        this.$app.on('click', '.reader-paragraph', async (e) => {
+            e.stopPropagation();
+            const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
+            const [cIdx, pIdx] = paragraphIdentifier.split('-');
+            ReaderService.play(parseInt(cIdx), parseInt(pIdx), 5);
         });
 
         this.$app.on('click', '.orator-backdrop', async (e) => {

@@ -35,6 +35,10 @@ const StorageService = {
     },
 
     async writeOratorJson(orator) {
+        if (!orator.orator) {
+            orator = {orator: orator};
+        }
+
         await this.db.data.put({
             key: "orator",
             ...orator

@@ -154,6 +154,18 @@ label.btn-import-books {
     font-size: 45px;
 }
 
+.player-controls #btn-reader-playpause i.bi-pause-fill {
+    display: none;
+}
+
+.player-controls #btn-reader-playpause.playing i.bi-play-fill {
+    display: none;
+}
+
+.player-controls #btn-reader-playpause.playing i.bi-pause-fill {
+    display: block;
+}
+
 .navbar-book-cover-container {
     height: 42px;
     width: 52px;
@@ -265,4 +277,12 @@ label.btn-import-books {
     overflow: auto;
     flex-grow: 1;
     padding-bottom: 100px;
+}
+
+.buffer-health {
+    color: #c7c7c7;
+    text-align: center;
+    padding-bottom: 5px;
+    font-size: 8pt;
+    text-transform: uppercase;
 }
