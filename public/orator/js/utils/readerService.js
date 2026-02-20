@@ -6,6 +6,7 @@ const ReaderService = {
     currentChapterOnScreen: undefined,
 
     $app: undefined,
+    $wrapper: undefined,
     $container: undefined,
     $bookName: undefined,
     $chaptersListHeader: undefined,
@@ -18,15 +19,25 @@ const ReaderService = {
     isBuffering: false,
     bufferrer: undefined,
     isPlaying: false,
+    playIdentifier: undefined,
+    initialBufferSize: 0,
+    initialBufferFetched: 0,
 
     async init(bookId) {
         this.$app = App.$app;
+        this.$wrapper = this.$app.find('.reader-container-wrapper');
         this.$container = this.$app.find('.reader-container');
         this.$bookName = this.$app.find('#navbar-book-name');
         this.$chaptersListHeader = this.$app.find('.playback-chapter-header');
         this.$chaptersList = this.$app.find('.playback-chapters-list');
         this.$playPauseButton = this.$app.find('#btn-reader-playpause');
         this.$bufferHealth = this.$app.find('.buffer-health');
+
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+
+        this.abortController = new AbortController();
 
         const books = await StorageService.getBooks();
         const book = books.find(b => b.id == bookId);
@@ -70,6 +81,12 @@ const ReaderService = {
         }
 
         App.showView('reader');
+
+        setTimeout(() => {
+            this.$container.find('.reader-paragraph').removeClass('active');
+            this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
+            this.scrollToParagraph(progressTracker[0], progressTracker[1]);
+        }, 250);
     },
 
     async renderChaptersList() {
@@ -94,6 +111,8 @@ const ReaderService = {
 
         const chapter = this.book.chapters[chapterIdToRender];
         this.$container.empty();
+
+        this.$container.attr('data-chapter-id', chapterId);
 
         chapter.forEach((paragraph, paragraphId) => {
             $paragraph = $('<p></p>')
@@ -134,17 +153,20 @@ const ReaderService = {
             [chapterId, paragraphId] = this.progressTracker;
         }
 
+        this.playIdentifier = Date.now();
         this.isPlaying = true;
         this.$playPauseButton.addClass('playing');
 
+        App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0);
+
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
-        await this.fillBuffer(chapterId, paragraphId, bufferSize);
+        await this.fillBuffer(chapterId, paragraphId, bufferSize, true);
 
         console.log("Calling play next");
         this.playNext();
     },
 
-    async fillBuffer(cIdx, pIdx, size) {
+    async fillBuffer(cIdx, pIdx, size, isFromPlay = false) {
         if (this.isBuffering) {
             console.log("Fill buffer called while buffering previous request");
             return;
@@ -155,9 +177,10 @@ const ReaderService = {
             console.log("Buffer health good");
         }
 
+        const playIdentifier = this.playIdentifier;
         this.isBuffering = true;
 
-        let maxBatchSize = 5;
+        let maxBatchSize = 3;
         if (this.currentBuffer.length < 5 && size >= 10) {
             maxBatchSize = 2;
         }
@@ -172,6 +195,8 @@ const ReaderService = {
             this.$bufferHealth.text(this.$bufferHealth.text() + ` (${batchSize})`);
 
             for (let i = 0; i < Math.min(needed, batchSize); i++) {
+                if (this.playIdentifier !== playIdentifier) return;
+
                 const text = this.getParagraphText(tempC, tempP);
                 if (!text) break;
 
@@ -180,6 +205,11 @@ const ReaderService = {
                 );
 
                 [tempC, tempP] = this.getNextParagraphId(tempC, tempP);
+            }
+
+            if (isFromPlay) {
+                this.initialBufferSize = fetchTasks.length;
+                this.initialBufferFetched = 0;
             }
 
             const results = await Promise.all(fetchTasks);
@@ -218,6 +248,9 @@ const ReaderService = {
     async fetchAndLoad(text, cIdx, pIdx) {
         console.log("Fetch and load", cIdx, pIdx, text.substring(0, 30));
 
+        const playIdentifier = this.playIdentifier;
+        console.log("Play identifier: ", playIdentifier);
+
         const ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
         const voice = 'af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)';
         const speed = 1.1;
@@ -246,6 +279,7 @@ const ReaderService = {
 
         const response = await fetch(ttsUrl, {
             method: 'POST',
+            signal: this.abortController.signal,
             headers: {
                 'accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -254,6 +288,12 @@ const ReaderService = {
         });
 
         if (!response.ok) throw new Error("TTS Fetch Failed");
+
+        console.log("Play identifier: ", playIdentifier, this.playIdentifier);
+        if (playIdentifier !== this.playIdentifier) {
+            console.log("Play identifier has changed, user probably requested another play start point");
+            return null;
+        }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
@@ -267,8 +307,27 @@ const ReaderService = {
                 format: ['mp3'],
                 html5: false,
                 onload: () => {
-                    console.log("Howler finished loading", cIdx, pIdx);
-                    resolve({shortText, cIdx, pIdx, sound, url})
+                    if (playIdentifier !== this.playIdentifier) {
+                        console.log("Howler loaded an older play identifier, skipping");
+                        resolve(null);
+                    } else {
+                        console.log("Howler finished loading", cIdx, pIdx);
+
+                        this.initialBufferFetched++;
+
+                        if (this.initialBufferFetched <= this.initialBufferSize) {
+                            const percent = Math.ceil((this.initialBufferFetched / this.initialBufferSize) * 100);
+                            console.log("Initial buffer percent", percent);
+
+                            if (percent < 100) {
+                                App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), percent);
+                            } else {
+                                App.hideMessageBoard();
+                            }
+                        }
+
+                        resolve({shortText, cIdx, pIdx, sound, url})
+                    }
                 },
                 onloadError: () => {
                     console.log("Howloer failed to load", cIdx, pIdx);
@@ -305,6 +364,7 @@ const ReaderService = {
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
+        this.scrollToParagraph(current.cIdx, current.pIdx);
 
         this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
         current.sound.play();
@@ -322,8 +382,38 @@ const ReaderService = {
         this.fillBuffer(nextC, nextP, 200);
     },
 
+    async scrollToParagraph(cIdx, pIdx) {
+        if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
+            await this.renderChapterOnScreen(cIdx);
+        }
+
+        const wrapperTop = this.$wrapper.scrollTop();
+        const targetTop = this.$container
+            .find(`#reader-paragraph-${cIdx}-${pIdx}`)
+            .position()
+            ?.top;
+
+        if (!targetTop) return;
+
+        const offset = 100;
+        const scrollTop = Math.max(0, wrapperTop + targetTop - offset)
+
+        this.$wrapper.animate({
+            scrollTop: scrollTop
+        }, 250);
+    },
+
     stop() {
         this.isPlaying = false;
+        this.isBuffering = false;
+
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+
+        this.abortController = new AbortController();
+
+
         Howler.stop();
 
         this.$playPauseButton.removeClass('playing');

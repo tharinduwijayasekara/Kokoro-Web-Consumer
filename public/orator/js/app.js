@@ -69,6 +69,7 @@ const App = {
                 .appendTo($list);
 
             this.showView('library');
+            this.hideMessageBoard();
             return;
         }
 
@@ -93,6 +94,7 @@ const App = {
         });
 
         this.showView('library');
+        this.hideMessageBoard();
     },
 
     setEventHandlers() {
@@ -176,6 +178,7 @@ const App = {
 
     async handleImport(file) {
         console.log("Processing EPUB...");
+        this.showMessageBoard("Importing...", "Reading your book", -1);
         const reader = new FileReader();
 
         reader.onload = async (e) => {
@@ -271,7 +274,7 @@ const App = {
 
                 // Use ArrayBuffer for clean binary extraction
                 const buffer = fileObject.asArrayBuffer();
-                const blob = new Blob([buffer], { type: 'image/jpeg' }); // Browser handles specific subtype logic
+                const blob = new Blob([buffer], {type: 'image/jpeg'}); // Browser handles specific subtype logic
                 const tempUrl = URL.createObjectURL(blob);
 
                 try {
@@ -296,6 +299,38 @@ const App = {
             reader.onloadend = () => resolve(reader.result);
             reader.readAsDataURL(blob);
         });
+    },
+
+    async showMessageBoard(title, message, progress = -1) {
+        const $messageBoard = $('#message-board-wrapper').show();
+        $messageBoard.find('.message-board-header').text(title);
+        $messageBoard.find('.message-board-container p').text(message);
+
+        const $progress = $messageBoard.find('.message-progress');
+
+        if (progress < 0) {
+            $progress.hide();
+        }
+
+        if (progress > -1) {
+            $progress.show()
+                .find('div')
+                .width(`${progress}%`);
+        }
+        ;
+    },
+
+    async hideMessageBoard() {
+        const $messageBoard = $('#message-board-wrapper').hide();
+    },
+
+    getRandomOratorMessage() {
+        if (ORATOR_MESSAGES.length === 0) return "";
+
+        const seconds = Math.floor(Date.now() / 1000);
+        const index = seconds % ORATOR_MESSAGES.length;
+
+        return ORATOR_MESSAGES[index];
     }
 
 }
