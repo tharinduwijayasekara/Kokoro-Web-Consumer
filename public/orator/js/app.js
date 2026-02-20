@@ -227,8 +227,7 @@ const App = {
 
                 // Save to Dexie logic...
                 const meta = await book.getMetadata();
-                const coverUrl = await book.coverUrl();
-                const base64Cover = await this.urlToBase64(coverUrl);
+                const base64Cover = await this.getBookCover(book);
 
                 await StorageService.db.books.add({
                     id: Date.now(),
@@ -246,6 +245,46 @@ const App = {
         };
 
         reader.readAsArrayBuffer(file);
+    },
+
+    async getBookCover(book) {
+        try {
+            // 1. Primary Method
+            const coverUrl = await book.coverUrl();
+            if (coverUrl) return await this.urlToBase64(coverUrl);
+        } catch (e) {
+            console.warn("Standard cover fetch failed, searching archive...");
+        }
+
+        // 2. Fallback: Search the ZIP archive
+        try {
+            // Accessing the internal JSZip files
+            const files = book.zip.zip.files;
+            const imageKeys = Object.keys(files).filter(path =>
+                /\.(jpg|jpeg|png|webp)$/i.test(path) && !path.includes('__MACOSX')
+            );
+
+            if (imageKeys.length > 0) {
+                // Find 'cover' specifically, or fallback to the first available image
+                const bestMatch = imageKeys.find(k => k.toLowerCase().includes('cover')) || imageKeys[0];
+                const fileObject = files[bestMatch];
+
+                // Use ArrayBuffer for clean binary extraction
+                const buffer = fileObject.asArrayBuffer();
+                const blob = new Blob([buffer], { type: 'image/jpeg' }); // Browser handles specific subtype logic
+                const tempUrl = URL.createObjectURL(blob);
+
+                try {
+                    return await this.urlToBase64(tempUrl);
+                } finally {
+                    URL.revokeObjectURL(tempUrl); // Prevent memory leaks
+                }
+            }
+        } catch (e) {
+            console.error("Archive search failed", e);
+        }
+
+        return null; // No cover found
     },
 
     async urlToBase64(url) {
