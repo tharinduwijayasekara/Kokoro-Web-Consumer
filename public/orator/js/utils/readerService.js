@@ -219,7 +219,7 @@ const ReaderService = {
         console.log("Fetch and load", cIdx, pIdx, text.substring(0, 30));
 
         const ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
-        const voice = 'af_heart(1)+af_sky(1)+af_nicole(1)';
+        const voice = 'af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)';
         const speed = 1.1;
 
         const params = {
@@ -276,13 +276,23 @@ const ReaderService = {
                     resolve(null);
                 },
                 onend: () => {
+                    const silence = this.getParagraphBreath(sound);
                     sound.unload(); // Free memory
                     URL.revokeObjectURL(url);
-                    if (this.isPlaying) this.playNext();
+                    if (this.isPlaying) {
+                        setTimeout(() => this.playNext(), silence)
+                    }
                 }
             })
 
         });
+    },
+
+    getParagraphBreath(sound) {
+        const duration = sound.duration();
+        const silence = parseInt(Math.min(900, duration * 60));
+        console.log(`Breathing for ${silence} for a ${duration} second paragraph`);
+        return silence;
     },
 
     async playNext() {
