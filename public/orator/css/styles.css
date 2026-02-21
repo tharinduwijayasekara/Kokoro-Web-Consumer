@@ -226,11 +226,11 @@ label.btn-import-books {
 .playback-chapters-list-container {
     width: 300px;
     height: 100%;
-    background-color: #ffffff91;
+    background-color: #ffffffcc;
     position: relative;
     display: flex;
     flex-direction: column;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     box-shadow: 2px 2px 20px #0000009c;
 }
 
