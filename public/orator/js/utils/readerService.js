@@ -360,7 +360,8 @@ const ReaderService = {
         console.log("About to play next, current buffer length", this.currentBuffer.length);
 
         const current = this.currentBuffer.shift();
-        this.progressTracker = `${current.cIdx}::${current.pIdx}::0`;
+        const progressTrackerString = `${current.cIdx}::${current.pIdx}::0`;
+        this.progressTracker = progressTrackerString.split('::').map(v => parseInt(v));
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
@@ -370,9 +371,9 @@ const ReaderService = {
         current.sound.play();
 
         const orator = await StorageService.getOratorJson();
-        orator.reading[this.book.id] = this.progressTracker;
+        orator.reading[this.book.id] = progressTrackerString;
         await StorageService.writeOratorJson(orator);
-        console.log("Progress tracker moved to", this.progressTracker);
+        console.log("Progress tracker moved to", progressTrackerString);
 
         const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
 
@@ -408,7 +409,7 @@ const ReaderService = {
         this.isBuffering = false;
 
         if (this.abortController) {
-            this.abortController.abort();
+            this.abortController.abort("User requested stop");
         }
 
         this.abortController = new AbortController();

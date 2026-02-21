@@ -30,7 +30,7 @@ html, body {
 }
 
 .orator-view-splash h1 {
-    font-family: 'Crimson Pro';
+    font-family: 'Crimson Pro', sans-serif;
 }
 
 .bg-dark, .navbar-dark {
@@ -45,7 +45,7 @@ html, body {
 .orator-view-library nav.navbar.navbar-dark {
     background-color: #00000000 !important;
     box-shadow: none !important;
-    font-family: "Crimson Pro";
+    font-family: 'Crimson Pro', sans-serif;
 }
 
 .orator-view-reader nav.navbar.navbar-dark {
@@ -75,7 +75,7 @@ html, body {
     justify-content: center;
     align-items: center;
     margin: 0;
-    font-family: 'Crimson Pro';
+    font-family: 'Crimson Pro', sans-serif;
 }
 
 /* Library List Styling */
@@ -250,7 +250,7 @@ label.btn-import-books {
 .playback-chapter-header {
     padding: 0;
     margin: 0;
-    font-family: "Crimson Pro";
+    font-family: 'Crimson Pro', sans-serif;
     font-weight: bold;
     font-size: 1.5em;
     text-align: center;
