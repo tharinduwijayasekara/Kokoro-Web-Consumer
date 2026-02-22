@@ -9,12 +9,13 @@ const StorageService = {
         db.version(1).stores({
             books: "id, title, importedAt",
             data: "key",
-            audios: "id, blob"
+            audios: "id, createdAt"
         });
 
         this.db = db;
 
         await this.seedDefaults();
+        await this.cleanupOldAudios();
     },
 
     async seedDefaults() {
@@ -51,6 +52,22 @@ const StorageService = {
 
     async getBooks() {
         return await this.db.books.toArray();
+    },
+
+    async cleanupOldAudios() {
+        const threshold = new Date();
+        threshold.setDate(threshold.getDate() - 5);
+
+        try {
+            const deleteCount = await this.db.audios
+                .where('createdAt')
+                .below(threshold)
+                .delete();
+
+            console.log(`Cleanup complete. Deleted ${deleteCount} items.`);
+        } catch (e) {
+            console.log("Failed to cleanup old audio cache", e);
+        }
     }
 
 };
