@@ -42,6 +42,18 @@ const ImportEpub = {
                         // Use '*' and filter to avoid namespace/selector issues
                         $doc.find('*').each((i, el) => {
                             if (['P', 'H1', 'H2', 'H3'].includes(el.tagName.toUpperCase())) {
+                                const $el = $(el);
+
+                                $el.find('i, em, span.italic').each((_, italics) => {
+                                    const $italics = $(italics);
+                                    const italicsText = $italics.text().trim();
+
+                                    if (italicsText.length > 0) {
+                                        $italics.replaceWith(`**##${$italics.text()}##**`);
+                                        console.log("Found italics");
+                                    }
+                                })
+
                                 const txt = $(el).text().trim();
                                 if (txt.length > 0) {
                                     paragraphs.push(txt.replace(/\s+/g, ' '));
@@ -62,9 +74,10 @@ const ImportEpub = {
                     // Save to Dexie logic...
                     const meta = await book.getMetadata();
                     const base64Cover = await this.getBookCover(book);
+                    const bookId = file.name;
 
                     resolve({
-                        id: Date.now(),
+                        id: bookId,
                         title: meta.bookTitle || file.name,
                         author: meta.creator || "",
                         cover: base64Cover,

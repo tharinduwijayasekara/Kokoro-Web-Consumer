@@ -91,9 +91,14 @@
                 <div id="navbar-book-name" class="m-auto text-truncate">Book Name</div>
             </div>
 
-            <button id="btn-reader-settings" class="btn btn-sm">
-                <i class="bi bi-gear-fill text-light" style="font-size: 20px"></i>
-            </button>
+            <div class="navbar-action-button-group">
+                <button id="btn-reader-fullscreen" class="btn btn-sm">
+                    <i class="bi bi-fullscreen text-light" style="font-size: 20px"></i>
+                </button>
+                <button id="btn-reader-settings" class="btn btn-sm">
+                    <i class="bi bi-gear-fill text-light" style="font-size: 20px"></i>
+                </button>
+            </div>
         </nav>
 
         <div class="reader-container-wrapper flex-grow-1 overflow-auto">
@@ -102,7 +107,7 @@
             <div class="reader-container-padding"></div>
         </div>
 
-        <div id="playback-controls" class="position-fixed bg-white d-flex flex-column justify-content-end">
+        <div id="playback-controls" class="position-fixed d-flex flex-column justify-content-end">
             <div class="buffer-health">x ready to play</div>
             <div class="player-track">
                 <div class="progress chapter-progress">

@@ -177,7 +177,6 @@ const App = {
             ReaderService.play(-10, -12, 3);
         });
 
-
         this.$app.on('click', '#btn-reader-recenter', async (e) => {
             e.stopPropagation();
             ReaderService.scrollToParagraph(null, null);
@@ -188,6 +187,11 @@ const App = {
             const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
             const [cIdx, pIdx] = paragraphIdentifier.split('-');
             ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
+        });
+
+        this.$app.on('click', '#btn-reader-fullscreen', async (e) => {
+            e.stopPropagation();
+            ReaderService.toggleFullscreen();
         });
 
         this.$app.on('click', '.orator-backdrop', async (e) => {
@@ -219,7 +223,7 @@ const App = {
             return;
         }
 
-        await StorageService.db.books.add(importedBook);
+        await StorageService.db.books.put(importedBook);
         this.renderLibrary();
     },
 

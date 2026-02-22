@@ -15,6 +15,7 @@ html, body {
     display: none;
     height: 100%;
     width: 100%;
+    transition: all 0.5s ease-in-out;
 }
 
 .orator-view.active {
@@ -55,8 +56,8 @@ html, body {
 
 .book-details .text-muted {
     color: #bebebe !important;
-    font-size: 0.6em;
-    line-height: 1.3em;
+    font-size: 0.6rem;
+    line-height: 1.3rem;
 }
 
 .library-top-image {
@@ -68,7 +69,6 @@ html, body {
 }
 
 .library-top-text {
-    backdrop-filter: blur(10px);
     height: 100%;
     width: 100%;
     display: flex;
@@ -76,6 +76,10 @@ html, body {
     align-items: center;
     margin: 0;
     font-family: 'Crimson Pro', sans-serif;
+    background: rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
 /* Library List Styling */
@@ -111,7 +115,7 @@ html, body {
 }
 
 .book-details .fw-bold {
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.2rem;
     padding-bottom: 0.5rem;
 }
@@ -126,19 +130,29 @@ label.btn-import-books {
     background-color: #6f1a8d;
 }
 
+#view-reader {
+    background: #eeeeee;
+}
+
 #playback-controls {
     bottom: 10px;
     left: 10px;
     right: 10px;
-    height: 140px;
+    height: 120px;
     padding: 5px 20px;
-    border-radius: 10px;
-    box-shadow: 1px 1px 5px #00000070;
+    background-color: #ffffffbb;
+    border-radius: 16px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: bottom 0.5s ease-in-out;
 }
 
 .player-track .progress {
     margin-bottom: 5px;
     height: 5px;
+    background-color: #d7d7d7;
 }
 
 .player-controls {
@@ -148,9 +162,14 @@ label.btn-import-books {
     margin: 0 auto;
 }
 
+.reader-fullscreen #playback-controls {
+    bottom: -140px;
+}
+
 .player-controls i {
     font-size: 25px;
     color: black !important;
+    line-height: 40px;
 }
 
 .player-controls #btn-reader-playpause i {
@@ -197,7 +216,12 @@ label.btn-import-books {
     scroll-margin-top: 50px;
     font-family: "Radley", sans-serif;
     font-weight: 400;
-    font-size: 14pt;
+    font-size: 1rem;
+    line-height: 1.2rem;
+}
+
+.reader-container p span.italic {
+    font-style: italic;
 }
 
 .reader-container p.active {
@@ -213,11 +237,15 @@ label.btn-import-books {
     left: -100%;
     width: 100%;
     bottom: 0;
-    transition: all .25s;
+    transition: all .5s ease-in-out;
 }
 
 #playback-chapters.active {
     left: 0;
+}
+
+.reader-fullscreen #playback-chapters {
+    left: -100% !important;
 }
 
 .orator-backdrop {
@@ -255,6 +283,16 @@ label.btn-import-books {
     cursor: pointer;
     border-radius: 10px;
     margin-bottom: 10px;
+    font-family: 'Crimson Pro', sans-serif;
+    text-shadow: 0.2px 0.2px 0.5px black;
+}
+
+.playback-chapter-item.active {
+    background-color: #6f1a8d30;
+}
+
+.playback-chapter-item span.italic {
+    font-style: italic;
 }
 
 .playback-chapter-header {
@@ -300,7 +338,7 @@ label.btn-import-books {
     color: #c7c7c7;
     text-align: center;
     padding-bottom: 5px;
-    font-size: 8pt;
+    font-size: 0.7rem;
     text-transform: uppercase;
 }
 
@@ -340,7 +378,9 @@ div#message-board-wrapper {
 
 .message-board-container {
     padding-top: 10px;
-    font-size: 10pt;
+    font-size: 1rem;
+    word-break: break-word;
+    text-align: left;
 }
 
 .message-board-container .progress {
@@ -372,8 +412,12 @@ div#message-board-wrapper {
         padding-left: 300px
     }
 
+    #view-reader.reader-fullscreen {
+        padding-left: 0;
+    }
+
     #playback-controls {
-        width: 500px;
+        width: 400px;
         margin-left: 330px;
     }
 
@@ -384,6 +428,25 @@ div#message-board-wrapper {
     .reader-container {
         max-width: 700px;
         margin: auto
+    }
+
+    #library-list {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        grid-column-gap: 10px;
+        margin: 20px auto;
+        max-width: 70%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.01);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+    }
+
+    #library-list .book-item {
+        width: 100%;
     }
 
 }

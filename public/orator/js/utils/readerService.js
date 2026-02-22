@@ -15,6 +15,9 @@ const ReaderService = {
     $playPauseButton: undefined,
     $bufferHealth: 0,
 
+    $chapterProgress: undefined,
+    $bookProgress: undefined,
+
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -22,6 +25,8 @@ const ReaderService = {
     playIdentifier: undefined,
     initialBufferSize: 0,
     initialBufferFetched: 0,
+
+    bookLength: 0,
 
     async init(bookId) {
         this.$app = App.$app;
@@ -32,6 +37,8 @@ const ReaderService = {
         this.$chaptersList = this.$app.find('.playback-chapters-list');
         this.$playPauseButton = this.$app.find('#btn-reader-playpause');
         this.$bufferHealth = this.$app.find('.buffer-health');
+        this.$chapterProgress = this.$app.find('.chapter-progress .progress-bar');
+        this.$bookProgress = this.$app.find('.book-progress .progress-bar');
 
         if (this.abortController) {
             this.abortController.abort();
@@ -76,6 +83,9 @@ const ReaderService = {
         await this.renderChaptersList();
         await this.renderChapterOnScreen(progressTracker[0]);
 
+        this.calculateBookLength();
+        this.updateProgress();
+
         if (!this.bufferrer) {
             this.setBufferrer();
         }
@@ -89,18 +99,45 @@ const ReaderService = {
         }, 250);
     },
 
+    calculateBookLength() {
+        let bookLength = 0;
+        this.book.chapters.forEach(chapter => bookLength += chapter.length);
+        this.bookLength = bookLength;
+    },
+
+    updateProgress() {
+        const chapter = this.book.chapters[this.progressTracker[0]];
+        const chapterProgress = (this.progressTracker[1] / chapter.length) * 100;
+        const completedChapters = this.book.chapters.slice(0, Math.max(0, this.progressTracker[0] - 1));
+
+        let bookProgress = this.progressTracker[1];
+        completedChapters.forEach(completedChapter => bookProgress += completedChapter.length);
+        bookProgress = (bookProgress / this.bookLength) * 100;
+
+        this.$chapterProgress.width(`${chapterProgress}%`);
+        this.$bookProgress.width(`${bookProgress}%`);
+    },
+
     async renderChaptersList() {
         this.$chaptersListHeader.css('background-image', `url(${this.book.cover})`)
         this.$chaptersList.empty();
 
         this.book.chapters.forEach((paragraphs, chapterId) => {
-            let chapterTitle = paragraphs[0] ?? '-';
+            // Matches "Chapter 1", "CHAPTER IV", or "1. Introduction" / "IV - The Start"
+            const chapterRegex = /^\s*(chapter\s+([0-9]+|[ivxlcdm]+|[a-z]+)|([0-9]+|[ivxlcdm]+)[\s\.\-\:]+)/i;
+            const foundChapter = paragraphs.slice(0, 5).find(p => chapterRegex.test(p));
 
-            if (chapterTitle.length > 70) chapterTitle = chapterTitle.substring(0, 70) + '...';
-            if (chapterTitle.length < 3) chapterTitle = "Chapter " + chapterTitle;
+            let chapterTitle = paragraphs[0] ?? '-';
+            if (foundChapter) chapterTitle = foundChapter;
+
+            chapterTitle = chapterTitle
+                .replaceAll("**##", `<span class="italic">`)
+                .replaceAll("##**", `</span>`);
+
+            if (chapterTitle.length < 3) chapterTitle = "Chapter: " + chapterTitle;
 
             $('<div></div>')
-                .text(chapterTitle)
+                .html(chapterTitle)
                 .addClass('playback-chapter-item')
                 .attr('data-id', chapterId)
                 .attr('id', `toc-chapter-${chapterId}`)
@@ -118,13 +155,20 @@ const ReaderService = {
         this.$container.attr('data-chapter-id', chapterId);
 
         chapter.forEach((paragraph, paragraphId) => {
+            const paragraphHtml = paragraph
+                .replaceAll("**##", `<span class="italic">`)
+                .replaceAll("##**", `</span>`);
+
             $paragraph = $('<p></p>')
                 .attr('id', `reader-paragraph-${chapterId}-${paragraphId}`)
                 .addClass('reader-paragraph')
                 .attr('data-paragraph-identifier', `${chapterIdToRender}-${paragraphId}`)
-                .text(paragraph)
+                .html(paragraphHtml)
                 .appendTo(this.$container);
         });
+
+        this.$chaptersList.find('.playback-chapter-item').removeClass('active');
+        this.$chaptersList.find(`#toc-chapter-${chapterIdToRender}`).addClass('active');
 
         this.currentChapterOnScreen = chapterIdToRender;
     },
@@ -200,8 +244,12 @@ const ReaderService = {
             for (let i = 0; i < Math.min(needed, batchSize); i++) {
                 if (this.playIdentifier !== playIdentifier) return;
 
-                const text = this.getParagraphText(tempC, tempP);
+                let text = this.getParagraphText(tempC, tempP);
                 if (!text) break;
+
+                text = text
+                    .replaceAll("**##", "'")
+                    .replaceAll("##**", "'");
 
                 fetchTasks.push(
                     this.fetchAndLoad(text, tempC, tempP)
@@ -233,7 +281,7 @@ const ReaderService = {
         this.bufferrer = setInterval(() => {
 
             if (!this.isPlaying || this.isBuffering) return;
-            if (this.currentBuffer.length > 100) return;
+            if (this.currentBuffer.length > 50) return;
 
             const current = this.currentBuffer[0];
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
@@ -243,7 +291,7 @@ const ReaderService = {
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
             console.log("About to call fill buffer with", nextC, nextP);
-            this.fillBuffer(nextC, nextP, 200);
+            this.fillBuffer(nextC, nextP, 60);
 
         }, 2000)
     },
@@ -365,6 +413,7 @@ const ReaderService = {
         const current = this.currentBuffer.shift();
         const progressTrackerString = `${current.cIdx}::${current.pIdx}::0`;
         this.progressTracker = progressTrackerString.split('::').map(v => parseInt(v));
+        this.updateProgress();
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
@@ -383,7 +432,7 @@ const ReaderService = {
         let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
         console.log("About to call fill buffer with", nextC, nextP);
-        this.fillBuffer(nextC, nextP, 200);
+        this.fillBuffer(nextC, nextP, 60);
     },
 
     async scrollToParagraph(cIdx, pIdx) {
@@ -446,5 +495,9 @@ const ReaderService = {
         }
 
         return [nextC, nextP];
+    },
+
+    toggleFullscreen() {
+        this.$app.find('#view-reader').toggleClass('reader-fullscreen');
     }
 };
