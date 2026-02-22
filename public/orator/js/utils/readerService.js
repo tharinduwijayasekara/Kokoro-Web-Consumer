@@ -18,6 +18,7 @@ const ReaderService = {
     $chapterProgress: undefined,
     $bookProgress: undefined,
 
+    bufferSize: 200,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -281,7 +282,7 @@ const ReaderService = {
         this.bufferrer = setInterval(() => {
 
             if (!this.isPlaying || this.isBuffering) return;
-            if (this.currentBuffer.length > 50) return;
+            if (this.currentBuffer.length > this.bufferSize) return;
 
             const current = this.currentBuffer[0];
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
@@ -291,7 +292,7 @@ const ReaderService = {
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
             console.log("About to call fill buffer with", nextC, nextP);
-            this.fillBuffer(nextC, nextP, 60);
+            this.fillBuffer(nextC, nextP, this.bufferSize);
 
         }, 2000)
     },
@@ -452,7 +453,7 @@ const ReaderService = {
         let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
         console.log("About to call fill buffer with", nextC, nextP);
-        this.fillBuffer(nextC, nextP, 60);
+        this.fillBuffer(nextC, nextP, this.bufferSize);
     },
 
     async scrollToParagraph(cIdx, pIdx) {
