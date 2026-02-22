@@ -94,13 +94,16 @@ const ReaderService = {
         this.$chaptersList.empty();
 
         this.book.chapters.forEach((paragraphs, chapterId) => {
-            let chapterTitle = "¤\n" + (paragraphs[0] ?? '-');
+            let chapterTitle = paragraphs[0] ?? '-';
+
             if (chapterTitle.length > 70) chapterTitle = chapterTitle.substring(0, 70) + '...';
+            if (chapterTitle.length < 3) chapterTitle = "Chapter " + chapterTitle;
 
             $('<div></div>')
                 .text(chapterTitle)
                 .addClass('playback-chapter-item')
                 .attr('data-id', chapterId)
+                .attr('id', `toc-chapter-${chapterId}`)
                 .appendTo(this.$chaptersList);
         })
     },
@@ -384,24 +387,22 @@ const ReaderService = {
     },
 
     async scrollToParagraph(cIdx, pIdx) {
+        if (cIdx === null && pIdx === null) {
+            [cIdx, pIdx] = this.progressTracker;
+        }
+
         if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
             await this.renderChapterOnScreen(cIdx);
         }
 
-        const wrapperTop = this.$wrapper.scrollTop();
-        const targetTop = this.$container
-            .find(`#reader-paragraph-${cIdx}-${pIdx}`)
-            .position()
-            ?.top;
-
-        if (!targetTop) return;
-
-        const offset = 100;
-        const scrollTop = Math.max(0, wrapperTop + targetTop - offset)
-
-        this.$wrapper.animate({
-            scrollTop: scrollTop
-        }, 250);
+        const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start' // This respects the scroll-margin-top
+            });
+        }
+        return;
     },
 
     stop() {

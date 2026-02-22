@@ -133,6 +133,7 @@ label.btn-import-books {
     height: 140px;
     padding: 5px 20px;
     border-radius: 10px;
+    box-shadow: 1px 1px 5px #00000070;
 }
 
 .player-track .progress {
@@ -146,10 +147,12 @@ label.btn-import-books {
     width: 320px;
     margin: 0 auto;
 }
+
 .player-controls i {
     font-size: 25px;
     color: black !important;
 }
+
 .player-controls #btn-reader-playpause i {
     font-size: 45px;
 }
@@ -177,7 +180,7 @@ label.btn-import-books {
 }
 
 .reader-container-wrapper {
-    padding: 5px;
+    padding: 5px 10px 5px 5px;
     background: #eeeeee;
 }
 
@@ -186,15 +189,22 @@ label.btn-import-books {
 }
 
 .reader-container p {
-    padding: 10px;
+    padding: 5px 5px 5px 10px;
     color: #121212;
     margin: 0;
     border-radius: 7px;
-    text-shadow: 0 0 0.25px #000000;
+    text-shadow: 0.3px 0.3px 0.25px #000000;
+    scroll-margin-top: 50px;
+    font-family: "Radley", sans-serif;
+    font-weight: 400;
+    font-size: 14pt;
 }
 
 .reader-container p.active {
     background-color: #fcd47e52;
+    border-left: 5px solid #fcd47e;
+    padding-left: 6px;
+    /* padding: 5px 5px 5px 5px; */
 }
 
 #playback-chapters {
@@ -235,7 +245,7 @@ label.btn-import-books {
 }
 
 .playback-chapter-item {
-    padding: 10px 10px;
+    padding: 5px 10px;
     border: 2px solid #00000012;
     width: 100%;
     text-overflow: ellipsis;
@@ -339,4 +349,41 @@ div#message-board-wrapper {
 
 .message-board-container .progress .progress-bar {
     background-color: #9f5ca3;
+}
+
+.progress .progress-bar {
+    transition: width 0.2s ease-in-out;
+}
+
+/** Media queries for desktop only */
+
+@media only screen and (min-width: 1000px) {
+
+    #playback-chapters {
+        left: 0 !important;
+        width: 300px !important;
+    }
+
+    #playback-chapters .orator-backdrop {
+        display: none !important;
+    }
+
+    #view-reader {
+        padding-left: 300px
+    }
+
+    #playback-controls {
+        width: 500px;
+        margin-left: 330px;
+    }
+
+    .reader-container-wrapper {
+        padding: 20px 30px;
+    }
+
+    .reader-container {
+        max-width: 700px;
+        margin: auto
+    }
+
 }

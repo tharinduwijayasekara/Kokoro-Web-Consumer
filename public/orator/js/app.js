@@ -8,12 +8,16 @@ const App = {
         'js/default/defaults.js',
         'js/utils/storageService.js',
         'js/utils/readerService.js',
+        'js/utils/importEpub.js',
     ],
 
     async init() {
         console.log("Orator initializing...");
 
         try {
+
+            console.log("Requesting wake lock");
+            await this.requestWakeLock();
 
             await this.loadDependencies();
             console.log("Dependencies loaded.");
@@ -32,6 +36,16 @@ const App = {
 
         } catch (e) {
             console.log("Initialization failed.", e);
+        }
+    },
+
+    async requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
         }
     },
 
@@ -163,6 +177,12 @@ const App = {
             ReaderService.play(-10, -12, 3);
         });
 
+
+        this.$app.on('click', '#btn-reader-recenter', async (e) => {
+            e.stopPropagation();
+            ReaderService.scrollToParagraph(null, null);
+        });
+
         this.$app.on('click', '.reader-paragraph', async (e) => {
             e.stopPropagation();
             const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
@@ -177,117 +197,30 @@ const App = {
     },
 
     async handleImport(file) {
-        console.log("Processing EPUB...");
+
         this.showMessageBoard("Importing...", "Reading your book", -1);
-        const reader = new FileReader();
+        console.log(file);
 
-        reader.onload = async (e) => {
-            const book = ePub(e.target.result, {restore: false});
+        let importedBook = null;
 
-            try {
-                await book.ready;
-                const zipFiles = book.zip.zip.files;
-                const chapters = [];
-
-                // 1. Get all filenames, sort them to keep book order
-                const fileKeys = Object.keys(zipFiles)
-                    .filter(key => key.endsWith('.xhtml') || key.endsWith('.html'))
-                    .sort((a, b) => {
-                        return a.localeCompare(b, undefined, {
-                            numeric: true,
-                            sensitivity: 'base'
-                        });
-                    });
-
-                // 2. Iterate and extract
-                fileKeys.forEach(key => {
-                    let htmlString = zipFiles[key].asText();
-                    htmlString = htmlString
-                        .replaceAll('\r\n', '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-
-                    const bodyMatch = htmlString.match(/<body[^>]*>([\s\S.]*)<\/body>/i);
-                    const contentToParse = bodyMatch ? bodyMatch[1] : htmlString;
-
-                    const $doc = $($.parseHTML(`<div>${contentToParse}</div>`));
-
-                    const paragraphs = [];
-                    // Use '*' and filter to avoid namespace/selector issues
-                    $doc.find('*').each((i, el) => {
-                        if (['P', 'H1', 'H2', 'H3'].includes(el.tagName.toUpperCase())) {
-                            const txt = $(el).text().trim();
-                            if (txt.length > 0) {
-                                paragraphs.push(txt.replace(/\s+/g, ' '));
-                            }
-                        }
-                    });
-
-                    if (paragraphs.length > 0) chapters.push(paragraphs);
-                });
-
-                console.log("Direct Zip Extraction Complete", chapters);
-
-                // Save to Dexie logic...
-                const meta = await book.getMetadata();
-                const base64Cover = await this.getBookCover(book);
-
-                await StorageService.db.books.add({
-                    id: Date.now(),
-                    title: meta.bookTitle || file.name,
-                    author: meta.creator || "",
-                    cover: base64Cover,
-                    chapters: chapters,
-                    importedAt: new Date().toLocaleDateString()
-                });
-
-                this.renderLibrary();
-            } catch (err) {
-                console.error("Direct extraction failed:", err);
-            }
-        };
-
-        reader.readAsArrayBuffer(file);
-    },
-
-    async getBookCover(book) {
         try {
-            // 1. Primary Method
-            const coverUrl = await book.coverUrl();
-            if (coverUrl) return await this.urlToBase64(coverUrl);
-        } catch (e) {
-            console.warn("Standard cover fetch failed, searching archive...");
-        }
-
-        // 2. Fallback: Search the ZIP archive
-        try {
-            // Accessing the internal JSZip files
-            const files = book.zip.zip.files;
-            const imageKeys = Object.keys(files).filter(path =>
-                /\.(jpg|jpeg|png|webp)$/i.test(path) && !path.includes('__MACOSX')
-            );
-
-            if (imageKeys.length > 0) {
-                // Find 'cover' specifically, or fallback to the first available image
-                const bestMatch = imageKeys.find(k => k.toLowerCase().includes('cover')) || imageKeys[0];
-                const fileObject = files[bestMatch];
-
-                // Use ArrayBuffer for clean binary extraction
-                const buffer = fileObject.asArrayBuffer();
-                const blob = new Blob([buffer], {type: 'image/jpeg'}); // Browser handles specific subtype logic
-                const tempUrl = URL.createObjectURL(blob);
-
-                try {
-                    return await this.urlToBase64(tempUrl);
-                } finally {
-                    URL.revokeObjectURL(tempUrl); // Prevent memory leaks
-                }
+            if (file.type === 'application/epub+zip') {
+                importedBook = await ImportEpub.handle(file);
             }
         } catch (e) {
-            console.error("Archive search failed", e);
+            console.log("Error while importing", e);
         }
 
-        return null; // No cover found
+        this.hideMessageBoard();
+
+        if (!importedBook) {
+            this.showMessageBoard("Import failed", "The file you selected could not be imported", -1);
+            setTimeout(() => this.hideMessageBoard(), 5000);
+            return;
+        }
+
+        await StorageService.db.books.add(importedBook);
+        this.renderLibrary();
     },
 
     async urlToBase64(url) {
@@ -317,11 +250,14 @@ const App = {
                 .find('div')
                 .width(`${progress}%`);
         }
-        ;
     },
 
     async hideMessageBoard() {
         const $messageBoard = $('#message-board-wrapper').hide();
+        const $progress = $messageBoard.find('.message-progress');
+        $progress.show()
+            .find('div')
+            .width(`0%`);
     },
 
     getRandomOratorMessage() {
@@ -331,6 +267,10 @@ const App = {
         const index = seconds % ORATOR_MESSAGES.length;
 
         return ORATOR_MESSAGES[index];
+    },
+
+    async sleep(milliseconds) {
+        return new Promise(resolve => setTimeout(() => resolve(), milliseconds));
     }
 
 }
