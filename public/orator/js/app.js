@@ -139,8 +139,7 @@ const App = {
 
         this.$app.on('click', '#btn-reader-back', async (e) => {
             e.stopPropagation();
-            //Readerservice.stop;
-
+            ReaderService.stop();
             this.showView('library');
         });
 

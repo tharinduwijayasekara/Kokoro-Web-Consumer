@@ -82,7 +82,8 @@ const ImportEpub = {
                         author: meta.creator || "",
                         cover: base64Cover,
                         chapters: chapters,
-                        importedAt: new Date().toLocaleDateString()
+                        importedAt: new Date().toLocaleDateString(),
+                        importId: Date.now(),
                     });
                 } catch (err) {
                     console.error("Direct extraction failed:", err);

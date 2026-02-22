@@ -306,49 +306,69 @@ const ReaderService = {
         const voice = 'af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)';
         const speed = 1.1;
 
-        const params = {
-            "model": "kokoro",
-            "input": text,
-            "voice": voice,
-            "response_format": "mp3",
-            "download_format": "mp3",
-            "speed": speed,
-            "stream": false,
-            "return_download_link": false,
-            "lang_code": "a",
-            "volume_multiplier": 3,
-            "normalization_options": {
-                "normalize": true,
-                "unit_normalization": false,
-                "url_normalization": true,
-                "email_normalization": true,
-                "optional_pluralization_normalization": true,
-                "phone_normalization": true,
-                "replace_remaining_symbols": true
+        let cacheKey = [
+            ttsUrl,
+            voice,
+            speed,
+            this.book.importId ?? '--',
+            cIdx,
+            pIdx
+        ].join(":");
+
+        console.log(`Checking cacheed audios ${cacheKey}`);
+
+        let blob = (await StorageService.db.audios.get(cacheKey))?.blob;
+
+        if (!blob) {
+            const params = {
+                "model": "kokoro",
+                "input": text,
+                "voice": voice,
+                "response_format": "mp3",
+                "download_format": "mp3",
+                "speed": speed,
+                "stream": false,
+                "return_download_link": false,
+                "lang_code": "a",
+                "volume_multiplier": 3,
+                "normalization_options": {
+                    "normalize": true,
+                    "unit_normalization": false,
+                    "url_normalization": true,
+                    "email_normalization": true,
+                    "optional_pluralization_normalization": true,
+                    "phone_normalization": true,
+                    "replace_remaining_symbols": true
+                }
             }
+
+            const response = await fetch(ttsUrl, {
+                method: 'POST',
+                signal: this.abortController.signal,
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
+            });
+
+            if (!response.ok) throw new Error("TTS Fetch Failed");
+
+            console.log("Play identifier: ", playIdentifier, this.playIdentifier);
+            if (playIdentifier !== this.playIdentifier) {
+                console.log("Play identifier has changed, user probably requested another play start point");
+                return null;
+            }
+
+            blob = await response.blob();
+
+            await StorageService.db.audios.put({
+                id: cacheKey,
+                blob: blob
+            });
         }
 
-        const response = await fetch(ttsUrl, {
-            method: 'POST',
-            signal: this.abortController.signal,
-            headers: {
-                'accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(params)
-        });
-
-        if (!response.ok) throw new Error("TTS Fetch Failed");
-
-        console.log("Play identifier: ", playIdentifier, this.playIdentifier);
-        if (playIdentifier !== this.playIdentifier) {
-            console.log("Play identifier has changed, user probably requested another play start point");
-            return null;
-        }
-
-        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
-
         const shortText = text.substring(0, 20);
 
         return new Promise((resolve) => {

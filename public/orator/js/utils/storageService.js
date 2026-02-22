@@ -8,7 +8,8 @@ const StorageService = {
 
         db.version(1).stores({
             books: "id, title, importedAt",
-            data: "key"
+            data: "key",
+            audios: "id, blob"
         });
 
         this.db = db;
