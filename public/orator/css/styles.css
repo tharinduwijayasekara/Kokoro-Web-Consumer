@@ -1,3 +1,19 @@
+/* Regular Style */
+@font-face {
+    font-family: 'Athelas';
+    src: url('../fonts/Athelas-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Italic Style */
+@font-face {
+    font-family: 'Athelas';
+    src: url('../fonts/Athelas-Italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
 html, body {
     height: 100%;
     background: #121212;
@@ -52,6 +68,8 @@ html, body {
 .orator-view-reader nav.navbar.navbar-dark {
     background-color: #000000 !important;
     box-shadow: none !important;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .book-details .text-muted {
@@ -208,16 +226,16 @@ label.btn-import-books {
 }
 
 .reader-container p {
-    padding: 5px 5px 5px 10px;
+    padding: 10px;
     color: #121212;
     margin: 0;
     border-radius: 7px;
-    text-shadow: 0.3px 0.3px 0.25px #000000;
+    text-shadow: 0.4px 0.4px 0.25px #000000;
     scroll-margin-top: 50px;
-    font-family: "Radley", sans-serif;
+    font-family: "Athelas", sans-serif;
     font-weight: 400;
     font-size: 1rem;
-    line-height: 1.2rem;
+    line-height: 1.3rem;
 }
 
 .reader-container p span.italic {
@@ -226,9 +244,6 @@ label.btn-import-books {
 
 .reader-container p.active {
     background-color: #fcd47e52;
-    border-left: 5px solid #fcd47e;
-    padding-left: 6px;
-    /* padding: 5px 5px 5px 5px; */
 }
 
 #playback-chapters {
