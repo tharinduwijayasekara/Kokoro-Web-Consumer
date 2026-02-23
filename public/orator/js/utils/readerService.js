@@ -6,6 +6,7 @@ const ReaderService = {
     currentChapterOnScreen: undefined,
 
     $app: undefined,
+    $banner: undefined,
     $wrapper: undefined,
     $container: undefined,
     $bookName: undefined,
@@ -33,6 +34,7 @@ const ReaderService = {
 
     async init(bookId) {
         this.$app = App.$app;
+        this.$banner = this.$app.find('.error-banner');
         this.$wrapper = this.$app.find('.reader-container-wrapper');
         this.$container = this.$app.find('.reader-container');
         this.$bookName = this.$app.find('#navbar-book-name');
@@ -324,6 +326,12 @@ const ReaderService = {
         // let model = "tts-1-hd";
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+                this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
+                this.stop();
+                return;
+            }
+
             ttsUrl = this.tempOratorConfig.ttsUrl;
             voice = this.tempOratorConfig.voice;
             speed = this.tempOratorConfig.speed;

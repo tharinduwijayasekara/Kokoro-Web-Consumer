@@ -1,9 +1,9 @@
 const DEFAULT_ORATOR_JSON = {
     orator: {
         config: {
-            ttsUrl: "http://localhost:8888/v1/audio/speech",
+            ttsUrl: "https://kokoro.orator-audio.com/v1/audio/speech",
             voice: "af_heart(1)+af_aoede(1)+af_sky(1)",
-            speed: 1.1,
+            speed: 1.0,
             appearance: {
                 font: "serif",
                 size: 18,

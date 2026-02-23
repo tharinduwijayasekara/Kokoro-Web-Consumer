@@ -83,15 +83,15 @@ const SettingsService = {
 
     buildConfigJson() {
         const config = structuredClone(this.config);
-        config.ttsUrl = this.$speechService.val();
-        config.voice = this.speechVoice.val();
-        config.speed = this.$speechSpeed.val();
+        config.ttsUrl = this.$speechService.val().trim();
+        config.voice = this.speechVoice.val().trim();
+        config.speed = this.$speechSpeed.val().trim();
 
         const replacements = [];
         this.$speechReplacements.find('.speech-cust-item').each((idx, rep) => {
             const $rep = $(rep);
-            const left = $rep.find('.speech-replacement-input-left').val();
-            const right = $rep.find('.speech-replacement-input-right').val();
+            const left = $rep.find('.speech-replacement-input-left').val().trim();
+            const right = $rep.find('.speech-replacement-input-right').val().trim();
             replacements.push([left, right]);
         });
 
