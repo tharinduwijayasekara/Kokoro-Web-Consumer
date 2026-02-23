@@ -53,6 +53,21 @@ const SettingsService = {
         console.log("Loaded settings", config);
     },
 
+    resetSpeechSettings(mode) {
+        if (mode === 'kokoro') {
+
+            this.$speechService.val(DEFAULT_KOKORO_URL);
+            this.speechVoice.val(DEFAULT_ORATOR_JSON.orator.config.voice);
+            this.$speechSpeed.val(DEFAULT_ORATOR_JSON.orator.config.speed);
+            return;
+        }
+
+        this.$speechService.val(DEFAULT_EDGE_TTS_URL);
+        this.speechVoice.val(EDGETTS_VOICES[0]);
+        this.$speechSpeed.val(1.1);
+        return;
+    },
+
     isActive() {
         return this.$settings.hasClass('active');
     },

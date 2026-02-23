@@ -332,9 +332,9 @@ const ReaderService = {
                 return;
             }
 
-            ttsUrl = this.tempOratorConfig.ttsUrl;
-            voice = this.tempOratorConfig.voice;
-            speed = this.tempOratorConfig.speed;
+            ttsUrl = this.tempOratorConfig.ttsUrl !== "" ? this.tempOratorConfig.ttsUrl : ttsUrl;
+            voice = this.tempOratorConfig.voice !== "" ? this.tempOratorConfig.voice : voice;
+            speed = this.tempOratorConfig.speed !== "" ? this.tempOratorConfig.speed : speed;
 
             const replacements = this.tempOratorConfig.replacements ?? [];
             replacements.forEach(rep => {
@@ -388,7 +388,7 @@ const ReaderService = {
                 },
                 body: JSON.stringify(params)
             });
-            
+
             if (!response.ok) throw new Error("TTS Fetch Failed");
 
             console.log("Play identifier: ", playIdentifier, this.playIdentifier);

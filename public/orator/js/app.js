@@ -223,6 +223,16 @@ const App = {
             SettingsService.removeSpeechReplacement(e.currentTarget);
         });
 
+        this.$app.on('click', '#speech-svc-reset-kokoro', async (e) => {
+            e.stopPropagation();
+            SettingsService.resetSpeechSettings("kokoro");
+        });
+
+        this.$app.on('click', '#speech-svc-reset-edgetts', async (e) => {
+            e.stopPropagation();
+            SettingsService.resetSpeechSettings("edgeTTS");
+        });
+
         this.$app.on('click', '.orator-backdrop', async (e) => {
             e.stopPropagation();
             $(e.currentTarget).parent().removeClass('active');
