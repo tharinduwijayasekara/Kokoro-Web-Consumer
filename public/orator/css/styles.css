@@ -63,6 +63,9 @@ html, body {
     background-color: #00000000 !important;
     box-shadow: none !important;
     font-family: 'Crimson Pro', sans-serif;
+    display: grid;
+    justify-content: space-evenly;
+    font-size: 1.5rem;
 }
 
 .orator-view-reader nav.navbar.navbar-dark {
@@ -230,9 +233,9 @@ label.btn-import-books {
     color: #121212;
     margin: 0;
     border-radius: 7px;
-    text-shadow: 0.4px 0.4px 0.25px #000000;
+    text-shadow: 0 0.012rem, 0.02rem 00, 0.02rem 0.02rem;
     scroll-margin-top: 50px;
-    font-family: "Athelas", sans-serif;
+    font-family: "Radley", sans-serif;
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.3rem;
@@ -408,6 +411,94 @@ div#message-board-wrapper {
 
 .progress .progress-bar {
     transition: width 0.2s ease-in-out;
+}
+
+#playback-settings {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    transition: all .5s ease-in-out;
+    background: #000000d0;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px -2px 5px black;
+    border-radius: 10px 10px 0 0;
+}
+
+#playback-settings.active {
+    height: 75%;
+}
+
+.playback-settings-wrapper {
+    padding: 10px 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+.playback-settings-header {
+    margin: 10px auto;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.accordion {
+    --bs-accordion-bg: #1e1e1e00;
+    --bs-accordion-color: #ffffff;
+    --bs-accordion-border-color: #333;
+    --bs-accordion-btn-bg: #252525;
+    --bs-accordion-btn-color: #ffffff;
+    --bs-accordion-active-bg: #3d3d3d;
+    --bs-accordion-active-color: #ffffff; /* Highlight color */
+}
+
+#btn-playback-settings-save {
+    font-size: 1.5rem;
+}
+
+label.form-label {
+    font-size: 0.8rem;
+}
+
+.speech-cust-add-btn {
+    text-align: center;
+}
+
+.speech-cust-add-btn i {
+    color: white;
+    font-size: 24px
+}
+
+.form-control:focus,
+.form-floating,
+.form-floating input,
+.form-floating label {
+    color: white;
+    background-color: transparent;
+}
+
+.form-floating {
+    background-color: #ffffff11;
+}
+
+.form-floating input {
+    border-color: #ffffff44;
+}
+
+.speech-cust-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr 30px;
+    grid-column-gap: 10px;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.speech-cust-item label {
+    font-size: 0.8rem;
+}
+
+.speech-cust-item button {
+    color: white;
 }
 
 /** Media queries for desktop only */

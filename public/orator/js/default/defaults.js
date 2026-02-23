@@ -2,8 +2,8 @@ const DEFAULT_ORATOR_JSON = {
     orator: {
         config: {
             ttsUrl: "http://localhost:8888/v1/audio/speech",
-            voice: "af_heart",
-            speed: 1.25,
+            voice: "af_heart(1)+af_aoede(1)+af_sky(1)",
+            speed: 1.1,
             appearance: {
                 font: "serif",
                 size: 18,
@@ -19,6 +19,46 @@ const DEFAULT_ORATOR_JSON = {
         } // Empty initially
     }
 };
+
+const DEFAULT_KOKORO_URL = 'https://kokoro.orator-audio.com/v1/audio/speech';
+
+const DEFAULT_EDGE_TTS_URL = 'https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech'
+
+const KOKORO_VOICES = [
+    "af_heart",
+    "af_alloy",
+    "af_aoede",
+    "af_bella",
+    "af_jessica",
+    "af_kore",
+    "af_nicole",
+    "af_nova",
+    "af_river",
+    "af_sarah",
+    "af_sky",
+    "am_adam",
+    "am_echo",
+    "am_eric",
+    "am_fenrir",
+    "am_liam",
+    "am_michael",
+    "am_onyx",
+    "am_puck",
+    "am_santa",
+    "bf_alice",
+    "bf_emma",
+    "bf_isabella",
+    "bf_lily",
+    "bm_daniel",
+    "bm_fable",
+    "bm_george",
+    "bm_lewis"
+];
+
+const EDGETTS_VOICES = [
+    'en-US-AvaNeural',
+    'en-US-BrianNeural'
+];
 
 const ORATOR_MESSAGES = [
     "Clearing throat like starting a romance.",

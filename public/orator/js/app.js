@@ -8,6 +8,7 @@ const App = {
         'js/default/defaults.js',
         'js/utils/storageService.js',
         'js/utils/readerService.js',
+        'js/utils/settingsService.js',
         'js/utils/importEpub.js',
     ],
 
@@ -29,6 +30,8 @@ const App = {
             console.log("Fetched orator configuration json", StorageService.orator);
 
             this.setEventHandlers();
+
+            document.getElementById('styles-for-init').remove();
 
             setTimeout(() => {
                 this.renderLibrary();
@@ -183,6 +186,12 @@ const App = {
 
         this.$app.on('click', '.reader-paragraph', async (e) => {
             e.stopPropagation();
+
+            if (SettingsService.isActive()) {
+                ReaderService.hidePlaybackSettings();
+                return;
+            }
+
             const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
             const [cIdx, pIdx] = paragraphIdentifier.split('-');
             ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
@@ -191,6 +200,27 @@ const App = {
         this.$app.on('click', '#btn-reader-fullscreen', async (e) => {
             e.stopPropagation();
             ReaderService.toggleFullscreen();
+        });
+
+        this.$app.on('click', '#btn-reader-settings', async (e) => {
+            e.stopPropagation();
+
+            if (SettingsService.isActive()) {
+                ReaderService.hidePlaybackSettings();
+                return;
+            }
+
+            ReaderService.showPlaybackSettings();
+        });
+
+        this.$app.on('click', '.speech-cust-add-btn', async (e) => {
+            e.stopPropagation();
+            SettingsService.addNewSpeechReplacement();
+        });
+
+        this.$app.on('click', '.speech-replacement-remove', async (e) => {
+            e.stopPropagation();
+            SettingsService.removeSpeechReplacement(e.currentTarget);
         });
 
         this.$app.on('click', '.orator-backdrop', async (e) => {
@@ -256,6 +286,7 @@ const App = {
     },
 
     async hideMessageBoard() {
+        await this.sleep(100);
         const $messageBoard = $('#message-board-wrapper').hide();
         const $progress = $messageBoard.find('.message-progress');
         $progress.show()

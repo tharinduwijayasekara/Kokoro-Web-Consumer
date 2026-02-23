@@ -18,7 +18,7 @@ const ReaderService = {
     $chapterProgress: undefined,
     $bookProgress: undefined,
 
-    bufferSize: 200,
+    bufferSize: 100,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -28,6 +28,8 @@ const ReaderService = {
     initialBufferFetched: 0,
 
     bookLength: 0,
+
+    tempOratorConfig: undefined,
 
     async init(bookId) {
         this.$app = App.$app;
@@ -55,6 +57,8 @@ const ReaderService = {
 
         const orator = await StorageService.getOratorJson();
         console.log("Orator json", orator);
+
+        this.updateTempOratorConfig(orator.config);
 
         const progressTracker = (orator.reading[bookId] ?? "0::0::0")
             .split('::')
@@ -91,6 +95,8 @@ const ReaderService = {
             this.setBufferrer();
         }
 
+        await SettingsService.init();
+
         App.showView('reader');
 
         setTimeout(() => {
@@ -100,13 +106,17 @@ const ReaderService = {
         }, 250);
     },
 
+    updateTempOratorConfig(config) {
+        this.tempOratorConfig = config;
+    },
+
     calculateBookLength() {
         let bookLength = 0;
         this.book.chapters.forEach(chapter => bookLength += chapter.length);
         this.bookLength = bookLength;
     },
 
-    updateProgress() {
+    async updateProgress() {
         const chapter = this.book.chapters[this.progressTracker[0]];
         const chapterProgress = (this.progressTracker[1] / chapter.length) * 100;
         const completedChapters = this.book.chapters.slice(0, Math.max(0, this.progressTracker[0] - 1));
@@ -294,7 +304,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 2000)
+        }, 500)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -303,14 +313,32 @@ const ReaderService = {
         const playIdentifier = this.playIdentifier;
         console.log("Play identifier: ", playIdentifier);
 
-        const ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
-        const voice = 'af_heart(1)+af_aoede(1)+af_nicole(1)+af_sky(1)';
-        const speed = 1.1;
+        let ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
+        let voice = 'af_heart(1)+af_aoede(1)+af_sky(1)';
+        let speed = 1.0;
+        let model = "kokoro";
+
+        // let ttsUrl = 'https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech'; // Get from config in the future
+        // let voice = 'en-US-AvaNeural';
+        // let speed = 1.1;
+        // let model = "tts-1-hd";
+
+        if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
+            ttsUrl = this.tempOratorConfig.ttsUrl;
+            voice = this.tempOratorConfig.voice;
+            speed = this.tempOratorConfig.speed;
+
+            const replacements = this.tempOratorConfig.replacements ?? [];
+            replacements.forEach(rep => {
+                if (!rep[0] || !rep[1]) return;
+                text = text.replaceAll(rep[0], rep[1]);
+            });
+
+            console.log("Updated text to:" + text);
+        }
 
         let cacheKey = [
-            ttsUrl,
-            voice,
-            speed,
+            this.tempOratorConfig.updatedAt ?? '-init-config-',
             this.book.importId ?? '--',
             cIdx,
             pIdx
@@ -322,7 +350,7 @@ const ReaderService = {
 
         if (!blob) {
             const params = {
-                "model": "kokoro",
+                "model": model,
                 "input": text,
                 "voice": voice,
                 "response_format": "mp3",
@@ -331,7 +359,7 @@ const ReaderService = {
                 "stream": false,
                 "return_download_link": false,
                 "lang_code": "a",
-                "volume_multiplier": 3,
+                "volume_multiplier": 1,
                 "normalization_options": {
                     "normalize": true,
                     "unit_normalization": false,
@@ -352,7 +380,7 @@ const ReaderService = {
                 },
                 body: JSON.stringify(params)
             });
-
+            
             if (!response.ok) throw new Error("TTS Fetch Failed");
 
             console.log("Play identifier: ", playIdentifier, this.playIdentifier);
@@ -485,7 +513,6 @@ const ReaderService = {
 
         this.abortController = new AbortController();
 
-
         Howler.stop();
 
         this.$playPauseButton.removeClass('playing');
@@ -520,5 +547,13 @@ const ReaderService = {
 
     toggleFullscreen() {
         this.$app.find('#view-reader').toggleClass('reader-fullscreen');
+    },
+
+    showPlaybackSettings() {
+        this.$app.find('#playback-settings').addClass('active');
+    },
+
+    hidePlaybackSettings() {
+        this.$app.find('#playback-settings').removeClass('active');
     }
 };

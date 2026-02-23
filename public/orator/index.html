@@ -62,11 +62,8 @@
 
     <div id="view-library" class="orator-view orator-view-library bg-dark">
         <nav class="navbar navbar-dark bg-dark px-3 shadow">
-            <img class="navbar-toggler-icon" src="images/icon-v2.png" width="128" class="mb-4">
+            <!--<img class="navbar-toggler-icon" src="images/icon-v2.png" width="128" class="mb-4">-->
             <span class="navbar-brand mb-0 h1">ORATOR WEB</span>
-            <button id="btn-settings" class="btn btn-sm">
-                <i class="bi bi-gear-fill text-light" style="font-size: 20px"></i>
-            </button>
         </nav>
 
         <div class="library-container flex-grow-1 overflow-auto">
@@ -146,6 +143,82 @@
                     <h1>Chapters</h1>
                 </div>
                 <div class="playback-chapters-list"></div>
+            </div>
+        </div>
+
+        <div id="playback-settings" class="">
+            <div class="playback-settings-wrapper">
+                <div class="playback-settings-header">
+                    Playback Settings
+                </div>
+                <div class="playback-settings">
+
+                    <div class="accordion accordion-flush" id="accordionPlaybackSettings">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                    Speech Service
+                                </button>
+                            </h2>
+                            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
+                                <div class="accordion-body">
+
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="speech-service-input" placeholder="1.0">
+                                        <label for="speech-service-input">Speech Service URL</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="speech-voice-input" placeholder="1.0">
+                                        <label for="speech-voice-input">Voice</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="speech-speed-input" placeholder="1.0">
+                                        <label for="speech-speed-input">Speed (1.1 recommended)</label>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                                    Speech Customization
+                                </button>
+                            </h2>
+                            <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
+                                <div class="accordion-body">
+
+                                    <div class="speech-cust-container">
+                                        <div class="speech-cust-items">
+                                            <!-- items rendered here with speech-cust-item class -->
+                                        </div>
+                                        <div class="speech-cust-add-btn">
+                                            <button class="btn btn-sm">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                                    Typography
+                                </button>
+                            </h2>
+                            <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
+                                <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the third item’s accordion body. Nothing more exciting happening here in terms of content, but just filling up the space to make it look, at least at first glance, a bit more representative of how this would look in a real-world application.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
             </div>
         </div>
 
