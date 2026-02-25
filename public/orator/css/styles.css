@@ -379,6 +379,7 @@ label.btn-import-books {
     align-items: center;
     padding: 0;
     margin: 0;
+    text-shadow: 0 0 5px black;
 }
 
 .playback-chapters-list {
