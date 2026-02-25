@@ -109,7 +109,11 @@
         </div>
 
         <div id="playback-controls" class="position-fixed d-flex flex-column justify-content-end">
-            <div class="buffer-health">x ready to play</div>
+            <div class="buffer-health"><span>X</span> ready to play
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
             <div class="player-track">
                 <div class="progress chapter-progress">
                     <div class="progress-bar bg-black w-0" role="progressbar" aria-valuenow="75" aria-valuemin="0"

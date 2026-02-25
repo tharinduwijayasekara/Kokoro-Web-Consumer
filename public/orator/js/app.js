@@ -76,7 +76,11 @@ const App = {
 
     async renderLibrary() {
         await StorageService.getOratorJson();
-        const books = await StorageService.getBooks();
+        let books = await StorageService.getBooks();
+        if (books) {
+            books = books.sort((a, b) => b.importId - a.importId);
+        }
+
         const $list = $('#library-list').empty();
 
         if (!books || books.length === 0) {
@@ -91,8 +95,20 @@ const App = {
         }
 
         books.forEach(book => {
+            const bookDesc = {
+                src: book.meta?.description ?? "<div>",
+                text: ""
+            };
+
+            try {
+                bookDesc.text = $(bookDesc.src).text().trim();
+                bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
+            } finally {
+
+            }
+
             $(`
-                <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}">
+                <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}" xmlns="http://www.w3.org/1999/html">
                     <div class="book-background" style="background-image: url(${book.cover})"></div>
                     <div class="book-item-contianer">
                         <img src="${book.cover}" class="book-cover-thumb">
@@ -101,8 +117,14 @@ const App = {
                             <p class="text-muted">
                                 ${book.author}
                                 </br>
-                                ${book.importedAt}
+                                Published on: ${book.meta?.pubdate ?? ""}
+                                </br>
+                                Imported on: ${book.importedAt}
+                                </br>
                             </p>
+                            <div class="book-description">
+                                ${bookDesc.text}
+                            </div>
                         </div>
                         <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
                             <i class="bi bi-trash3-fill" style="font-size: 20px"></i>

@@ -81,8 +81,8 @@ span.navbar-brand {
 
 .book-details .text-muted {
     color: #bebebe !important;
-    font-size: 0.6rem;
-    line-height: 1.3rem;
+    font-size: 7pt;
+    line-height: 9pt;
 }
 
 .library-top-image {
@@ -127,10 +127,11 @@ span.navbar-brand {
     align-items: center;
     padding: 10px;
     cursor: pointer;
-    background-color: #22222250;
+    background-color: #00000050;
     cursor: pointer;
     backdrop-filter: blur(10px);
-    box-shadow: 0px 0px 50px 5px rgb(0 0 0 / 50%) inset
+    box-shadow: 0px 0px 50px 5px rgb(0 0 0 / 50%) inset;
+    height: 100%;
 }
 
 .book-cover-thumb {
@@ -146,13 +147,16 @@ span.navbar-brand {
     flex: 1;
     padding-left: 15px;
     position: relative;
-    height: 130px
+    border-right: 1px solid #ffffff20;
+    padding-right: 15px;
+    margin-right: 10px;
 }
 
 .book-details .fw-bold {
     font-size: 1rem;
     line-height: 1.2rem;
     padding-bottom: 0.5rem;
+    font-family: 'Crimson Pro';
 }
 
 .book-background {
@@ -164,6 +168,13 @@ span.navbar-brand {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center
+}
+
+.book-description {
+    font-size: 7pt;
+    color: #a29a98;
+    max-width: 300px;
+    text-align: justify;
 }
 
 label.btn-import-books {
@@ -383,6 +394,23 @@ label.btn-import-books {
     padding-bottom: 5px;
     font-size: 0.7rem;
     text-transform: uppercase;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: center;
+    justify-content: center;
+    grid-column-gap: 5px
+
+}
+
+.buffer-health .spinner-border {
+    opacity: 0;
+    transition: opacity 1s;
+    height: 10px;
+    width: 10px
+}
+
+.buffer-health .spinner-border.active {
+    opacity: 1;
 }
 
 div#message-board-wrapper {
@@ -685,6 +713,7 @@ label.form-label {
 
     #library-list {
         grid-template-columns: repeat(3, auto);
+        justify-content: center;
     }
 
     #library-list .book-item {

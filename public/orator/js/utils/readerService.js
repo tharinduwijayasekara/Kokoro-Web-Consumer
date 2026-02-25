@@ -105,7 +105,7 @@ const ReaderService = {
             this.$container.find('.reader-paragraph').removeClass('active');
             this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
             this.scrollToParagraph(progressTracker[0], progressTracker[1]);
-        }, 250);
+        }, 1000);
     },
 
     updateTempOratorConfig(config) {
@@ -192,7 +192,9 @@ const ReaderService = {
             return;
         }
 
-        this.renderChapterOnScreen(currentChapter - 1);
+        await this.renderChapterOnScreen(currentChapter - 1);
+        await App.sleep(50);
+        this.scrollToParagraph(this.currentChapterOnScreen, 0);
     },
 
     async goToNextChapter() {
@@ -202,6 +204,8 @@ const ReaderService = {
         }
 
         this.renderChapterOnScreen(currentChapter + 1);
+        await App.sleep(50);
+        this.scrollToParagraph(this.currentChapterOnScreen, 0);
     },
 
     async play(chapterId, paragraphId, bufferSize) {
@@ -252,7 +256,7 @@ const ReaderService = {
             let tempC = cIdx;
             let tempP = pIdx;
 
-            this.$bufferHealth.text(this.$bufferHealth.text() + ` (${batchSize})`);
+            this.$bufferHealth.find('.spinner-border').addClass("active");
 
             for (let i = 0; i < Math.min(needed, batchSize); i++) {
                 if (this.playIdentifier !== playIdentifier) return;
@@ -284,7 +288,8 @@ const ReaderService = {
             console.log("Buffering complete, buffer health at: ", this.currentBuffer.length);
         }
 
-        this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
+        this.$bufferHealth.find('.spinner-border').removeClass('active');
+        this.$bufferHealth.find('span').text(this.currentBuffer.length);
     },
 
     hasLettersOrNumbers(str) {
@@ -311,7 +316,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 500)
+        }, 2000)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -481,7 +486,7 @@ const ReaderService = {
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
         this.scrollToParagraph(current.cIdx, current.pIdx);
 
-        this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
+        this.$bufferHealth.find("span").text(this.currentBuffer.length);
         current.sound.play();
 
         const orator = await StorageService.getOratorJson();
@@ -504,6 +509,7 @@ const ReaderService = {
 
         if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
             await this.renderChapterOnScreen(cIdx);
+            await App.sleep(1000);
         }
 
         const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
@@ -513,7 +519,6 @@ const ReaderService = {
                 block: 'start' // This respects the scroll-margin-top
             });
         }
-        return;
     },
 
     stop() {

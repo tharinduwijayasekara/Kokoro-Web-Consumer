@@ -82,6 +82,7 @@ const ImportEpub = {
                         author: meta.creator || "",
                         cover: base64Cover,
                         chapters: chapters,
+                        meta: meta,
                         importedAt: new Date().toLocaleDateString(),
                         importId: Date.now(),
                     });
