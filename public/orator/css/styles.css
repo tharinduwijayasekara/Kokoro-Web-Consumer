@@ -395,11 +395,14 @@ label.btn-import-books {
     font-size: 0.7rem;
     text-transform: uppercase;
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: 25px 20px 20px 1fr;
     align-items: center;
-    justify-content: center;
-    grid-column-gap: 5px
+}
 
+.buffer-health .chapter-timings {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
 }
 
 .buffer-health .spinner-border {
@@ -678,7 +681,7 @@ label.form-label {
     }
 }
 
-@media only screen and (min-width: 1280px) {
+@media only screen and (min-width: 1400px) {
 
     #playback-chapters {
         left: 0 !important;
@@ -698,7 +701,7 @@ label.form-label {
     }
 
     #playback-controls {
-        width: 400px;
+        right: 40px;
         margin-left: 330px;
     }
 
@@ -722,7 +725,7 @@ label.form-label {
 
 }
 
-@media only screen and (min-width: 1500px) {
+@media only screen and (min-width: 2000px) {
     #library-list {
         grid-template-columns: repeat(5, auto);
     }

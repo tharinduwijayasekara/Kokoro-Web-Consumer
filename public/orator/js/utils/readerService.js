@@ -19,6 +19,9 @@ const ReaderService = {
     $chapterProgress: undefined,
     $bookProgress: undefined,
 
+    $chapterTimingsLeft: undefined,
+    $chapterTimingsRight: undefined,
+
     bufferSize: 100,
     currentBuffer: [],
     isBuffering: false,
@@ -32,6 +35,10 @@ const ReaderService = {
 
     tempOratorConfig: undefined,
 
+    charactersProcessed: 0,
+    durationProcessed: 0,
+    durationPerCharacter: 0,
+
     async init(bookId) {
         this.$app = App.$app;
         this.$banner = this.$app.find('.error-banner');
@@ -44,6 +51,8 @@ const ReaderService = {
         this.$bufferHealth = this.$app.find('.buffer-health');
         this.$chapterProgress = this.$app.find('.chapter-progress .progress-bar');
         this.$bookProgress = this.$app.find('.book-progress .progress-bar');
+        this.$chapterTimingsLeft = this.$app.find('.chapter-timings-left');
+        this.$chapterTimingsRight = this.$app.find('.chapter-timings-right');
 
         if (this.abortController) {
             this.abortController.abort();
@@ -239,14 +248,20 @@ const ReaderService = {
         const needed = size - this.currentBuffer.length;
         if (needed <= 0) {
             console.log("Buffer health good");
+            return;
         }
 
         const playIdentifier = this.playIdentifier;
         this.isBuffering = true;
 
         let maxBatchSize = 3;
+
         if (this.currentBuffer.length < 5 && size >= 10) {
             maxBatchSize = 2;
+        }
+
+        if (this.currentBuffer.length > 50 && size >= 10) {
+            maxBatchSize = 5;
         }
 
         const batchSize = Math.min(needed, maxBatchSize);
@@ -444,11 +459,11 @@ const ReaderService = {
                             }
                         }
 
-                        resolve({shortText, cIdx, pIdx, sound, url})
+                        resolve({shortText, cIdx, pIdx, sound, url, text})
                     }
                 },
                 onloadError: () => {
-                    console.log("Howloer failed to load", cIdx, pIdx);
+                    console.log("Howler failed to load", cIdx, pIdx);
                     URL.revokeObjectURL(url);
                     resolve(null);
                 },
@@ -494,12 +509,63 @@ const ReaderService = {
         await StorageService.writeOratorJson(orator);
         console.log("Progress tracker moved to", progressTrackerString);
 
-        const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
+        if (this.currentBuffer.length < ((this.bufferSize * 75) / 100)) {
+            const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
+            let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
-        let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
+            console.log("About to call fill buffer with", nextC, nextP);
+            this.fillBuffer(nextC, nextP, this.bufferSize);
+        }
 
-        console.log("About to call fill buffer with", nextC, nextP);
-        this.fillBuffer(nextC, nextP, this.bufferSize);
+        this.processTimings(current);
+    },
+
+    async processTimings(current) {
+        const soundDuration = current.sound.duration();
+        const textLength = current.text.length ?? 0;
+
+        if (soundDuration > 0.2 && textLength >= 5) {
+            this.durationProcessed += soundDuration;
+            this.charactersProcessed += textLength;
+            this.durationPerCharacter = this.durationProcessed / this.charactersProcessed;
+        }
+
+        console.log(`Total processed sound duration ${this.durationProcessed} for ${this.charactersProcessed} characters :: rate: ${this.durationPerCharacter}`, current);
+
+        const chapter = this.book.chapters[current.cIdx];
+        const paragraphsRead = chapter.slice(0, current.pIdx);
+        const paragraphsLeft = chapter.slice(current.pIdx + 1, chapter.length - 1);
+
+        const chars = {
+            total: 0,
+            read: 0,
+            left: 0,
+        };
+
+        chapter.map(p => chars.total = chars.total + p.length);
+        paragraphsRead.map(p => chars.read = chars.read + p.length);
+        paragraphsLeft.map(p => chars.left = chars.left + p.length);
+
+        const timings = {
+            total: this.secondsToHms(this.durationPerCharacter * chars.total),
+            read: this.secondsToHms(this.durationPerCharacter * chars.read),
+            left: this.secondsToHms(this.durationPerCharacter * chars.left),
+        }
+
+        this.$chapterTimingsLeft.text(timings.read);
+        this.$chapterTimingsRight.text(`${timings.left}/${timings.total}`);
+
+        console.log("Timings", timings);
+    },
+
+    secondsToHms(seconds) {
+        const SECONDS_PER_DAY = 86400;
+        const HOURS_PER_DAY = 24;
+
+        const days = Math.floor(seconds / SECONDS_PER_DAY);
+        const remainderSeconds = seconds % SECONDS_PER_DAY;
+        const hms = new Date(remainderSeconds * 1000).toISOString().substring(11, 19);
+        return hms.replace(/^(\d+)/, h => `${Number(h) + days * HOURS_PER_DAY}`.padStart(2, '0'));
     },
 
     async scrollToParagraph(cIdx, pIdx) {
