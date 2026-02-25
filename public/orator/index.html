@@ -41,11 +41,15 @@
         document.head.appendChild(link);
     </script>
 
+    <style id="app-styles">
+
+    </style>
+
 </head>
 <body class="body">
 
 
-<div id="app" class="container-fluid and test" style="background-color: black; color: white">
+<div id="app" class="container-fluid" style="background-color: black; color: white" data-bs-theme="dark">
 
     <div id="view-splash" class="orator-view orator-view-splash">
         <div class="text-center w-100">
@@ -156,43 +160,123 @@
                     <div class="accordion accordion-flush" id="accordionPlaybackSettings">
                         <div class="accordion-item">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                                    Speech Service
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseZero" aria-expanded="false"
+                                        aria-controls="flush-collapseZero">
+                                    Font Settings
                                 </button>
                             </h2>
-                            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
+                            <div id="flush-collapseZero" class="accordion-collapse collapse"
+                                 data-bs-parent="#accordionPlaybackSettings">
                                 <div class="accordion-body">
 
                                     <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" id="speech-service-input" placeholder="1.0">
-                                        <label for="speech-service-input">Speech Service URL</label>
+                                        <select class="form-select" id="font-input">
+                                            <!-- rendered from default fonts -->
+                                        </select>
+                                        <label for="font-input">Font</label>
                                     </div>
-
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" id="speech-voice-input" placeholder="1.0">
-                                        <label for="speech-voice-input">Voice</label>
+                                    <div class="form-slider-stack">
+                                        <label for="font-size-input" class="form-label">Font Size</label>
+                                        <input type="range" class="form-range" min="5" max="20" id="font-size-input"
+                                               data-show-on-change="true">
+                                        <div><span></span> PT.</div>
                                     </div>
-
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" id="speech-speed-input" placeholder="1.0">
-                                        <label for="speech-speed-input">Speed (1.1 recommended)</label>
+                                    <div class="form-slider-stack">
+                                        <label for="font-line-input" class="form-label">Line Height</label>
+                                        <input type="range" class="form-range" min="5" max="40" id="font-line-input"
+                                               data-show-on-change="true">
+                                        <div><span></span> PT.</div>
                                     </div>
-
-                                    <div class="settings-reset-container">
-                                        <button id="speech-svc-reset-kokoro" class="btn btn-outline-info">Restore Kokoro Defaults</button>
-                                        <button id="speech-svc-reset-edgetts" class="btn btn-outline-info">Restore EdgeTTS Defaults</button>
+                                    <div class="form-slider-stack">
+                                        <label for="font-spacing-input" class="form-label">Letter Spacing</label>
+                                        <input type="range" class="form-range" min="-1" max="2" step="1"
+                                               id="font-spacing-input" data-show-on-change="true">
+                                        <div><span></span></div>
+                                    </div>
+                                    <div class="color-settings">
+                                        <div>
+                                            <label for="font-color-input" class="form-label">Font</label>
+                                            <input type="color" class="form-control form-control-color"
+                                                   id="font-color-input" value="#563d7c" title="Choose your color">
+                                        </div>
+                                        <div>
+                                            <label for="font-highlight-input" class="form-label">Highlight</label>
+                                            <input type="color" class="form-control form-control-color"
+                                                   id="font-highlight-input" value="#563d7c" title="Choose your color">
+                                        </div>
+                                        <div>
+                                            <label for="font-background-input" class="form-label">Background</label>
+                                            <input type="color" class="form-control form-control-color"
+                                                   id="font-background-input" value="#563d7c" title="Choose your color">
+                                        </div>
                                     </div>
 
                                 </div>
                             </div>
                         </div>
+
                         <div class="accordion-item">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                                    Speech Customization
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseOne" aria-expanded="false"
+                                        aria-controls="flush-collapseOne">
+                                    Speech Settings
                                 </button>
                             </h2>
-                            <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
+                            <div id="flush-collapseOne" class="accordion-collapse collapse"
+                                 data-bs-parent="#accordionPlaybackSettings">
+                                <div class="accordion-body">
+
+                                    <div class="form-floating mb-3">
+                                        <select class="form-select" id="speech-service-input">
+                                            <option selected value="https://kokoro.orator-audio.com/v1/audio/speech">
+                                                Kokoro
+                                            </option>
+                                            <option value="https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech">
+                                                EdgeTTS
+                                            </option>
+                                        </select>
+                                        <label for="speech-service-input">Speech Service URL</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input disabled type="text" class="form-control" id="speech-voice-input"
+                                               placeholder="af_heart">
+                                        <label for="speech-speed-input">Voice</label>
+
+                                        <div class="check-box-group check-box-group-voice kokoro active">
+                                            <div class="check-box-group-title">You can select multiple voices to blend
+                                                them together (limit: 5)
+                                            </div>
+                                            <!-- rendered at runtime -->
+                                        </div>
+                                        <div class="check-box-group check-box-group-voice edgetts">
+                                            <!-- rendered at runtime -->
+                                        </div>
+
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="speech-speed-input"
+                                               placeholder="1.0">
+                                        <label for="speech-speed-input">Speed (1.1 recommended)</label>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseTwo" aria-expanded="false"
+                                        aria-controls="flush-collapseTwo">
+                                    Customize Pronounciation
+                                </button>
+                            </h2>
+                            <div id="flush-collapseTwo" class="accordion-collapse collapse"
+                                 data-bs-parent="#accordionPlaybackSettings">
                                 <div class="accordion-body">
 
                                     <div class="speech-cust-container">
@@ -210,18 +294,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                                    Typography
-                                </button>
-                            </h2>
-                            <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionPlaybackSettings">
-                                <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the third item’s accordion body. Nothing more exciting happening here in terms of content, but just filling up the space to make it look, at least at first glance, a bit more representative of how this would look in a real-world application.</div>
-                            </div>
-                        </div>
                     </div>
-                    
+
 
                 </div>
             </div>

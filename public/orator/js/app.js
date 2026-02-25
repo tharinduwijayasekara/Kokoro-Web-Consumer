@@ -93,18 +93,21 @@ const App = {
         books.forEach(book => {
             $(`
                 <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}">
-                    <img src="${book.cover}" class="book-cover-thumb">
-                    <div class="book-details">
-                        <div class="fw-bold">${book.title}</div>
-                        <p class="text-muted">
-                            ${book.author}
-                            </br>
-                            ${book.importedAt}
-                        </p>
+                    <div class="book-background" style="background-image: url(${book.cover})"></div>
+                    <div class="book-item-contianer">
+                        <img src="${book.cover}" class="book-cover-thumb">
+                        <div class="book-details">
+                            <div class="fw-bold">${book.title}</div>
+                            <p class="text-muted">
+                                ${book.author}
+                                </br>
+                                ${book.importedAt}
+                            </p>
+                        </div>
+                        <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
+                            <i class="bi bi-trash3-fill" style="font-size: 20px"></i>
+                        </button>
                     </div>
-                    <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
-                        <i class="text-danger bi bi-trash3-fill" style="font-size: 20px"></i>
-                    </button>
                 </div>
             `)
                 .appendTo($list);
@@ -223,20 +226,25 @@ const App = {
             SettingsService.removeSpeechReplacement(e.currentTarget);
         });
 
-        this.$app.on('click', '#speech-svc-reset-kokoro', async (e) => {
-            e.stopPropagation();
-            SettingsService.resetSpeechSettings("kokoro");
-        });
-
-        this.$app.on('click', '#speech-svc-reset-edgetts', async (e) => {
-            e.stopPropagation();
-            SettingsService.resetSpeechSettings("edgeTTS");
-        });
-
         this.$app.on('click', '.orator-backdrop', async (e) => {
             e.stopPropagation();
             $(e.currentTarget).parent().removeClass('active');
         });
+
+        this.$app.on('change', 'input[data-show-on-change="true"]', async (e) => {
+            const $input = $(e.currentTarget);
+            $input.parent().find('span').text($input.val());
+        });
+
+        this.$app.on('click', '.reader-container-wrapper', async (e) => {
+            e.stopPropagation();
+
+            if (SettingsService.isActive()) {
+                ReaderService.hidePlaybackSettings();
+                return;
+            }
+        });
+
     },
 
     async handleImport(file) {
@@ -247,7 +255,7 @@ const App = {
         let importedBook = null;
 
         try {
-            if (file.type === 'application/epub+zip') {
+            if (file.type === 'application/epub+zip' || file.type === 'application/epub') {
                 importedBook = await ImportEpub.handle(file);
             }
         } catch (e) {

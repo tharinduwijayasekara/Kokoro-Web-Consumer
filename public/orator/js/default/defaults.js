@@ -4,15 +4,15 @@ const DEFAULT_ORATOR_JSON = {
             ttsUrl: "https://kokoro.orator-audio.com/v1/audio/speech",
             voice: "af_heart(1)+af_aoede(1)+af_sky(1)",
             speed: 1.0,
-            appearance: {
-                font: "serif",
-                size: 18,
-                line: 1.5,
-                spacing: 1,
-                color: "#222222",
-                background: "#eeeeee",
-                highlight: "#eeddbb"
-            }
+            replacements: [],
+            fontFamily: "Crimson Pro",
+            fontSize: 14,
+            lineHeight: 16,
+            letterSpacing: 0,
+            fontColor: "#ffffff",
+            highlightColor: "#ffff00",
+            backgroundColor: "#000000",
+
         },
         reading: {
             bookId: "chapterid::paragraphid::book-progress-percent"
@@ -111,4 +111,13 @@ const ORATOR_MESSAGES = [
     "Imagining award for most addictive voice.",
     "Whispering too deliciously for the mystery chapter.",
     "Preparing for marathon chapter with no breaks."
+];
+
+const ORATOR_FONTS = [
+    "Athelas",
+    "Crimson Pro",
+    "EB Garamond",
+    "Libre Caslon Text",
+    "Radley",
+    "Handlee"
 ];

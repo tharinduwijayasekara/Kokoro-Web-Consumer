@@ -262,11 +262,10 @@ const ReaderService = {
 
                 text = text
                     .replaceAll("**##", "'")
-                    .replaceAll("##**", "'");
+                    .replaceAll("##**", "'")
+                    .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());
 
-                fetchTasks.push(
-                    this.fetchAndLoad(text, tempC, tempP)
-                );
+                if (this.hasLettersOrNumbers(text)) fetchTasks.push(this.fetchAndLoad(text, tempC, tempP));
 
                 [tempC, tempP] = this.getNextParagraphId(tempC, tempP);
             }
@@ -287,6 +286,12 @@ const ReaderService = {
 
         this.$bufferHealth.text(`${this.currentBuffer.length} ready to play`);
     },
+
+    hasLettersOrNumbers(str) {
+        const regex = /[a-zA-Z0-9]/;
+        return regex.test(str);
+    },
+
 
     async setBufferrer() {
         if (this.bufferrer) return;
