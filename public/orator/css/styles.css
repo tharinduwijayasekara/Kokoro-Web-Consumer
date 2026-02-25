@@ -390,13 +390,14 @@ label.btn-import-books {
 }
 
 .buffer-health {
-    color: #c7c7c7;
+    color: #acacac;
     text-align: center;
     padding-bottom: 5px;
     font-size: 0.7rem;
     text-transform: uppercase;
     display: grid;
-    grid-template-columns: 25px 20px 20px 1fr;
+    grid-template-columns: auto 1fr;
+    grid-column-gap: 10px;
     align-items: center;
 }
 
@@ -404,13 +405,31 @@ label.btn-import-books {
     display: grid;
     grid-template-columns: auto auto;
     justify-content: space-between;
+    margin-top: 2px;
 }
 
 .buffer-health .spinner-border {
-    opacity: 0;
+    opacity: 1;
     transition: opacity 1s;
     height: 10px;
     width: 10px
+}
+
+.buffer-health-info {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-content: center;
+    align-items: center;
+    grid-column-gap: 5px;
+}
+
+.buffer-health-info span, .buffer-health-info i {
+    margin-top: 3px;
+}
+
+.buffer-health .buffer-health-info i {
+    font-size: 10px;
+    line-height: 10px;
 }
 
 .buffer-health .spinner-border.active {

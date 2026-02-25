@@ -108,6 +108,9 @@ const ReaderService = {
 
         await SettingsService.init();
 
+        history.pushState({page: 'book', id: bookId});
+        App.currentPage = "book";
+
         App.showView('reader');
 
         setTimeout(() => {

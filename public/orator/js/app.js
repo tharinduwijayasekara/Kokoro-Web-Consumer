@@ -267,6 +267,12 @@ const App = {
             }
         });
 
+        window.onpopstate = (e) => {
+            if (App.currentPage && App.currentPage === "book") {
+                App.renderLibrary();
+            }
+        };
+
     },
 
     async handleImport(file) {
