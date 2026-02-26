@@ -183,7 +183,7 @@ const SettingsService = {
         this.saving = true;
         this.config = newConfig;
 
-        this.applyStyles(config);
+        this.applyStyles(newConfig);
 
         ReaderService.updateTempOratorConfig(newConfig);
         await this.saveSettings(newConfig);
@@ -253,6 +253,15 @@ const SettingsService = {
                 background-color: ${config.highlightColor}30 !important;
             }
         `);
+
+
+
+        backgroundColor = tinycolor(config.backgroundColor);
+        if (backgroundColor.isDark()) {
+            $('#playback-controls').addClass('dark-mode');
+        } else {
+            $('#playback-controls').removeClass('dark-mode');
+        }
     }
 
 }
