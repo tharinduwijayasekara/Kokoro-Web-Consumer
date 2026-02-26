@@ -73,7 +73,14 @@ const App = {
         await StorageService.getOratorJson();
         let books = await StorageService.getBooks();
         if (books) {
-            books = books.sort((a, b) => b.author > a.author ? -1 : 1);
+            books = books.sort((a, b) => {
+                const comparators = {
+                    a: ((a.author ?? "Unknown Author") + a.title).toLowerCase(),
+                    b: ((b.author ?? "Unknown Author") + b.title).toLowerCase(),
+                }
+
+                return comparators.a < comparators.b ? -1 : 1
+            });
         }
 
         const $list = $('#library-list').empty();
@@ -90,11 +97,22 @@ const App = {
             return;
         }
 
+        let lastAuthor = -1;
+
         books.forEach(book => {
             const bookDesc = {
                 src: book.meta?.description ?? "<div></div>",
                 text: ""
             };
+
+            const author = book.author;
+            if (author !== lastAuthor) {
+
+                lastAuthor = author;
+                $(`<div class="author-item">${author}</div>`)
+                    .appendTo($list)
+
+            }
 
             try {
                 bookDesc.text = $(bookDesc.src).text().trim();
@@ -110,22 +128,27 @@ const App = {
                     <div class="book-item-contianer">
                         <img src="${book.cover}" class="book-cover-thumb">
                         <div class="book-details">
-                            <div class="fw-bold">${book.title}</div>
-                            <p class="text-muted">
-                                ${book.author}
-                                </br>
-                                Published on: ${book.meta?.pubdate ?? ""}
-                                </br>
-                                Imported on: ${book.importedAt}
-                                </br>
-                            </p>
+                            <div class="book-header">
+                                <div>
+                                    <div class="fw-bold">${book.title}</div>
+                                    <p class="text-muted">
+                                        ${book.author}
+                                        </br>
+                                        Published on: ${book.meta?.pubdate ?? ""}
+                                        </br>
+                                        Imported on: ${book.importedAt}
+                                        </br>
+                                    </p>
+                                </div>
+                                <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
+                                    <i class="bi bi-trash3-fill" style="font-size: 20px"></i>
+                                </button>
+                            </div>
                             <div class="book-description">
                                 ${bookDesc.text}
                             </div>
                         </div>
-                        <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
-                            <i class="bi bi-trash3-fill" style="font-size: 20px"></i>
-                        </button>
+                        
                     </div>
                 </div>
             `)

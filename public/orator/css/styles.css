@@ -79,10 +79,29 @@ span.navbar-brand {
     padding-bottom: 5px;
 }
 
+.author-item {
+    font-size: 0.8rem;
+    line-height: 1.2rem;
+    grid-column: 1/-1;
+    margin-top: 5px;
+    padding-top: 25px;
+    padding-bottom: 15px;
+    border-top: 1px solid #2a2a2a;
+    padding-left: 10px;
+    color: #bcbcbc;
+}
+
+.author-item:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border: none;
+}
+
 .book-details .text-muted {
     color: #bebebe !important;
     font-size: 7pt;
     line-height: 9pt;
+    margin: 0;
 }
 
 .library-top-image {
@@ -103,8 +122,7 @@ span.navbar-brand {
     font-family: 'Crimson Pro', sans-serif;
     background: rgba(255, 255, 255, 0);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(2px);
 }
 
 /* Library List Styling */
@@ -147,9 +165,9 @@ span.navbar-brand {
     flex: 1;
     padding-left: 15px;
     position: relative;
-    border-right: 1px solid #ffffff20;
-    padding-right: 15px;
-    margin-right: 10px;
+    /* border-right: 1px solid #ffffff20; */
+    padding-right: 5px;
+    /* margin-right: 10px; */
 }
 
 .book-details .fw-bold {
@@ -157,6 +175,14 @@ span.navbar-brand {
     line-height: 1.2rem;
     padding-bottom: 0.5rem;
     font-family: 'Crimson Pro';
+}
+
+.book-header {
+    display: grid;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    grid-template-columns: 1fr auto;
 }
 
 .book-background {
@@ -175,6 +201,7 @@ span.navbar-brand {
     color: #a29a98;
     max-width: 300px;
     text-align: justify;
+    margin-top: 20px;
 }
 
 label.btn-import-books {
