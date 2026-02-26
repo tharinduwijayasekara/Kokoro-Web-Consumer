@@ -205,8 +205,7 @@ const App = {
 
         this.$app.on('click', '#btn-reader-back', async (e) => {
             e.stopPropagation();
-            ReaderService.stop();
-            this.showView('library');
+            ReaderService.closeBook();
         });
 
         this.$app.on('click', '.playback-chapter-item', async (e) => {
@@ -307,8 +306,7 @@ const App = {
 
         window.onpopstate = (e) => {
             if (App.currentPage && App.currentPage === "book") {
-                App.showMessageBoard("Orator", "Reloading your library...", -1);
-                App.renderLibrary();
+                ReaderService.closeBook();
             }
         };
 

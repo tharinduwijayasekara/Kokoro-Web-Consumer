@@ -130,6 +130,12 @@ const ReaderService = {
         this.bookLength = bookLength;
     },
 
+    async closeBook() {
+        App.showMessageBoard("Orator", "Reloading your library...", -1);
+        this.stop();
+        App.renderLibrary();
+    },
+
     async updateProgress() {
         const chapter = this.book.chapters[this.progressTracker[0]];
         const chapterProgress = (this.progressTracker[1] / chapter.length) * 100;
