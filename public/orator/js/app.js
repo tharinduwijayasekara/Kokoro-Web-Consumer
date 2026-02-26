@@ -122,6 +122,13 @@ const App = {
                 bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
             }
 
+            let pubDate = book.meta?.pubdate ?? "";
+            if (pubDate) {
+                try {
+                    pubDate = (new Date(pubDate)).toLocaleDateString();
+                } catch (e) {}
+            }
+
             $(`
                 <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}" xmlns="http://www.w3.org/1999/html">
                     <div class="book-background" style="background-image: url(${book.cover})"></div>
@@ -134,7 +141,7 @@ const App = {
                                     <p class="text-muted">
                                         ${book.author}
                                         </br>
-                                        Published on: ${book.meta?.pubdate ?? ""}
+                                        Published on: ${pubDate}
                                         </br>
                                         Imported on: ${book.importedAt}
                                         </br>
@@ -300,6 +307,7 @@ const App = {
 
         window.onpopstate = (e) => {
             if (App.currentPage && App.currentPage === "book") {
+                App.showMessageBoard("Orator", "Reloading your library...", -1);
                 App.renderLibrary();
             }
         };
