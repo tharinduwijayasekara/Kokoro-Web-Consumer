@@ -114,24 +114,8 @@ const SettingsService = {
             this.$speechReplacements.empty();
 
             config.replacements.forEach((rep, id) => {
-                const itemHtml = `
-                    <div class="speech-cust-item">
-                        <div class="form-floating">
-                          <input type="text" class="form-control speech-replacement-input-left" id="speech-replacement-left-${id}" placeholder="replace this" value="${rep[0]}">
-                          <label for="speech-replacement-left-${id}">Replace</label>
-                        </div>
-                        <div class="form-floating">
-                          <input type="text" class="form-control speech-replacement-input-right" id="speech-replacement-right-${id}" placeholder="with this" value="${rep[1]}">
-                          <label for="speech-replacement-right-${id}">Correct Pronounciation</label>
-                        </div>
-                        <button class="btn btn-sm speech-replacement-remove" data-id="${id}">
-                            <i class="bi bi-trash3-fill"></i>
-                        </button>
-                    </div>
-                `;
-
-                this.$speechReplacements.append(itemHtml);
-            })
+                this.$speechReplacements.append(this.prepareReplacementHtml(rep, id));
+            });
         }
 
         // Typography
@@ -157,6 +141,24 @@ const SettingsService = {
         console.log("Loaded settings", config);
     },
 
+    prepareReplacementHtml(rep, id) {
+        return `
+            <div class="speech-cust-item">
+                <div class="form-floating">
+                  <input type="text" class="form-control speech-replacement-input-left" id="speech-replacement-left-${id}" placeholder="replace this" value="${rep[0]}">
+                  <label for="speech-replacement-left-${id}">Replace</label>
+                </div>
+                <div class="form-floating">
+                  <input type="text" class="form-control speech-replacement-input-right" id="speech-replacement-right-${id}" placeholder="with this" value="${rep[1]}">
+                  <label for="speech-replacement-right-${id}">Correct Pronounciation</label>
+                </div>
+                <button class="btn btn-sm speech-replacement-remove" data-id="${id}">
+                    <i class="bi bi-trash3-fill"></i>
+                </button>
+            </div>
+        `;
+    },
+
     isActive() {
         return this.$settings.hasClass('active');
     },
@@ -180,7 +182,8 @@ const SettingsService = {
 
         this.saving = true;
         this.config = newConfig;
-        this.loadSettings(newConfig);
+
+        this.applyStyles(config);
 
         ReaderService.updateTempOratorConfig(newConfig);
         await this.saveSettings(newConfig);
@@ -226,12 +229,7 @@ const SettingsService = {
     addNewSpeechReplacement() {
         const newConfig = this.buildConfigJson();
         const replacements = newConfig.replacements ?? [];
-
-        replacements.push(['', '']);
-        newConfig.replacements = replacements;
-
-        this.config = newConfig;
-        this.loadSettings(newConfig);
+        this.$speechReplacements.append(this.prepareReplacementHtml(['', ''], replacements));
     },
 
     removeSpeechReplacement(button) {

@@ -726,6 +726,19 @@ label.form-label {
     #library-list .book-item {
         width: 100%;
     }
+
+    #playback-settings {
+        top: 0;
+        left: auto;
+        right: -520px;
+        width: 500px;
+        height: auto;
+    }
+
+    #playback-settings.active {
+        height: auto;
+        right: 0;
+    }
 }
 
 @media only screen and (min-width: 1400px) {
