@@ -17,20 +17,15 @@ const App = {
 
         try {
 
-            console.log("Requesting wake lock");
             await this.requestWakeLock();
-
             await this.loadDependencies();
-            console.log("Dependencies loaded.");
 
             this.showView('splash');
 
             await StorageService.init();
-
             console.log("Fetched orator configuration json", StorageService.orator);
 
             this.setEventHandlers();
-
             document.getElementById('styles-for-init').remove();
 
             setTimeout(() => {
@@ -78,7 +73,7 @@ const App = {
         await StorageService.getOratorJson();
         let books = await StorageService.getBooks();
         if (books) {
-            books = books.sort((a, b) => b.importId - a.importId);
+            books = books.sort((a, b) => b.author > a.author ? -1 : 1);
         }
 
         const $list = $('#library-list').empty();
@@ -86,6 +81,7 @@ const App = {
         if (!books || books.length === 0) {
             $('<div>')
                 .addClass('p-5 text-center text-light')
+                .attr('style', 'grid-column: 1/-1')
                 .text("No books available. Tap + to import")
                 .appendTo($list);
 
@@ -96,15 +92,16 @@ const App = {
 
         books.forEach(book => {
             const bookDesc = {
-                src: book.meta?.description ?? "<div>",
+                src: book.meta?.description ?? "<div></div>",
                 text: ""
             };
 
             try {
                 bookDesc.text = $(bookDesc.src).text().trim();
-                bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
+            } catch (e) {
+                bookDesc.text = bookDesc.src;
             } finally {
-
+                bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
             }
 
             $(`
@@ -150,11 +147,22 @@ const App = {
             }
         });
 
-        this.$app.find('#epub-input').on('change', (e) => {
+        this.$app.find('#epub-input').on('change', async (e) => {
             console.log(e);
-            const file = e.target.files[0];
-            console.log("New file selected for import", file);
-            if (file) this.handleImport(file);
+
+            const files = e.target.files;
+            const promises = [];
+
+            for (const file of files) {
+                promises.push(new Promise(resolve => {
+                    console.log("New file selected for import", file);
+                    if (file) this.handleImport(file);
+                    resolve(file);
+                }));
+            }
+
+            if (promises) await Promise.all(promises);
+            console.log("Import all files complete");
         });
 
         this.$app.on('click', '.book-item', async (e) => {
