@@ -14,5 +14,6 @@
     <orderEntry type="library" name="jszip" level="application" />
     <orderEntry type="library" name="bootstrap-icons" level="application" />
     <orderEntry type="library" name="epubjs" level="application" />
+    <orderEntry type="library" name="@simonwep/pickr" level="application" />
   </component>
 </module>

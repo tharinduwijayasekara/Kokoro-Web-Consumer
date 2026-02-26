@@ -75,6 +75,39 @@ const SettingsService = {
                 `
             );
         });
+
+        const createPicker = (el, defaultColor) => {
+            return Pickr.create({
+                el: el,
+                theme: 'nano',
+                default: defaultColor,
+                components: {
+                    preview: true,
+                    opacity: true,
+                    hue: true,
+                    interaction: { input: true, save: true }
+                }
+            });
+        };
+
+        this.pickers = {
+            font: createPicker('#font-color-picker', this.config.fontColor),
+            highlight: createPicker('#font-highlight-picker', this.config.highlightColor),
+            background: createPicker('#font-background-picker', this.config.backgroundColor)
+        };
+
+        Object.values(this.pickers).forEach(p => {
+
+            p.on('change', (color) => {
+                p.applyColor(true); // Forces the color to be applied to the button
+            });
+
+            p.on('save', (color) => {
+                p.hide();
+                this.monitorConfig();
+            });
+
+        });
     },
 
     loadSettings(config) {
@@ -131,9 +164,9 @@ const SettingsService = {
         this.$fontSpacing.parent().find('span').text(config.letterSpacing);
 
         // Colors
-        this.$fontColor.val(config.fontColor);
-        this.$highlightColor.val(config.highlightColor);
-        this.$backgroundColor.val(config.backgroundColor);
+        this.pickers.font.setColor(config.fontColor);
+        this.pickers.highlight.setColor(config.highlightColor);
+        this.pickers.background.setColor(config.backgroundColor);
 
         // Apply the styles
         this.applyStyles(config);
@@ -219,9 +252,9 @@ const SettingsService = {
         config.letterSpacing = parseInt(this.$fontSpacing.val());
 
         // Colors
-        config.fontColor = this.$fontColor.val();
-        config.highlightColor = this.$highlightColor.val();
-        config.backgroundColor = this.$backgroundColor.val();
+        config.fontColor = this.pickers.font.getColor().toHEXA().toString();
+        config.highlightColor = this.pickers.highlight.getColor().toHEXA().toString();
+        config.backgroundColor = this.pickers.background.getColor().toHEXA().toString();
 
         return config;
     },
@@ -253,8 +286,6 @@ const SettingsService = {
                 background-color: ${config.highlightColor}30 !important;
             }
         `);
-
-
 
         backgroundColor = tinycolor(config.backgroundColor);
         if (backgroundColor.isDark()) {

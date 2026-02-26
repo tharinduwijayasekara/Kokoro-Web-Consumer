@@ -23,6 +23,9 @@
 
     <script type='text/javascript' src='js/vendor/tinycolor.js'></script>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
@@ -190,6 +193,7 @@
                                         </select>
                                         <label for="font-input">Font</label>
                                     </div>
+
                                     <div class="form-slider-stack">
                                         <label for="font-size-input" class="form-label">Font Size</label>
                                         <input type="range" class="form-range" min="5" max="20" id="font-size-input"
@@ -208,21 +212,19 @@
                                                id="font-spacing-input" data-show-on-change="true">
                                         <div><span></span></div>
                                     </div>
+
                                     <div class="color-settings">
                                         <div>
-                                            <label for="font-color-input" class="form-label">Font</label>
-                                            <input type="color" class="form-control form-control-color"
-                                                   id="font-color-input" value="#563d7c" title="Choose your color">
+                                            <label class="form-label">Font</label>
+                                            <div id="font-color-picker"></div>
                                         </div>
                                         <div>
-                                            <label for="font-highlight-input" class="form-label">Highlight</label>
-                                            <input type="color" class="form-control form-control-color"
-                                                   id="font-highlight-input" value="#563d7c" title="Choose your color">
+                                            <label class="form-label">Highlight</label>
+                                            <div id="font-highlight-picker"></div>
                                         </div>
                                         <div>
-                                            <label for="font-background-input" class="form-label">Background</label>
-                                            <input type="color" class="form-control form-control-color"
-                                                   id="font-background-input" value="#563d7c" title="Choose your color">
+                                            <label class="form-label">Background</label>
+                                            <div id="font-background-picker"></div>
                                         </div>
                                     </div>
 
