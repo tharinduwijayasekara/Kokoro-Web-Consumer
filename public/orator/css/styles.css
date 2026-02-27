@@ -159,7 +159,7 @@ span.navbar-brand {
 
 #view-library[data-view="grid"] #library-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     /* Adds space between grid items */
 }
 
@@ -168,7 +168,7 @@ span.navbar-brand {
 }
 
 #view-library[data-view="grid"] .book-item {
-    width: 125px;
+    width: 120px;
 }
 
 #view-library[data-view="grid"] .book-item-contianer {
