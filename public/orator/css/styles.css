@@ -125,11 +125,73 @@ span.navbar-brand {
     backdrop-filter: blur(2px);
 }
 
+#view-library .library-list-header-buttons i.bi-view-list {
+    display: none;
+}
+
+#view-library .library-list-header-buttons i.bi-grid-3x3-gap-fill {
+    display: block;
+}
+
+#view-library[data-view="grid"] .library-list-header-buttons i.bi-view-list {
+    display: block;
+}
+
+#view-library[data-view="grid"] .library-list-header-buttons i.bi-grid-3x3-gap-fill {
+    display: none;
+}
+
+.library-list-header-buttons {
+    padding: 0 5px;
+    text-align: right;
+}
+
+.library-list-header-buttons i {
+    font-size: 25px;
+}
+
 /* Library List Styling */
 #library-list {
     padding: 0px 10px;
     padding-bottom: 400px;
     padding-top: 20px;
+}
+
+#view-library[data-view="grid"] #library-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    /* Adds space between grid items */
+}
+
+#view-library[data-view="grid"] .author-item {
+    display: none;
+}
+
+#view-library[data-view="grid"] .book-item {
+    width: 125px;
+}
+
+#view-library[data-view="grid"] .book-item-contianer {
+    display: grid;
+    padding: 0;
+    width: 100%;
+    align-content: start;
+}
+
+#view-library[data-view="grid"] .book-item-contianer .book-cover-thumb {
+    width: 100%;
+    height: auto;
+}
+
+#view-library[data-view="grid"] .book-details {
+    padding: 10px;
+}
+
+#view-library[data-view="grid"] .orator-btn-delete-book {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    text-shadow: 1px 1px 3px black;
 }
 
 .book-item {

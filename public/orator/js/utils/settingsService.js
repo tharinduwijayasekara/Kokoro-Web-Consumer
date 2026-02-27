@@ -17,9 +17,9 @@ const SettingsService = {
         this.$fontLine = $('#font-line-input');
         this.$fontSpacing = $('#font-spacing-input');
 
-        this.$fontColor = $('#font-color-input');
-        this.$highlightColor = $('#font-highlight-input');
-        this.$backgroundColor = $('#font-background-input');
+        config.fontColor = config.fontColor ?? "#000000";
+        config.highlightColor = config.highlightColor ?? "#00ff00";
+        config.backgroundColor = config.backgroundColor ?? "#eeeeee";
 
         this.config = config;
         this.saving = false;

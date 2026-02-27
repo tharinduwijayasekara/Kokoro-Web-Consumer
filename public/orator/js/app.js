@@ -99,6 +99,11 @@ const App = {
 
         let lastAuthor = -1;
 
+        const viewType = StorageService.orator.config.libraryView ?? "list";
+        $('#view-library').attr('data-view', viewType);
+
+        const bookItemTemplate = `book-item-${viewType}`;
+
         books.forEach(book => {
             const bookDesc = {
                 src: book.meta?.description ?? "<div></div>",
@@ -129,41 +134,32 @@ const App = {
                 } catch (e) {}
             }
 
-            $(`
-                <div class="book-item" xmlns="http://www.w3.org/1999/html" data-id="${book.id}" xmlns="http://www.w3.org/1999/html">
-                    <div class="book-background" style="background-image: url(${book.cover})"></div>
-                    <div class="book-item-contianer">
-                        <img src="${book.cover}" class="book-cover-thumb">
-                        <div class="book-details">
-                            <div class="book-header">
-                                <div>
-                                    <div class="fw-bold">${book.title}</div>
-                                    <p class="text-muted">
-                                        ${book.author}
-                                        </br>
-                                        Published on: ${pubDate}
-                                        </br>
-                                        Imported on: ${book.importedAt}
-                                        </br>
-                                    </p>
-                                </div>
-                                <button class="btn btn-sm orator-btn-delete-book" data-id="${book.id}">
-                                    <i class="bi bi-trash3-fill" style="font-size: 20px"></i>
-                                </button>
-                            </div>
-                            <div class="book-description">
-                                ${bookDesc.text}
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-            `)
-                .appendTo($list);
+            const bookItemHtml = this.fromTemplate(bookItemTemplate, {
+                id: book.id,
+                cover: book.cover,
+                title: book.title,
+                author: book.author,
+                pubDate: pubDate,
+                importedAt: book.importedAt,
+                bookDescText: bookDesc.text
+            });
+
+            $(bookItemHtml).appendTo($list);
         });
 
         this.showView('library');
         this.hideMessageBoard();
+    },
+
+    fromTemplate(templateId, data) {
+        let html = $(`#template-${templateId}`).html();
+        if (typeof data !== 'object') throw Error("From template expects a template id and a data object");
+
+        for (const [key, value] of Object.entries(data)) {
+            html = html.replaceAll(`{{${key}}}`, value);
+        }
+
+        return html;
     },
 
     setEventHandlers() {
@@ -181,18 +177,20 @@ const App = {
             console.log(e);
 
             const files = e.target.files;
-            const promises = [];
 
-            for (const file of files) {
-                promises.push(new Promise(resolve => {
+            try {
+                for (const file of files) {
                     console.log("New file selected for import", file);
-                    if (file) this.handleImport(file);
-                    resolve(file);
-                }));
+                    this.showMessageBoard("Importing...");
+                    if (file) await this.handleImport(file);
+                }
+            } catch (e) {
+                console.log("Error while importing files", e);
             }
 
-            if (promises) await Promise.all(promises);
             console.log("Import all files complete");
+
+            this.renderLibrary();
         });
 
         this.$app.on('click', '.book-item', async (e) => {
@@ -304,6 +302,11 @@ const App = {
             }
         });
 
+        this.$app.on('click', '.btn-library-view-toggle', async (e) => {
+            e.stopPropagation();
+            this.handleViewToggle();
+        });
+
         window.onpopstate = (e) => {
             if (App.currentPage && App.currentPage === "book") {
                 ReaderService.closeBook();
@@ -312,9 +315,32 @@ const App = {
 
     },
 
+    async handleViewToggle() {
+        const views = ['list', 'grid'];
+        let view = $('#view-library').attr('data-view');
+        let viewIndex = views.indexOf(view);
+
+        if (viewIndex < 0) {
+            view = 'list';
+        }
+
+        viewIndex++;
+        viewIndex = viewIndex > (views.length - 1) ? 0 : viewIndex;
+
+        const newView = views[viewIndex];
+        $('#view-library').attr('data-view', newView);
+
+        await StorageService.getOratorJson();
+        const config = StorageService.orator.config;
+        config.libraryView = newView;
+
+        await SettingsService.saveSettings(config);
+        this.renderLibrary();
+    },
+
     async handleImport(file) {
 
-        this.showMessageBoard("Importing...", "Reading your book", -1);
+        this.showMessageBoard("Importing...", "Opening...", -1);
         console.log(file);
 
         let importedBook = null;
@@ -327,8 +353,6 @@ const App = {
             console.log("Error while importing", e);
         }
 
-        this.hideMessageBoard();
-
         if (!importedBook) {
             this.showMessageBoard("Import failed", "The file you selected could not be imported", -1);
             setTimeout(() => this.hideMessageBoard(), 5000);
@@ -336,7 +360,6 @@ const App = {
         }
 
         await StorageService.db.books.put(importedBook);
-        this.renderLibrary();
     },
 
     async urlToBase64(url) {

@@ -12,6 +12,7 @@ const DEFAULT_ORATOR_JSON = {
             fontColor: "#ffffff",
             highlightColor: "#ffff00",
             backgroundColor: "#000000",
+            libraryView: 'list',
 
         },
         reading: {

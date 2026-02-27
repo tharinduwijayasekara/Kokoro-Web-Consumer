@@ -72,14 +72,22 @@
     <div id="view-library" class="orator-view orator-view-library bg-dark">
         <nav class="navbar navbar-dark bg-dark px-3 shadow">
             <!--<img class="navbar-toggler-icon" src="images/icon-v2.png" width="128" class="mb-4">-->
-            <span class="navbar-brand mb-0 h1">ORATOR WEB</span>
+            <span class="navbar-brand mb-0 h1">ORATOR AUDIOBOOK READER</span>
         </nav>
 
         <div class="library-container flex-grow-1 overflow-auto">
             <div class="library-top-image d-flex justify-content-center align-items-center text-light">
                 <h1 class="library-top-text">Your Library</h1>
             </div>
-            <div id="library-list"></div>
+            <div class="library-list-wrapper">
+                <div class="library-list-header-buttons">
+                    <button class="btn btn-sm btn-library-view-toggle">
+                        <i class="bi bi-view-list"></i>
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </button>
+                </div>
+                <div id="library-list"></div>
+            </div>
         </div>
 
         <label class="btn btn-dark rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg btn-import-books">
@@ -345,6 +353,51 @@
     script.src = 'js/app.js?v=' + Date.now();
     //script.src = 'js/app.js';
     document.head.appendChild(script);
+</script>
+
+<script type="text/html" id="template-book-item-list">
+    <div class="book-item" data-id="{{id}}">
+        <div class="book-background" style="background-image: url({{cover}})"></div>
+        <div class="book-item-contianer">
+            <img src="{{cover}}" class="book-cover-thumb">
+            <div class="book-details">
+                <div class="book-header">
+                    <div>
+                        <div class="fw-bold">{{title}}</div>
+                        <p class="text-muted">
+                            {{author}}
+                            </br>
+                            Published on: {{pubDate}}
+                            </br>
+                            Imported on: {{importedAt}}
+                            </br>
+                        </p>
+                    </div>
+                    <button class="btn btn-sm orator-btn-delete-book" data-id="{{id}}">
+                        <i class="bi bi-trash3-fill" style="font-size: 20px"></i>
+                    </button>
+                </div>
+                <div class="book-description">
+                    {{bookDescText}}
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="template-book-item-grid">
+    <div class="book-item" data-id="{{id}}">
+        <div class="book-item-contianer">
+            <img src="{{cover}}" class="book-cover-thumb">
+            <div class="book-details">
+                <div class="fw-bold">{{title}}</div>
+                <p class="text-muted">{{author}}</p>
+            </div>
+            <button class="btn btn-sm orator-btn-delete-book" data-id="{{id}}">
+                <i class="bi bi-x" style="font-size: 25px"></i>
+            </button>
+        </div>
+    </div>
 </script>
 
 

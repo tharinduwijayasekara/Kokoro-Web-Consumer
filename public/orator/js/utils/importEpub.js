@@ -64,8 +64,8 @@ const ImportEpub = {
                         if (paragraphs.length > 0) chapters.push(paragraphs);
 
                         const progressPercent = (chapters.length / fileKeys.length) * 100;
-                        App.showMessageBoard("Importing...", `Reading your epub file: ${key}`, parseInt(progressPercent));
-                        await App.sleep(25);
+                        App.showMessageBoard("Importing...", `Reading your epub file: ${file.name}`, parseInt(progressPercent));
+                        await App.sleep(5);
 
                     }
 
