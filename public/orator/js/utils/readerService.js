@@ -131,9 +131,8 @@ const ReaderService = {
     },
 
     async closeBook() {
-        App.showMessageBoard("Orator", "Reloading your library...", -1);
         this.stop();
-        App.renderLibrary();
+        App.showView('library')
     },
 
     async updateProgress() {
