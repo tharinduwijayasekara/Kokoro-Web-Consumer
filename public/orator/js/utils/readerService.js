@@ -184,17 +184,28 @@ const ReaderService = {
 
         this.$container.attr('data-chapter-id', chapterId);
 
+        let $currentParagraph = null;
+
         chapter.forEach((paragraph, paragraphId) => {
+            const isContinuation = paragraph.startsWith("##::##::ATTACH_TO_PREV_SPAN::##::##");
+            paragraph = paragraph.replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "");
+
+            if (!isContinuation) {
+                $currentParagraph = $(`<p></p>`).addClass('reader-paragraph-wrapper');
+                $currentParagraph.appendTo(this.$container);
+            }
+
             const paragraphHtml = paragraph
                 .replaceAll("**##", `<span class="italic">`)
                 .replaceAll("##**", `</span>`);
 
-            $paragraph = $('<p></p>')
-                .attr('id', `reader-paragraph-${chapterId}-${paragraphId}`)
-                .addClass('reader-paragraph')
-                .attr('data-paragraph-identifier', `${chapterIdToRender}-${paragraphId}`)
-                .html(paragraphHtml)
-                .appendTo(this.$container);
+            const spanHtml = `
+                <span id="reader-paragraph-${chapterId}-${paragraphId}" class="reader-paragraph" data-paragraph-identifier="${chapterIdToRender}-${paragraphId}">
+                    ${paragraphHtml}
+                </span>
+            `;
+
+            $(spanHtml).appendTo($currentParagraph);
         });
 
         this.$chaptersList.find('.playback-chapter-item').removeClass('active');
@@ -288,6 +299,7 @@ const ReaderService = {
                 if (!text) break;
 
                 text = text
+                    .replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "")
                     .replaceAll("**##", "'")
                     .replaceAll("##**", "'")
                     .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());

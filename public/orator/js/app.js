@@ -411,6 +411,22 @@ const App = {
 
     async sleep(milliseconds) {
         return new Promise(resolve => setTimeout(() => resolve(), milliseconds));
+    },
+
+    splitSentences(string) {
+        const strings = string.split(/(?<=[.?])\s+/);
+        const response = [];
+
+        for (let i = 0; i < strings.length; i++) {
+            if (i===0) {
+                response.push(strings[i]);
+                continue;
+            }
+
+            response.push(`##::##::ATTACH_TO_PREV_SPAN::##::##${strings[i]}`);
+        }
+
+        return response;
     }
 
 }

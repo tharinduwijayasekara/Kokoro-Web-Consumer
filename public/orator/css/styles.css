@@ -1,4 +1,3 @@
-/* Regular Style */
 @font-face {
     font-family: 'Athelas';
     src: url('../fonts/Athelas-Regular.woff2') format('woff2');
@@ -6,10 +5,23 @@
     font-style: normal;
 }
 
-/* Italic Style */
 @font-face {
     font-family: 'Athelas';
     src: url('../fonts/Athelas-Italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'BradleyHand';
+    src: url('../fonts/BradleyHand-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'BradleyHand';
+    src: url('../fonts/BradleyHand-Regular.woff2') format('woff2');
     font-weight: normal;
     font-style: italic;
 }
@@ -203,6 +215,7 @@ span.navbar-brand {
     background-color: #00000050;
     cursor: pointer;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 0px 0px 50px 5px rgb(0 0 0 / 50%) inset;
     height: 100%;
 }
@@ -393,7 +406,6 @@ label.btn-import-books {
     margin: 0;
     border-radius: 7px;
     text-shadow: 0 0.012rem, 0.02rem 0 0, 0.02rem 0.02rem;
-    scroll-margin-top: 50px;
     font-family: "Radley", sans-serif;
     font-weight: 400;
     font-size: 13pt;
@@ -404,7 +416,11 @@ label.btn-import-books {
     font-style: italic;
 }
 
-.reader-container p.active {
+.reader-container .reader-paragraph {
+    scroll-margin-top: 100px;
+}
+
+.reader-container .reader-paragraph.active {
     background-color: #fcd47e52;
 }
 
@@ -446,6 +462,7 @@ label.btn-import-books {
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 2px 2px 20px #0000009c;
 }
 
@@ -494,6 +511,7 @@ label.btn-import-books {
 
 .playback-chapter-header h1 {
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     height: 100%;
     width: 100%;
     display: flex;
@@ -566,6 +584,7 @@ div#message-board-wrapper {
     right: 0;
     bottom: 0;
     backdrop-filter: blur(2px) brightness(0.8);
+    -webkit-backdrop-filter: blur(2px) brightness(0.8);
 }
 
 .message-board-backdrop {
@@ -621,6 +640,7 @@ div#message-board-wrapper {
     transition: all .5s ease-in-out;
     background: #000000cc;
     backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
     box-shadow: 0px -2px 5px black;
     border-radius: 10px 10px 0 0;
     font-size: 9pt;
@@ -706,6 +726,7 @@ label.form-label {
     bottom: 0;
     right: 0;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex !important;
     align-items: center;
     justify-content: center;

@@ -56,7 +56,13 @@ const ImportEpub = {
 
                                 const txt = $(el).text().trim();
                                 if (txt.length > 0) {
-                                    paragraphs.push(txt.replace(/\s+/g, ' '));
+
+                                    const paragraphTextRaw = txt.replace(/\s+/g, ' ');
+                                    const paragraphStrings = App.splitSentences(paragraphTextRaw);
+
+                                    for (const sentence of paragraphStrings) {
+                                        paragraphs.push(sentence);
+                                    }
                                 }
                             }
                         });

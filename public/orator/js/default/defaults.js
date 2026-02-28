@@ -116,6 +116,7 @@ const ORATOR_MESSAGES = [
 
 const ORATOR_FONTS = [
     "Athelas",
+    "BradleyHand",
     "Crimson Pro",
     "EB Garamond",
     "Libre Caslon Text",
