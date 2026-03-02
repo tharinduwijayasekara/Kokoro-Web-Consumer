@@ -10,6 +10,7 @@ const App = {
         'js/utils/readerService.js',
         'js/utils/settingsService.js',
         'js/utils/importEpub.js',
+        'js/utils/importEpubJsZip.js',
     ],
 
     async init() {
