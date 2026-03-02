@@ -10,6 +10,8 @@ const ImportEpub = {
             reader.onload = async (e) => {
                 const book = ePub(e.target.result, {restore: false});
 
+                console.log("Epub loaded", book);
+
                 try {
                     await book.ready;
                     const zipFiles = book.zip.zip.files;
@@ -58,10 +60,12 @@ const ImportEpub = {
                                 if (txt.length > 0) {
 
                                     const paragraphTextRaw = txt.replace(/\s+/g, ' ');
+                                    //paragraphs.push(paragraphTextRaw);
+
                                     const paragraphStrings = App.splitSentences(paragraphTextRaw);
 
                                     for (const sentence of paragraphStrings) {
-                                        paragraphs.push(sentence);
+                                         paragraphs.push(sentence);
                                     }
                                 }
                             }
@@ -77,7 +81,6 @@ const ImportEpub = {
 
                     console.log("Direct Zip Extraction Complete", chapters);
 
-                    // Save to Dexie logic...
                     const meta = await book.getMetadata();
                     const base64Cover = await this.getBookCover(book);
                     const bookId = file.name;

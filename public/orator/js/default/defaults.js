@@ -123,3 +123,5 @@ const ORATOR_FONTS = [
     "Radley",
     "Handlee"
 ];
+
+const ORATOR_P_CONTD = "##::##::ATTACH_TO_PREV_SPAN::##::##";

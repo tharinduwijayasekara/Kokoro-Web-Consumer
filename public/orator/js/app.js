@@ -423,7 +423,17 @@ const App = {
                 continue;
             }
 
-            response.push(`##::##::ATTACH_TO_PREV_SPAN::##::##${strings[i]}`);
+            const part = strings[i];
+            const prevIdx = response.length - 1;
+            let prev = response[prevIdx];
+
+            if (prev.length + part.length < 500) {
+                prev = `${prev} ${part}`;
+                response[prevIdx] = prev;
+                continue;
+            }
+
+            response.push(`${ORATOR_P_CONTD}${strings[i]}`);
         }
 
         return response;

@@ -39,6 +39,8 @@ const ReaderService = {
     durationProcessed: 0,
     durationPerCharacter: 0,
 
+    currentFullParagraphDuration: 0,
+
     async init(bookId) {
         this.$app = App.$app;
         this.$banner = this.$app.find('.error-banner');
@@ -187,8 +189,8 @@ const ReaderService = {
         let $currentParagraph = null;
 
         chapter.forEach((paragraph, paragraphId) => {
-            const isContinuation = paragraph.startsWith("##::##::ATTACH_TO_PREV_SPAN::##::##");
-            paragraph = paragraph.replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "");
+            const isContinuation = paragraph.startsWith(ORATOR_P_CONTD);
+            paragraph = paragraph.replaceAll(ORATOR_P_CONTD, "");
 
             if (!isContinuation) {
                 $currentParagraph = $(`<p></p>`).addClass('reader-paragraph-wrapper');
@@ -488,7 +490,7 @@ const ReaderService = {
                     resolve(null);
                 },
                 onend: () => {
-                    const silence = this.getParagraphBreath(sound);
+                    const silence = this.getParagraphBreath(cIdx, pIdx, sound);
                     sound.unload(); // Free memory
                     URL.revokeObjectURL(url);
                     if (this.isPlaying) {
@@ -500,10 +502,26 @@ const ReaderService = {
         });
     },
 
-    getParagraphBreath(sound) {
-        const duration = sound.duration();
+    getParagraphBreath(cIdx, pIdx, sound) {
+        if (pIdx === this.book.chapters[cIdx].length - 1 && this.book.chapters[cIdx].length > 5) {
+            // If last chapter paragraph, take a longer breath
+            return 1000;
+        }
+
+        this.currentFullParagraphDuration += sound.duration();
+        console.log("Paragraph full duration", this.currentFullParagraphDuration);
+
+        const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
+        const isContinuation = text.startsWith(ORATOR_P_CONTD);
+        if (isContinuation) {
+            return 200;
+        }
+
+        const duration = this.currentFullParagraphDuration;
         const silence = parseInt(Math.min(900, duration * 60));
         console.log(`Breathing for ${silence} for a ${duration} second paragraph`);
+
+        this.currentFullParagraphDuration = 0;
         return silence;
     },
 
