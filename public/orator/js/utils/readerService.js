@@ -354,6 +354,7 @@ const ReaderService = {
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
 
             console.log("Inside bufferrer: last available audio in current buffer", last);
+            if (!last) return;
 
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 

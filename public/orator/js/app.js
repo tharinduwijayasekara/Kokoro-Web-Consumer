@@ -452,6 +452,40 @@ const App = {
             reader.readAsArrayBuffer(file);
 
         });
+    },
+
+    async importUserInput() {
+        const text = $('#userTextInput').val().trim();
+        if (!text) return;
+
+        App.showMessageBoard("Orator", "Importing your text...", -1);
+
+        const paragraphsRaw = text.split(/\r?\n|\r|\n/);
+        const paragraphs = [];
+
+        for (const paragraph of paragraphsRaw) {
+            if (!paragraph.trim()) continue;
+            paragraphs.push(...this.splitSentences(paragraph.trim()));
+        }
+
+        const chapters = [paragraphs];
+
+        const title = "Text (" + new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString() + ")";
+
+        const importedBook = {
+            id: `user-text-${Date.now()}`,
+            title: title,
+            author: "Myself",
+            cover: '',
+            chapters: chapters,
+            meta: {},
+            importedAt: new Date().toLocaleDateString(),
+            importId: Date.now(),
+        }
+
+        await StorageService.db.books.put(importedBook);
+
+        App.renderLibrary();
     }
 
 }
