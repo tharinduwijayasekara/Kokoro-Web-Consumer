@@ -30,37 +30,7 @@ const ImportEpubJsZip = {
                         for (const key of fileKeys) {
                             // v2 syntax: .asText() is synchronous
                             let htmlString = zipFiles[key].asText();
-
-                            htmlString = htmlString
-                                .replaceAll('\r\n', '')
-                                .replace(/\s+/g, ' ')
-                                .trim();
-
-                            const bodyMatch = htmlString.match(/<body[^>]*>([\s\S.]*)<\/body>/i);
-                            const contentToParse = bodyMatch ? bodyMatch[1] : htmlString;
-
-                            const $doc = $($.parseHTML(`<div>${contentToParse}</div>`));
-                            const paragraphs = [];
-
-                            $doc.find('*').each((i, el) => {
-                                if (['P', 'H1', 'H2', 'H3'].includes(el.tagName.toUpperCase())) {
-                                    const $el = $(el);
-                                    $el.find('i, em, span.italic').each((_, italics) => {
-                                        const $italics = $(italics);
-                                        if ($italics.text().trim().length > 0) {
-                                            $italics.replaceWith(`**##${$italics.text()}##**`);
-                                        }
-                                    });
-
-                                    const txt = $el.text().trim();
-                                    if (txt.length > 0) {
-                                        const paragraphStrings = App.splitSentences(txt.replace(/\s+/g, ' '));
-                                        for (const sentence of paragraphStrings) {
-                                            paragraphs.push(sentence);
-                                        }
-                                    }
-                                }
-                            });
+                            const paragraphs = ImportEpub.getParagraphsFromHtml(htmlString);
 
                             if (paragraphs.length > 0) chapters.push(paragraphs);
 

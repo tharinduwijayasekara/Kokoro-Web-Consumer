@@ -132,7 +132,8 @@ const App = {
             if (pubDate) {
                 try {
                     pubDate = (new Date(pubDate)).toLocaleDateString();
-                } catch (e) {}
+                } catch (e) {
+                }
             }
 
             const bookItemHtml = this.fromTemplate(bookItemTemplate, {
@@ -419,7 +420,7 @@ const App = {
         const response = [];
 
         for (let i = 0; i < strings.length; i++) {
-            if (i===0) {
+            if (i === 0) {
                 response.push(strings[i]);
                 continue;
             }
@@ -438,6 +439,19 @@ const App = {
         }
 
         return response;
+    },
+
+    async loadFileAsync(file) {
+        return new Promise(resolve => {
+
+            const reader = new FileReader();
+            reader.onload = (e => {
+                console.log("File reader loaded", e);
+                resolve(e);
+            });
+            reader.readAsArrayBuffer(file);
+
+        });
     }
 
 }
