@@ -208,10 +208,16 @@ const SettingsService = {
         const newConfig = this.buildConfigJson();
         if (JSON.stringify(newConfig) === JSON.stringify(this.config)) return false;
 
-        newConfig.updatedAt = Date.now();
-        console.log("Monitoring config", this.config, newConfig);
+        if (
+            newConfig.ttsUrl !== this.config.ttsUrl
+            || newConfig.voice !== this.config.voice
+            || newConfig.speed !== this.config.speed
+        ) {
+            newConfig.updatedAt = Date.now();
+            ReaderService.stop();
+        }
 
-        ReaderService.stop();
+        console.log("Monitoring config", this.config, newConfig);
 
         this.saving = true;
         this.config = newConfig;
