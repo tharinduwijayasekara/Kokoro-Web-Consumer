@@ -22,7 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 100,
+    bufferSize: 300,
+    minBufferSize: 50,
+    maxBufferSize: 300,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -242,6 +244,8 @@ const ReaderService = {
         console.log("Triggering stop");
         this.stop();
 
+        this.bufferSize = this.maxBufferSize;
+
         if (chapterId === -10 && paragraphId === -12) {
             console.log("Start playback from previously stopped position", this.progressTracker);
             [chapterId, paragraphId] = this.progressTracker;
@@ -341,6 +345,9 @@ const ReaderService = {
         this.bufferrer = setInterval(() => {
 
             if (!this.isPlaying || this.isBuffering) return;
+
+            if (this.currentBuffer.length >= this.maxBufferSize) this.bufferSize = this.minBufferSize;
+            if (this.currentBuffer.length < this.minBufferSize) this.bufferSize = this.maxBufferSize;
             if (this.currentBuffer.length > this.bufferSize) return;
 
             const current = this.currentBuffer[0];
@@ -353,7 +360,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 2000)
+        }, 1000)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
