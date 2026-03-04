@@ -89,7 +89,7 @@ const App = {
         if (!books || books.length === 0) {
             $('<div>')
                 .addClass('p-5 text-center text-light')
-                .attr('style', 'grid-column: 1/-1; height: 50vh')
+                .attr('style', 'grid-column: 1/-1; height: 200px')
                 .text("No books available. Tap + to import")
                 .appendTo($list);
 
