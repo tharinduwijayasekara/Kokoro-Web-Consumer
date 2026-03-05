@@ -31,6 +31,7 @@ const App = {
 
             setTimeout(() => {
                 this.renderLibrary();
+                this.setLibraryBackgroundCarousel();
             }, 500);
 
         } catch (e) {
@@ -200,6 +201,8 @@ const App = {
             const id = $(e.currentTarget).data('id');
 
             console.log("About to load book for reading", id);
+
+            StorageService.enablePersistence();
             ReaderService.init(id);
         });
 
@@ -486,6 +489,37 @@ const App = {
         await StorageService.db.books.put(importedBook);
 
         App.renderLibrary();
+    },
+
+    async setLibraryBackgroundCarousel() {
+        const response = await fetch(`images/carousel/images.json?v=${Date.now()}`);
+        const images = await response.json();
+
+        this.libraryImages = images.map(i => `images/carousel/${i}`);
+        this.libraryImages = this.shuffle(this.libraryImages);
+
+        this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
+        this.changeLibraryBackground();
+
+        setInterval(() => this.changeLibraryBackground(), 60000);
+    },
+
+    shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+        }
+        return array;
+    },
+
+    async changeLibraryBackground() {
+        console.log("Updating library background");
+
+        const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
+        this.currentLibraryImageIdx = index;
+        const url = this.libraryImages[index];
+
+        $('#view-library').attr("style", `background-image: url(${url})`);
     }
 
 }

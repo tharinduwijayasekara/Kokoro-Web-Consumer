@@ -331,6 +331,10 @@ const ReaderService = {
 
         this.$bufferHealth.find('.spinner-border').removeClass('active');
         this.$bufferHealth.find('span').text(this.currentBuffer.length);
+
+        if (StorageService.storagePersisted) {
+            this.$bufferHealth.find('i').addClass("persisted");
+        }
     },
 
     hasLettersOrNumbers(str) {

@@ -47,7 +47,7 @@ span.navbar-brand {
     display: none;
     height: 100%;
     width: 100%;
-    transition: all 0.5s ease-in-out;
+    /*transition: all 0.5s ease-in-out;*/
 }
 
 .orator-view.active {
@@ -117,7 +117,7 @@ span.navbar-brand {
 }
 
 .library-top-image {
-    height: 250px;
+    height: 40vh;
 }
 
 .library-top-text {
@@ -283,27 +283,33 @@ label.btn-import-books {
 }
 
 #view-library {
-    background-image: url(../images/lib-back5-b.jpg);
+    background-image: url(../images/lib-back9.jpg);
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position-x: center;
+    background-position-y: top;
+}
+
+#view-library > div {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 .library-container {
     background: linear-gradient(
             to bottom,
-            transparent 150px,
-            rgba(30, 30, 30, 0.5) 300px,
-            rgba(30, 30, 30, 1) 600px
+            transparent 10vh,
+            rgba(30, 30, 30, 0.5) 35vh,
+            rgba(30, 30, 30, 1) 60vh
     );
 }
 
 .library-list-wrapper {
     background: linear-gradient(
             to bottom,
-            transparent 150px,
-            rgba(30, 30, 30, 0.5) 300px,
-            rgba(30, 30, 30, 1) 600px
+            transparent 10vh,
+            rgba(30, 30, 30, 0.5) 35vh,
+            rgba(30, 30, 30, 1) 60vh
     );
 }
 
@@ -595,6 +601,10 @@ label.btn-import-books {
 .buffer-health .buffer-health-info i {
     font-size: 10px;
     line-height: 10px;
+}
+
+.buffer-health .buffer-health-info i.persisted {
+    color: #00800070;
 }
 
 .buffer-health .spinner-border.active {
@@ -896,9 +906,26 @@ label.form-label {
         right: 0;
         border-top: none;
     }
+
+    #view-library[data-view="grid"] .book-item {
+        width: 180px;
+    }
+
+    #view-library[data-view="grid"] #library-list {
+        grid-template-columns: repeat(auto-fill, 190px);
+    }
 }
 
 @media only screen and (min-width: 1400px) {
+
+    #view-library {
+        background-position-y: top;
+    }
+
+    #view-library > div {
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+    }
 
     #playback-chapters {
         left: 0 !important;
@@ -934,10 +961,6 @@ label.form-label {
     #library-list {
         grid-template-columns: repeat(3, 1fr);
         justify-content: center;
-    }
-
-    #library-list .book-item {
-        width: 100%;
     }
 
 }
