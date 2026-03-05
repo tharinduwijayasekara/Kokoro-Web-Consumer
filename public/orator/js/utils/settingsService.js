@@ -208,6 +208,8 @@ const SettingsService = {
         const newConfig = this.buildConfigJson();
         if (JSON.stringify(newConfig) === JSON.stringify(this.config)) return false;
 
+        const isSpeechServiceChanged = newConfig.ttsUrl !== this.config.ttsUrl;
+
         if (
             newConfig.ttsUrl !== this.config.ttsUrl
             || newConfig.voice !== this.config.voice
@@ -227,6 +229,8 @@ const SettingsService = {
 
         ReaderService.updateTempOratorConfig(newConfig);
         await this.saveSettings(newConfig);
+
+        if (isSpeechServiceChanged) this.loadSettings(newConfig);
 
         this.saving = false;
     },

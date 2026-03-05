@@ -22,9 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 100,
-    minBufferSize: 20,
-    maxBufferSize: 100,
+    bufferSize: 200,
+    minBufferSize: 100,
+    maxBufferSize: 200,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,

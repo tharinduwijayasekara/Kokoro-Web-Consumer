@@ -269,8 +269,6 @@ span.navbar-brand {
 .book-description {
     font-size: 7pt;
     color: #a29a98;
-    max-width: 300px;
-    text-align: justify;
     margin-top: 20px;
 }
 
@@ -311,9 +309,11 @@ label.btn-import-books {
 
 .library-text-wrapper {
     border-top: 1px solid #4b4b4b;
-    padding: 20px;
+    padding: 40px 20px;
     display: flex;
     padding-bottom: 400px;
+    max-width: 800px;
+    margin: auto;
 }
 
 .library-text-wrapper textarea {
@@ -321,6 +321,10 @@ label.btn-import-books {
     height: 10rem;
     padding: 10px;
     margin-right: 20px;
+}
+
+.library-text-wrapper button {
+    background-color: #6e00b3;
 }
 
 .library-text-wrapper i {
