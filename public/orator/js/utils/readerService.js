@@ -158,7 +158,7 @@ const ReaderService = {
 
         this.book.chapters.forEach((paragraphs, chapterId) => {
             // Matches "Chapter 1", "CHAPTER IV", or "1. Introduction" / "IV - The Start"
-            const chapterRegex = /^\s*(chapter\s+([0-9]+|[ivxlcdm]+|[a-z]+)|([0-9]+|[ivxlcdm]+)[\s\.\-\:]+)/i;
+            const chapterRegex = /^\s*(contents|chapter\s+([0-9]+|[ivxlcdm]+|[a-z]+)|([0-9]+|[ivxlcdm]+)[\s\.\-\:]+)/i;
             const foundChapter = paragraphs.slice(0, 5).find(p => chapterRegex.test(p));
 
             let chapterTitle = paragraphs[0] ?? '-';
