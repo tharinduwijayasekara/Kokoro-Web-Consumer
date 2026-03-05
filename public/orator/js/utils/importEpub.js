@@ -1,7 +1,6 @@
 const ImportEpub = {
 
     async isValidEpub(file) {
-
         console.log("Checking if is valid epub", file);
         const e = await App.loadFileAsync(file);
 
@@ -14,56 +13,74 @@ const ImportEpub = {
         }
 
         try {
-
             const hasManifest = Object.keys(zip.files).some(name => name.endsWith('.opf'));
             if (!hasManifest) {
                 return false;
             }
-
         } catch (error) {
-
             console.log("Error while checking for manifest file", error);
             return false;
-
         }
 
         console.log("Epub has manifest!");
         return true;
-
     },
 
     async handle(file) {
         console.log("Processing EPUB...");
-
-        const isValidEpub = await this.isValidEpub(file);
-        if (!isValidEpub) {
-            console.log("Invalid epub, attempting to import with direct zip method");
-            return ImportEpubJsZip.handle(file);
-        }
+        //
+        // const isValidEpub = await this.isValidEpub(file);
+        // if (!isValidEpub) {
+        //     console.log("Invalid epub, attempting to import with direct zip method");
+        //     return ImportEpubJsZip.handle(file);
+        // }
 
         const e = await App.loadFileAsync(file);
-        const book = ePub(e.target.result, {restore: false});
+        // v0.3: book is opened, usually doesn't need {restore: false} as a second param here
+        const book = ePub(e.target.result);
 
         console.log("Epub loaded", book);
 
+        let isFromSpine = true;
+
         try {
-            await book.ready;
-            const zipFiles = book.zip.zip.files;
+
+            const openBook = Promise.race([
+                book.opened,
+                new Promise((r, reject) => setTimeout(() => reject(new Error("Book took too long to open")), 5000))
+            ]);
+
+            await openBook;
+            console.log("Book opened, about to import");
+
+            // v0.3: Internal zip is accessed via book.archive.zip.files
+            const zipFiles = book.archive.zip.files;
             const chapters = [];
 
-            // 1. Get all filenames, sort them to keep book order
-            const fileKeys = Object.keys(zipFiles)
-                .filter(key => key.endsWith('.xhtml') || key.endsWith('.html'))
-                .sort((a, b) => {
-                    return a.localeCompare(b, undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
+            let fileKeys = [];
+
+            try {
+
+                fileKeys = book.spine.spineItems.map(i => i.href);
+
+            } catch (error) {
+                console.log("Error checking the chapter order from spine", error);
+
+                isFromSpine = false;
+
+                fileKeys = Object.keys(zipFiles)
+                    .filter(key => key.endsWith('.xhtml') || key.endsWith('.html'))
+                    .sort((a, b) => {
+                        return a.localeCompare(b, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        });
                     });
-                });
+            }
 
             for (const key of fileKeys) {
-
-                let htmlString = zipFiles[key].asText();
+                // v0.3: zip objects often require async extraction or use async/await
+                const htmlString = await zipFiles[key].async("string");
                 const paragraphs = this.getParagraphsFromHtml(htmlString);
 
                 if (paragraphs.length > 0) chapters.push(paragraphs);
@@ -71,19 +88,21 @@ const ImportEpub = {
                 const progressPercent = (chapters.length / fileKeys.length) * 100;
                 App.showMessageBoard("Importing...", `Reading your epub file: ${file.name}`, parseInt(progressPercent));
                 await App.sleep(5);
-
             }
 
             console.log("Direct Zip Extraction Complete", chapters);
 
-            const meta = await book.getMetadata();
+            // v0.3 metadata access
+            const meta = await book.loaded.metadata;
             const base64Cover = await this.getBookCover(book);
             const bookId = file.name;
 
+            if (!isFromSpine) chapters.unshift(SPINAL_WARNING);
+
             return {
                 id: bookId,
-                title: meta.bookTitle || file.name,
-                author: meta.creator || "",
+                title: meta.title || file.name,
+                author: (meta.creator || "").split(',').reverse().map(s => s.trim()).join(' '),
                 cover: base64Cover,
                 chapters: chapters,
                 meta: meta,
@@ -92,9 +111,9 @@ const ImportEpub = {
             };
         } catch (err) {
             console.error("Direct extraction failed:", err);
+            App.showMessageBoard("Import failed", `${file.name} could not be imported. There's something wrong with the epub file.`);
             return null;
         }
-
     },
 
     getParagraphsFromHtml(htmlString) {
@@ -107,10 +126,8 @@ const ImportEpub = {
         const contentToParse = bodyMatch ? bodyMatch[1] : htmlString;
 
         const $doc = $($.parseHTML(`<div>${contentToParse}</div>`));
-
         const paragraphs = [];
 
-        // Use '*' and filter to avoid namespace/selector issues
         $doc.find('*').each((i, el) => {
             if (['P', 'H1', 'H2', 'H3'].includes(el.tagName.toUpperCase())) {
                 const $el = $(el);
@@ -121,16 +138,12 @@ const ImportEpub = {
 
                     if (italicsText.length > 0) {
                         $italics.replaceWith(`**##${$italics.text()}##**`);
-                        console.log("Found italics");
                     }
                 })
 
                 const txt = $(el).text().trim();
                 if (txt.length > 0) {
-
                     const paragraphTextRaw = txt.replace(/\s+/g, ' ');
-                    //paragraphs.push(paragraphTextRaw);
-
                     const paragraphStrings = App.splitSentences(paragraphTextRaw);
 
                     for (const sentence of paragraphStrings) {
@@ -145,43 +158,38 @@ const ImportEpub = {
 
     async getBookCover(book) {
         try {
-            // 1. Primary Method
+            // v0.3: coverUrl() is replaced by coverUrl property or book.coverPath()
             const coverUrl = await book.coverUrl();
             if (coverUrl) return await App.urlToBase64(coverUrl);
         } catch (e) {
             console.warn("Standard cover fetch failed, searching archive...");
         }
 
-        // 2. Fallback: Search the ZIP archive
         try {
-            // Accessing the internal JSZip files
-            const files = book.zip.zip.files;
+            // v0.3: book.zip -> book.archive
+            const files = book.archive.zip.files;
             const imageKeys = Object.keys(files).filter(path =>
                 /\.(jpg|jpeg|png|webp)$/i.test(path) && !path.includes('__MACOSX')
             );
 
             if (imageKeys.length > 0) {
-                // Find 'cover' specifically, or fallback to the first available image
                 const bestMatch = imageKeys.find(k => k.toLowerCase().includes('cover')) || imageKeys[0];
                 const fileObject = files[bestMatch];
 
-                // Use ArrayBuffer for clean binary extraction
-                const buffer = fileObject.asArrayBuffer();
-                const blob = new Blob([buffer], {type: 'image/jpeg'}); // Browser handles specific subtype logic
+                // JSZip v3 (used in v0.3) uses .async('blob')
+                const blob = await fileObject.async("blob");
                 const tempUrl = URL.createObjectURL(blob);
 
                 try {
                     return await App.urlToBase64(tempUrl);
                 } finally {
-                    URL.revokeObjectURL(tempUrl); // Prevent memory leaks
+                    URL.revokeObjectURL(tempUrl);
                 }
             }
         } catch (e) {
             console.error("Archive search failed", e);
         }
 
-        return null; // No cover found
+        return null;
     },
-
-
 };

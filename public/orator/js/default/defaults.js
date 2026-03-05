@@ -125,3 +125,12 @@ const ORATOR_FONTS = [
 ];
 
 const ORATOR_P_CONTD = "##::##::ATTACH_TO_PREV_SPAN::##::##";
+
+const SPINAL_WARNING = [
+    "Dear Reader",
+    "During the import process for this book I was not able to find any information on chapter sorting.",
+    "I have done my best to judge the order, but I may make mistakes.",
+    "And as I do not wish for you to jump straight into what might possibly be the final chapter in the book, and to spoilers galore.",
+    "I humbly invite you to double-check the chapter order by pressing the chapters button (the one furthest away on the left of the play button).",
+    "Warmest regards, and all my love from The Orator Developer, from Sri Lanka!"
+];

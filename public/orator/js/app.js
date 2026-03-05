@@ -429,7 +429,7 @@ const App = {
             const prevIdx = response.length - 1;
             let prev = response[prevIdx];
 
-            if (prev.length + part.length < 500) {
+            if (prev.length + part.length < 300 || part.length < 20) {
                 prev = `${prev} ${part}`;
                 response[prevIdx] = prev;
                 continue;

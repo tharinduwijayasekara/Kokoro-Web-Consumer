@@ -212,6 +212,7 @@ const SettingsService = {
             newConfig.ttsUrl !== this.config.ttsUrl
             || newConfig.voice !== this.config.voice
             || newConfig.speed !== this.config.speed
+            || newConfig.replacements !== this.config.replacements
         ) {
             newConfig.updatedAt = Date.now();
             ReaderService.stop();
