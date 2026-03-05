@@ -80,7 +80,13 @@ const ImportEpub = {
 
             for (const key of fileKeys) {
                 // v0.3: zip objects often require async extraction or use async/await
-                const htmlString = await zipFiles[key].async("string");
+                let zipfile = zipFiles[key];
+                if (!zipfile) zipfile = zipFiles[`OEBPS/${key}`];
+
+                console.log(zipfile);
+                if (!zipfile) continue;
+
+                const htmlString = await zipfile.async("string");
                 const paragraphs = this.getParagraphsFromHtml(htmlString);
 
                 if (paragraphs.length > 0) chapters.push(paragraphs);
