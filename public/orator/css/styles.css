@@ -320,6 +320,7 @@ label.btn-import-books {
     padding-bottom: 400px;
     max-width: 800px;
     margin: auto;
+    flex-direction: column;
 }
 
 .library-text-wrapper textarea {
@@ -327,14 +328,20 @@ label.btn-import-books {
     height: 10rem;
     padding: 10px;
     margin-right: 20px;
+    margin-bottom: 20px
 }
 
 .library-text-wrapper button {
     background-color: #6e00b3;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 
 .library-text-wrapper i {
-    font-size: 25px;
+    font-size: 20px;
+    margin-right: 5px;
 }
 
 #view-reader {

@@ -9,9 +9,9 @@ const DEFAULT_ORATOR_JSON = {
             fontSize: 14,
             lineHeight: 16,
             letterSpacing: 0,
-            fontColor: "#ffffff",
-            highlightColor: "#ffff00",
-            backgroundColor: "#000000",
+            fontColor: "#000000",
+            highlightColor: "#AAC7AA",
+            backgroundColor: "#dddddd",
             libraryView: 'list',
 
         },

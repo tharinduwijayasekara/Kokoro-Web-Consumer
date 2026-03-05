@@ -202,6 +202,7 @@ const App = {
 
             console.log("About to load book for reading", id);
 
+            this.requestWakeLock();
             StorageService.enablePersistence();
             ReaderService.init(id);
         });
