@@ -292,7 +292,7 @@ label.btn-import-books {
     background-repeat: no-repeat;
     background-position-x: center;
     background-position-y: 0;
-    animation: animateLibBackground 60s ease-in-out infinite alternate;
+    animation: animateLibBackground 120s ease-in-out infinite alternate;
 }
 
 @keyframes animateLibBackground {
