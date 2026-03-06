@@ -81,7 +81,7 @@ span.navbar-brand {
     font-family: 'Crimson Pro', sans-serif;
     display: grid;
     justify-content: space-evenly;
-    font-size: 1.5rem;
+    font-size: 2rem;
     background: linear-gradient(180deg,rgba(20, 20, 20, 1) -40%, rgba(255, 255, 255, 0) 100%);
 }
 
@@ -185,6 +185,7 @@ span.navbar-brand {
     padding: 0;
     width: 100%;
     align-content: start;
+    grid-template-rows: auto 1fr auto;
 }
 
 #view-library[data-view="grid"] .book-item-contianer .book-cover-thumb {
@@ -246,7 +247,8 @@ span.navbar-brand {
     font-size: 1rem;
     line-height: 1.2rem;
     padding-bottom: 0.5rem;
-    font-family: 'Crimson Pro';
+    font-family: 'Radley';
+    font-weight: 400 !important;
 }
 
 .book-header {
@@ -265,7 +267,7 @@ span.navbar-brand {
     height: 100%;
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center
+    background-position: center;
 }
 
 .book-description {
@@ -285,7 +287,7 @@ label.btn-import-books {
 }
 
 #view-library {
-    background-image: url(../images/lib-back9.jpg);
+    background-image: url(../images/lib-back5.jpg);
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: center;
@@ -309,9 +311,17 @@ label.btn-import-books {
 .library-list-wrapper {
     background: linear-gradient(
             to bottom,
-            transparent 0px,
-            rgba(20, 20, 20, 0.5) 70px,
-            rgba(20, 20, 20, 1) 200px
+            rgba(20, 20, 20, 0) 0px,         /* Step 1 */
+            rgba(20, 20, 20, 0.02) 20px,    /* Step 2 (The ultra-soft start) */
+            rgba(20, 20, 20, 0.08) 40px,    /* Step 3 */
+            rgba(20, 20, 20, 0.18) 60px,    /* Step 4 */
+            rgba(20, 20, 20, 0.32) 80px,    /* Step 5 */
+            rgba(20, 20, 20, 0.5) 100px,     /* Step 6 (Your 50% midpoint) */
+            rgba(20, 20, 20, 0.68) 120px,   /* Step 7 */
+            rgba(20, 20, 20, 0.82) 140px,   /* Step 8 */
+            rgba(20, 20, 20, 0.92) 160px,   /* Step 9 */
+            rgba(20, 20, 20, 0.98) 180px,   /* Step 10 */
+            rgba(20, 20, 20, 1) 200px       /* Step 11 */
     );
 }
 
@@ -389,6 +399,19 @@ label.btn-import-books {
 
 #view-library .library-currently-reading .book-item .book-item-contianer .orator-btn-delete-book {
     position: relative;
+}
+
+.book-item-progress-container {
+    width: 100%;
+    height: 5px;
+    background-color: #bcbcbc;
+    position: relative;
+}
+
+.book-item-progress {
+    height: 100%;
+    width: 0;
+    background-color: #6e00b3;
 }
 
 #view-reader {
@@ -966,9 +989,9 @@ label.form-label {
     }
 
     #view-library .library-currently-reading .book-item {
-    width: 100%;
-    max-width: 500px;
-}
+        width: 100%;
+        max-width: 500px;
+    }
 
     #view-library[data-view="grid"] #library-list {
         grid-template-columns: repeat(auto-fill, 190px);

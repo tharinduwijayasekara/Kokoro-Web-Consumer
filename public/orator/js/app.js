@@ -107,6 +107,8 @@ const App = {
 
         const bookItemTemplate = `book-item-${viewType}`;
 
+        const progress = StorageService.orator.reading;
+
         books.forEach(book => {
             const bookDesc = {
                 src: book.meta?.description ?? "<div></div>",
@@ -138,14 +140,17 @@ const App = {
                 }
             }
 
+            const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
+
             const bookItemHtml = this.fromTemplate(bookItemTemplate, {
                 id: book.id,
                 cover: book.cover,
-                title: book.title,
+                title: this.truncateMiddle(book.title, (viewType === 'list' ? 100 : 50)),
                 author: book.author,
                 pubDate: pubDate,
                 importedAt: book.importedAt,
-                bookDescText: bookDesc.text
+                bookDescText: bookDesc.text,
+                progress: bookProgress,
             });
 
             $(bookItemHtml).appendTo($list);
@@ -153,6 +158,16 @@ const App = {
 
         this.showView('library');
         this.hideMessageBoard();
+    },
+
+    truncateMiddle(str, max) {
+        const take = Math.floor((Math.max(5, max) - 5) / 2);
+
+        if (str.length > max) {
+            return `${str.substring(0, take)} ... ${str.substring(str.length - take, str.length)}`;
+        }
+        
+        return str;
     },
 
     fromTemplate(templateId, data) {
@@ -184,6 +199,8 @@ const App = {
         }
 
         const sectionTitle = this.getRandomOratorMessage(LIBRARY_CURRENT_READ_TITLES);
+        const progress = StorageService.orator.reading;
+        const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
         const bookItemHtml = this.fromTemplate('book-item-list', {
             id: book.id,
@@ -193,6 +210,7 @@ const App = {
             pubDate: pubDate,
             importedAt: book.importedAt,
             bookDescText: "",
+            progress: bookProgress,
         });
 
         this.$app.find('.library-currently-reading').html(
@@ -200,8 +218,6 @@ const App = {
                 `<div class="library-currently-reading-header">${sectionTitle}</div>`,
                 bookItemHtml
             ].join('')
-
-
         );
     },
 
@@ -555,7 +571,6 @@ const App = {
 
     async changeLibraryBackground() {
         console.log("Updating library background");
-
         const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
         this.currentLibraryImageIdx = index;
         const url = this.libraryImages[index];

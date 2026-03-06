@@ -107,7 +107,7 @@ const ReaderService = {
         await this.renderChapterOnScreen(progressTracker[0]);
 
         this.calculateBookLength();
-        this.updateProgress();
+        this.updateProgress(progressTracker[0], progressTracker[1]);
 
         if (!this.bufferrer) {
             this.setBufferrer();
@@ -143,17 +143,25 @@ const ReaderService = {
         App.renderCurrentlyReading();
     },
 
-    async updateProgress() {
-        const chapter = this.book.chapters[this.progressTracker[0]];
-        const chapterProgress = (this.progressTracker[1] / chapter.length) * 100;
-        const completedChapters = this.book.chapters.slice(0, Math.max(0, this.progressTracker[0] - 1));
+    async updateProgress(cIdx, pIdx) {
+        const chapter = this.book.chapters[cIdx];
+        const chapterProgress = (pIdx / chapter.length) * 100;
+        const completedChapters = this.book.chapters.slice(0, Math.max(0, cIdx - 1));
 
-        let bookProgress = this.progressTracker[1];
+        let bookProgress = pIdx;
         completedChapters.forEach(completedChapter => bookProgress += completedChapter.length);
-        bookProgress = (bookProgress / this.bookLength) * 100;
+        bookProgress = Math.ceil((bookProgress / this.bookLength) * 100);
 
         this.$chapterProgress.width(`${chapterProgress}%`);
         this.$bookProgress.width(`${bookProgress}%`);
+
+        const progressTrackerString = `${cIdx}::${pIdx}::${bookProgress}`;
+        this.progressTracker = progressTrackerString.split('::').map(v => parseInt(v));
+
+        const orator = await StorageService.getOratorJson();
+        orator.reading[this.book.id] = progressTrackerString;
+        await StorageService.writeOratorJson(orator);
+        console.log("Progress tracker moved to", progressTrackerString);
     },
 
     async renderChaptersList() {
@@ -547,9 +555,8 @@ const ReaderService = {
         console.log("About to play next, current buffer length", this.currentBuffer.length);
 
         const current = this.currentBuffer.shift();
-        const progressTrackerString = `${current.cIdx}::${current.pIdx}::0`;
-        this.progressTracker = progressTrackerString.split('::').map(v => parseInt(v));
-        this.updateProgress();
+
+        this.updateProgress(current.cIdx, current.pIdx);
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
@@ -557,11 +564,6 @@ const ReaderService = {
 
         this.$bufferHealth.find("span").text(this.currentBuffer.length);
         current.sound.play();
-
-        const orator = await StorageService.getOratorJson();
-        orator.reading[this.book.id] = progressTrackerString;
-        await StorageService.writeOratorJson(orator);
-        console.log("Progress tracker moved to", progressTrackerString);
 
         if (this.currentBuffer.length < ((this.bufferSize * 75) / 100)) {
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
