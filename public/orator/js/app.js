@@ -30,6 +30,7 @@ const App = {
             document.getElementById('styles-for-init').remove();
 
             setTimeout(() => {
+                this.renderCurrentlyReading();
                 this.renderLibrary();
                 this.setLibraryBackgroundCarousel();
             }, 500);
@@ -163,6 +164,45 @@ const App = {
         }
 
         return html;
+    },
+
+    async renderCurrentlyReading() {
+        const orator = await StorageService.getOratorJson();
+        const books = await StorageService.getBooks();
+
+        if (!orator.currentlyReading || !books) return;
+
+        const book = books.find(b => b.id === orator.currentlyReading);
+        if (!book) return;
+
+        let pubDate = book.meta?.pubdate ?? "";
+        if (pubDate) {
+            try {
+                pubDate = (new Date(pubDate)).toLocaleDateString();
+            } catch (e) {
+            }
+        }
+
+        const sectionTitle = this.getRandomOratorMessage(LIBRARY_CURRENT_READ_TITLES);
+
+        const bookItemHtml = this.fromTemplate('book-item-list', {
+            id: book.id,
+            cover: book.cover,
+            title: book.title,
+            author: book.author,
+            pubDate: pubDate,
+            importedAt: book.importedAt,
+            bookDescText: "",
+        });
+
+        this.$app.find('.library-currently-reading').html(
+            [
+                `<div class="library-currently-reading-header">${sectionTitle}</div>`,
+                bookItemHtml
+            ].join('')
+
+
+        );
     },
 
     setEventHandlers() {
@@ -406,13 +446,13 @@ const App = {
             .width(`0%`);
     },
 
-    getRandomOratorMessage() {
-        if (ORATOR_MESSAGES.length === 0) return "";
+    getRandomOratorMessage(selectFrom = ORATOR_MESSAGES) {
+        if (selectFrom.length === 0) return "";
 
         const seconds = Math.floor(Date.now() / 1000);
-        const index = seconds % ORATOR_MESSAGES.length;
+        const index = seconds % selectFrom.length;
 
-        return ORATOR_MESSAGES[index];
+        return selectFrom[index];
     },
 
     async sleep(milliseconds) {

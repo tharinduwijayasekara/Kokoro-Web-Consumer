@@ -73,6 +73,9 @@ const ReaderService = {
         const orator = await StorageService.getOratorJson();
         console.log("Orator json", orator);
 
+        orator.currentlyReading = bookId;
+        await StorageService.writeOratorJson(orator);
+
         this.updateTempOratorConfig(orator.config);
 
         const progressTracker = (orator.reading[bookId] ?? "0::0::0")
@@ -136,7 +139,8 @@ const ReaderService = {
 
     async closeBook() {
         this.stop();
-        App.showView('library')
+        App.showView('library');
+        App.renderCurrentlyReading();
     },
 
     async updateProgress() {

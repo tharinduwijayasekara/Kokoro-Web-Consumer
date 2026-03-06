@@ -17,7 +17,8 @@ const DEFAULT_ORATOR_JSON = {
         },
         reading: {
             bookId: "chapterid::paragraphid::book-progress-percent"
-        } // Empty initially
+        },
+        currentlyReading: 'bookid',
     }
 };
 
@@ -135,14 +136,36 @@ const SPINAL_WARNING = [
     "Warmest regards, and all my love from The Orator Developer, from Sri Lanka!"
 ];
 
-const ORATOR_LIBRARY_IMAGES = [
-    'images/lib-back5.jpg',
-    'https://i.pinimg.com/control1/1200x/59/f2/0d/59f20d1bf5342e394a9329b173af1167.jpg',
-    'https://i.pinimg.com/control1/1200x/cf/3b/a9/cf3ba9c1568e660b47ec9c9bba5f8631.jpg',
-    'https://i.pinimg.com/736x/2f/02/17/2f0217878699b77e01c90768be21003b.jpg',
-    'images/lib-back9.jpg',
-    'https://www.suneater.wiki/uploads/images/gallery/2025-11/hd-kharn-closeup.jpg',
-    'https://w0.peakpx.com/wallpaper/127/366/HD-wallpaper-books-on-bookshelf.jpg',
-    'https://i.pinimg.com/736x/e1/60/77/e16077476297b41c8eab61512975b8dd.jpg',
-    'https://i.pinimg.com/736x/15/88/20/1588206b656122999eefacbdc689144b.jpg'
+const LIBRARY_CURRENT_READ_TITLES = [
+    // The BookTok / Gen-Z Aesthetic
+    "Currently Reading",
+    "In My Reading Era",
+    "Current Obsession",
+    "POV: You're finishing this",
+    "The Current Vibe",
+    "Reading Status: Hooked",
+
+    // Emotional / Cozy
+    "Back into the story...",
+    "Where we left off",
+    "Your current escape",
+    "Snuggled up with...",
+    "Lost in the plot",
+    "A masterpiece in progress",
+
+    // High-Energy / Addictive
+    "Just one more chapter...",
+    "Still obsessed",
+    "The one you can't stop",
+    "Can't put this down",
+    "Main Character Energy",
+
+    // Minimalist / Clean
+    "Now Playing",
+    "Continue Listening",
+    "Current Read",
+
+    "Ah! Temptation!",
+    "Always forward, always down...",
+    "One does not simply not read another chapter"
 ];

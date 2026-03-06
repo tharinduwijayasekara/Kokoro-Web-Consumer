@@ -128,6 +128,7 @@ span.navbar-brand {
     align-items: center;
     margin: 0;
     font-family: 'Crimson Pro', sans-serif;
+    text-shadow: 0 0 2px black;
 }
 
 #view-library .library-list-header-buttons i.bi-view-list {
@@ -342,6 +343,51 @@ label.btn-import-books {
 .library-text-wrapper i {
     font-size: 20px;
     margin-right: 5px;
+}
+
+#view-library .library-currently-reading {
+    padding: 0px 10px;
+}
+
+#view-library[data-view="grid"] .library-currently-reading {
+    padding: 0px 15px;
+}
+
+#view-library .library-currently-reading .library-currently-reading-header {
+    font-size: 0.8rem;
+    color: #bcbcbc;
+    padding-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    text-align: center;
+}
+
+#view-library .library-currently-reading .book-item {
+    width: 100%;
+    max-width: 500px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer {
+    display: flex;
+    padding: 10px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-cover-thumb {
+    width: 100px;
+    height: 150px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details {
+    padding-left: 15px;
+    padding-right: 5px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details .book-description {
+    display: none;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .orator-btn-delete-book {
+    position: relative;
 }
 
 #view-reader {
