@@ -28,15 +28,8 @@ const ImportEpub = {
 
     async handle(file) {
         console.log("Processing EPUB...");
-        //
-        // const isValidEpub = await this.isValidEpub(file);
-        // if (!isValidEpub) {
-        //     console.log("Invalid epub, attempting to import with direct zip method");
-        //     return ImportEpubJsZip.handle(file);
-        // }
 
         const e = await App.loadFileAsync(file);
-        // v0.3: book is opened, usually doesn't need {restore: false} as a second param here
         const book = ePub(e.target.result);
 
         console.log("Epub loaded", book);
@@ -53,7 +46,6 @@ const ImportEpub = {
             await openBook;
             console.log("Book opened, about to import");
 
-            // v0.3: Internal zip is accessed via book.archive.zip.files
             const zipFiles = book.archive.zip.files;
             const chapters = [];
 
@@ -61,7 +53,7 @@ const ImportEpub = {
 
             try {
 
-                fileKeys = book.spine.spineItems.map(i => i.href);
+                fileKeys = book.spine.spineItems.map(i => i.canonical.replace(/^\//, ""));
 
             } catch (error) {
                 console.log("Error checking the chapter order from spine", error);
@@ -79,9 +71,8 @@ const ImportEpub = {
             }
 
             for (const key of fileKeys) {
-                // v0.3: zip objects often require async extraction or use async/await
                 let zipfile = zipFiles[key];
-                if (!zipfile) zipfile = zipFiles[`OEBPS/${key}`];
+                //if (!zipfile) zipfile = zipFiles[`OEBPS/${key}`];
 
                 console.log(zipfile);
                 if (!zipfile) continue;
@@ -98,7 +89,6 @@ const ImportEpub = {
 
             console.log("Direct Zip Extraction Complete", chapters);
 
-            // v0.3 metadata access
             const meta = await book.loaded.metadata;
             const base64Cover = await this.getBookCover(book);
             const bookId = file.name;
@@ -150,15 +140,12 @@ const ImportEpub = {
                 const txt = $(el).text().trim();
                 if (txt.length > 0) {
                     const paragraphTextRaw = txt.replace(/\s+/g, ' ');
-                    paragraphs.push(paragraphTextRaw);
+                    //paragraphs.push(paragraphTextRaw);
 
-                    /*
                     const paragraphStrings = App.splitSentences(paragraphTextRaw);
-
                     for (const sentence of paragraphStrings) {
                         paragraphs.push(sentence);
                     }
-                    */
                 }
             }
         });

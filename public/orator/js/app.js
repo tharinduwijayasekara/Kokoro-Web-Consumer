@@ -75,6 +75,9 @@ const App = {
     async renderLibrary() {
         await StorageService.getOratorJson();
         let books = await StorageService.getBooks();
+
+        console.log("Rendering library, got orator json and books");
+
         if (books) {
             books = books.sort((a, b) => {
                 const comparators = {
@@ -85,6 +88,8 @@ const App = {
                 return comparators.a < comparators.b ? -1 : 1
             });
         }
+
+        await App.sleep(50); //yield for ui thread
 
         const $list = $('#library-list').empty();
 
@@ -109,7 +114,7 @@ const App = {
 
         const progress = StorageService.orator.reading;
 
-        books.forEach(book => {
+        for (const book of books) {
             const bookDesc = {
                 src: book.meta?.description ?? "<div></div>",
                 text: ""
@@ -154,7 +159,9 @@ const App = {
             });
 
             $(bookItemHtml).appendTo($list);
-        });
+
+            await App.sleep(50); //yield for ui thread
+        }
 
         this.showView('library');
         this.hideMessageBoard();
@@ -242,6 +249,7 @@ const App = {
                     console.log("New file selected for import", file);
                     this.showMessageBoard("Importing...");
                     if (file) await this.handleImport(file);
+                    this.showMessageBoard("Importing...");
                 }
             } catch (e) {
                 console.log("Error while importing files", e);
@@ -319,6 +327,11 @@ const App = {
                 return;
             }
 
+            if ($('#view-reader').hasClass('reader-fullscreen')) {
+                $('#view-reader').removeClass('reader-fullscreen');
+                return;
+            }
+
             const paragraphIdentifier = $(e.currentTarget).data('paragraph-identifier');
             const [cIdx, pIdx] = paragraphIdentifier.split('-');
             ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
@@ -365,6 +378,11 @@ const App = {
 
             if (SettingsService.isActive()) {
                 ReaderService.hidePlaybackSettings();
+                return;
+            }
+
+            if ($('#view-reader').hasClass('reader-fullscreen')) {
+                $('#view-reader').removeClass('reader-fullscreen');
                 return;
             }
         });
@@ -481,6 +499,8 @@ const App = {
     },
 
     splitSentences(string) {
+        if (string.length < 500) return [string];
+
         const strings = string.split(/(?<=[.?])\s+/);
         const response = [];
 
@@ -494,7 +514,7 @@ const App = {
             const prevIdx = response.length - 1;
             let prev = response[prevIdx];
 
-            if (prev.length + part.length < 300 || part.length < 20) {
+            if (prev.length + part.length < 500 || part.length < 50) {
                 prev = `${prev} ${part}`;
                 response[prevIdx] = prev;
                 continue;

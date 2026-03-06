@@ -81,7 +81,7 @@ const StorageService = {
         if (alreadyPersisted) {
             this.storagePersisted = true;
             return true;
-        };
+        }
 
         const isPersisted = await navigator.storage.persist();
         if (isPersisted) {

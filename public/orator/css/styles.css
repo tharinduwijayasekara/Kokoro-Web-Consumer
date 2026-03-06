@@ -90,6 +90,16 @@ span.navbar-brand {
     box-shadow: none !important;
     padding-top: 5px;
     padding-bottom: 5px;
+    transition: margin-top 0.5s ease-in-out;
+}
+
+.orator-view-reader .navbar-action-button-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.orator-view-reader.reader-fullscreen nav.navbar.navbar-dark {
+    margin-top: -50px;
 }
 
 .author-item {
@@ -320,18 +330,18 @@ label.btn-import-books {
 
 .library-list-wrapper {
     background: linear-gradient(
-        to bottom,
-        rgba(20, 20, 20, 0) 0px,         /* Start (Transparent) */
-        rgba(20, 20, 20, 0.05) 15px,    
-        rgba(20, 20, 20, 0.22) 45px,    
-        rgba(20, 20, 20, 0.5) 75px,      /* 50% darkness at 25% (75px) */
-        rgba(20, 20, 20, 0.7) 105px,    
-        rgba(20, 20, 20, 0.82) 135px,   
-        rgba(20, 20, 20, 0.9) 165px,    
-        rgba(20, 20, 20, 0.95) 195px,   
-        rgba(20, 20, 20, 0.98) 235px,   
-        rgba(20, 20, 20, 0.995) 270px,  
-        rgba(20, 20, 20, 1) 300px       /* End (Solid) */
+            to bottom,
+            rgba(20, 20, 20, 0) 0px,         /* Start (Transparent) */
+            rgba(20, 20, 20, 0.05) 15px,
+            rgba(20, 20, 20, 0.22) 45px,
+            rgba(20, 20, 20, 0.5) 75px,      /* 50% darkness at 25% (75px) */
+            rgba(20, 20, 20, 0.7) 105px,
+            rgba(20, 20, 20, 0.82) 135px,
+            rgba(20, 20, 20, 0.9) 165px,
+            rgba(20, 20, 20, 0.95) 195px,
+            rgba(20, 20, 20, 0.98) 235px,
+            rgba(20, 20, 20, 0.995) 270px,
+            rgba(20, 20, 20, 1) 300px       /* End (Solid) */
     );
 }
 

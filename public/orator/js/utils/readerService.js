@@ -117,14 +117,13 @@ const ReaderService = {
 
         history.pushState({page: 'book', id: bookId});
         App.currentPage = "book";
-
         App.showView('reader');
 
-        setTimeout(() => {
-            this.$container.find('.reader-paragraph').removeClass('active');
-            this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
-            this.scrollToParagraph(progressTracker[0], progressTracker[1]);
-        }, 1000);
+        App.sleep(50);
+
+        this.$container.find('.reader-paragraph').removeClass('active');
+        this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
+        this.scrollToParagraph(progressTracker[0], progressTracker[1]);
     },
 
     updateTempOratorConfig(config) {
@@ -353,7 +352,6 @@ const ReaderService = {
         const regex = /[a-zA-Z0-9]/;
         return regex.test(str);
     },
-
 
     async setBufferrer() {
         if (this.bufferrer) return;
@@ -631,10 +629,11 @@ const ReaderService = {
 
         if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
             await this.renderChapterOnScreen(cIdx);
-            await App.sleep(1000);
+            await App.sleep(50);
         }
 
         const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
+        targetElement.classList.add('active');
         if (targetElement) {
             targetElement.scrollIntoView({
                 behavior: 'smooth',
