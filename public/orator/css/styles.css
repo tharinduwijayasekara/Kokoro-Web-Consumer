@@ -82,6 +82,7 @@ span.navbar-brand {
     display: grid;
     justify-content: space-evenly;
     font-size: 1.5rem;
+    background: linear-gradient(180deg,rgba(20, 20, 20, 1) -40%, rgba(255, 255, 255, 0) 100%);
 }
 
 .orator-view-reader nav.navbar.navbar-dark {
@@ -292,25 +293,25 @@ label.btn-import-books {
 }
 
 #view-library > div {
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(5px) contrast(1.1);
+    -webkit-backdrop-filter: blur(5px) contrast(1.1);
 }
 
 .library-container {
-    background: linear-gradient(
+    /* background: linear-gradient(
             to bottom,
             transparent 10vh,
             rgba(30, 30, 30, 0.5) 35vh,
             rgba(30, 30, 30, 1) 60vh
-    );
+    ); */
 }
 
 .library-list-wrapper {
     background: linear-gradient(
             to bottom,
-            transparent 10vh,
-            rgba(30, 30, 30, 0.5) 35vh,
-            rgba(30, 30, 30, 1) 60vh
+            transparent 0px,
+            rgba(20, 20, 20, 0.5) 70px,
+            rgba(20, 20, 20, 1) 200px
     );
 }
 
@@ -963,6 +964,11 @@ label.form-label {
     #view-library[data-view="grid"] .book-item {
         width: 180px;
     }
+
+    #view-library .library-currently-reading .book-item {
+    width: 100%;
+    max-width: 500px;
+}
 
     #view-library[data-view="grid"] #library-list {
         grid-template-columns: repeat(auto-fill, 190px);

@@ -519,7 +519,7 @@ const App = {
         const importedBook = {
             id: `user-text-${Date.now()}`,
             title: title,
-            author: "Myself",
+            author: "You",
             cover: '',
             chapters: chapters,
             meta: {},
@@ -542,7 +542,7 @@ const App = {
         this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
         this.changeLibraryBackground();
 
-        setInterval(() => this.changeLibraryBackground(), 60000);
+        setInterval(() => this.changeLibraryBackground(), 10000);
     },
 
     shuffle(array) {
