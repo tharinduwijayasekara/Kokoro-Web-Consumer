@@ -291,7 +291,17 @@ label.btn-import-books {
     background-size: cover;
     background-repeat: no-repeat;
     background-position-x: center;
-    background-position-y: top;
+    background-position-y: 0;
+    animation: animateLibBackground 60s ease-in-out infinite alternate;
+}
+
+@keyframes animateLibBackground {
+    from {
+        background-position-y: top;
+    }
+    to {
+        background-position-y: bottom;
+    }
 }
 
 #view-library > div {
@@ -310,18 +320,18 @@ label.btn-import-books {
 
 .library-list-wrapper {
     background: linear-gradient(
-            to bottom,
-            rgba(20, 20, 20, 0) 0px,         /* Step 1 */
-            rgba(20, 20, 20, 0.02) 20px,    /* Step 2 (The ultra-soft start) */
-            rgba(20, 20, 20, 0.08) 40px,    /* Step 3 */
-            rgba(20, 20, 20, 0.18) 60px,    /* Step 4 */
-            rgba(20, 20, 20, 0.32) 80px,    /* Step 5 */
-            rgba(20, 20, 20, 0.5) 100px,     /* Step 6 (Your 50% midpoint) */
-            rgba(20, 20, 20, 0.68) 120px,   /* Step 7 */
-            rgba(20, 20, 20, 0.82) 140px,   /* Step 8 */
-            rgba(20, 20, 20, 0.92) 160px,   /* Step 9 */
-            rgba(20, 20, 20, 0.98) 180px,   /* Step 10 */
-            rgba(20, 20, 20, 1) 200px       /* Step 11 */
+        to bottom,
+        rgba(20, 20, 20, 0) 0px,         /* Start (Transparent) */
+        rgba(20, 20, 20, 0.05) 15px,    
+        rgba(20, 20, 20, 0.22) 45px,    
+        rgba(20, 20, 20, 0.5) 75px,      /* 50% darkness at 25% (75px) */
+        rgba(20, 20, 20, 0.7) 105px,    
+        rgba(20, 20, 20, 0.82) 135px,   
+        rgba(20, 20, 20, 0.9) 165px,    
+        rgba(20, 20, 20, 0.95) 195px,   
+        rgba(20, 20, 20, 0.98) 235px,   
+        rgba(20, 20, 20, 0.995) 270px,  
+        rgba(20, 20, 20, 1) 300px       /* End (Solid) */
     );
 }
 
