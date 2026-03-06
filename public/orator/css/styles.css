@@ -1005,7 +1005,7 @@ label.form-label {
     }
 
     #view-library[data-view="grid"] .book-item {
-        width: 180px;
+        width: 150px;
     }
 
     #view-library .library-currently-reading .book-item {
@@ -1014,7 +1014,7 @@ label.form-label {
     }
 
     #view-library[data-view="grid"] #library-list {
-        grid-template-columns: repeat(auto-fill, 190px);
+        grid-template-columns: repeat(auto-fill, 150px);
     }
 }
 

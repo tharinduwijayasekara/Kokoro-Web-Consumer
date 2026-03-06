@@ -82,8 +82,6 @@ const ReaderService = {
             .split('::')
             .map(value => parseInt(value));
 
-        console.log("Progress tracker raw", progressTracker);
-
         if (book.chapters.length < progressTracker[0]) {
             progressTracker[0] = 0;
             progressTracker[1] = 0;
@@ -98,8 +96,6 @@ const ReaderService = {
         }
 
         this.progressTracker = progressTracker;
-
-        console.log("Progress tracker checked", progressTracker);
 
         this.$bookName.text(book.title);
 
@@ -160,7 +156,6 @@ const ReaderService = {
         const orator = await StorageService.getOratorJson();
         orator.reading[this.book.id] = progressTrackerString;
         await StorageService.writeOratorJson(orator);
-        console.log("Progress tracker moved to", progressTrackerString);
     },
 
     async renderChaptersList() {
@@ -252,7 +247,6 @@ const ReaderService = {
     },
 
     async play(chapterId, paragraphId, bufferSize) {
-        console.log("Triggering stop");
         this.stop();
 
         this.bufferSize = this.maxBufferSize;
@@ -382,7 +376,6 @@ const ReaderService = {
         console.log("Fetch and load", cIdx, pIdx, text.substring(0, 30));
 
         const playIdentifier = this.playIdentifier;
-        console.log("Play identifier: ", playIdentifier);
 
         let ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
         let voice = 'af_heart(1)+af_aoede(1)+af_sky(1)';
@@ -410,8 +403,6 @@ const ReaderService = {
                 if (!rep[0] || !rep[1]) return;
                 text = text.replaceAll(rep[0], rep[1]);
             });
-
-            console.log("Updated text to:" + text);
         }
 
         let cacheKey = [
@@ -421,7 +412,7 @@ const ReaderService = {
             pIdx
         ].join(":");
 
-        console.log(`Checking cacheed audios ${cacheKey}`);
+        console.log(`Checking cached audios ${cacheKey}`);
 
         let blob = (await StorageService.db.audios.get(cacheKey))?.blob;
 
@@ -460,7 +451,6 @@ const ReaderService = {
 
             if (!response.ok) throw new Error("TTS Fetch Failed");
 
-            console.log("Play identifier: ", playIdentifier, this.playIdentifier);
             if (playIdentifier !== this.playIdentifier) {
                 console.log("Play identifier has changed, user probably requested another play start point");
                 return null;
@@ -485,7 +475,6 @@ const ReaderService = {
                 html5: false,
                 onload: () => {
                     if (playIdentifier !== this.playIdentifier) {
-                        console.log("Howler loaded an older play identifier, skipping");
                         resolve(null);
                     } else {
                         console.log("Howler finished loading", cIdx, pIdx);
@@ -531,7 +520,6 @@ const ReaderService = {
         }
 
         this.currentFullParagraphDuration += sound.duration();
-        console.log("Paragraph full duration", this.currentFullParagraphDuration);
 
         const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
         const isContinuation = text.startsWith(ORATOR_P_CONTD);
@@ -541,7 +529,6 @@ const ReaderService = {
 
         const duration = this.currentFullParagraphDuration;
         const silence = parseInt(Math.min(900, duration * 60));
-        console.log(`Breathing for ${silence} for a ${duration} second paragraph`);
 
         this.currentFullParagraphDuration = 0;
         return silence;
@@ -584,8 +571,6 @@ const ReaderService = {
             this.durationPerCharacter = this.durationProcessed / this.charactersProcessed;
         }
 
-        console.log(`Total processed sound duration ${this.durationProcessed} for ${this.charactersProcessed} characters :: rate: ${this.durationPerCharacter}`, current);
-
         const chapter = this.book.chapters[current.cIdx];
         const paragraphsRead = chapter.slice(0, current.pIdx);
         const paragraphsLeft = chapter.slice(current.pIdx + 1, chapter.length - 1);
@@ -608,8 +593,6 @@ const ReaderService = {
 
         this.$chapterTimingsLeft.text(timings.read);
         this.$chapterTimingsRight.text(`${timings.left}/${timings.total}`);
-
-        console.log("Timings", timings);
     },
 
     secondsToHms(seconds) {

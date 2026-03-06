@@ -40,7 +40,7 @@ const ImportEpub = {
 
             const openBook = Promise.race([
                 book.opened,
-                new Promise((r, reject) => setTimeout(() => reject(new Error("Book took too long to open")), 5000))
+                new Promise((r, reject) => setTimeout(() => reject(new Error("Book took too long to open")), 2000))
             ]);
 
             await openBook;
@@ -72,9 +72,6 @@ const ImportEpub = {
 
             for (const key of fileKeys) {
                 let zipfile = zipFiles[key];
-                //if (!zipfile) zipfile = zipFiles[`OEBPS/${key}`];
-
-                console.log(zipfile);
                 if (!zipfile) continue;
 
                 const htmlString = await zipfile.async("string");
@@ -90,16 +87,32 @@ const ImportEpub = {
             console.log("Direct Zip Extraction Complete", chapters);
 
             const meta = await book.loaded.metadata;
-            const base64Cover = await this.getBookCover(book);
+
+            const base64Cover = {
+                original: await this.getBookCover(book),
+                resized: null,
+            };
+
+            if (base64Cover.original) base64Cover.resized = await this.resizeBase64(base64Cover.original);
+
             const bookId = file.name;
 
             if (!isFromSpine) chapters.unshift(SPINAL_WARNING);
 
+            let author = (meta.creator || "")
+                .split(',')
+                .reverse()
+                .map(s => s.trim())
+                .join(' ')
+                .split('.')
+                .map(s => s.trim())
+                .join(' ');
+
             return {
                 id: bookId,
                 title: meta.title || file.name,
-                author: (meta.creator || "").split(',').reverse().map(s => s.trim()).join(' '),
-                cover: base64Cover,
+                author: author,
+                cover: base64Cover.resized,
                 chapters: chapters,
                 meta: meta,
                 importedAt: new Date().toLocaleDateString(),
@@ -189,4 +202,25 @@ const ImportEpub = {
 
         return null;
     },
+
+    async resizeBase64(base64, maxSize = 300) {
+        const img = new Image();
+        img.src = base64;
+        await img.decode(); // Wait for image to load
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Calculate new dimensions
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+        const width = img.width * ratio;
+        const height = img.height * ratio;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw and export
+        ctx.drawImage(img, 0, 0, width, height);
+        return canvas.toDataURL('image/jpeg', 0.8); // 0.8 is quality
+    }
 };

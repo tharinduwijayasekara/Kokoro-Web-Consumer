@@ -114,54 +114,62 @@ const App = {
 
         const progress = StorageService.orator.reading;
 
+        const promises = [];
+
         for (const book of books) {
-            const bookDesc = {
-                src: book.meta?.description ?? "<div></div>",
-                text: ""
-            };
+            promises.push(new Promise(r => {
 
-            const author = book.author;
-            if (author !== lastAuthor) {
+                const bookDesc = {
+                    src: book.meta?.description ?? "<div></div>",
+                    text: ""
+                };
 
-                lastAuthor = author;
-                $(`<div class="author-item">${author}</div>`)
-                    .appendTo($list)
+                const author = book.author;
+                if (author !== lastAuthor) {
 
-            }
+                    lastAuthor = author;
+                    $(`<div class="author-item">${author}</div>`)
+                        .appendTo($list)
 
-            try {
-                bookDesc.text = $(bookDesc.src).text().trim();
-            } catch (e) {
-                bookDesc.text = bookDesc.src;
-            } finally {
-                bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
-            }
-
-            let pubDate = book.meta?.pubdate ?? "";
-            if (pubDate) {
-                try {
-                    pubDate = (new Date(pubDate)).toLocaleDateString();
-                } catch (e) {
                 }
-            }
 
-            const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
+                try {
+                    bookDesc.text = $(bookDesc.src).text().trim();
+                } catch (e) {
+                    bookDesc.text = bookDesc.src;
+                } finally {
+                    bookDesc.text = bookDesc.text.length > 500 ? `${bookDesc.text.substring(0, 500)}...` : bookDesc.text;
+                }
 
-            const bookItemHtml = this.fromTemplate(bookItemTemplate, {
-                id: book.id,
-                cover: book.cover,
-                title: this.truncateMiddle(book.title, (viewType === 'list' ? 100 : 50)),
-                author: book.author,
-                pubDate: pubDate,
-                importedAt: book.importedAt,
-                bookDescText: bookDesc.text,
-                progress: bookProgress,
-            });
+                let pubDate = book.meta?.pubdate ?? "";
+                if (pubDate) {
+                    try {
+                        pubDate = (new Date(pubDate)).toLocaleDateString();
+                    } catch (e) {
+                    }
+                }
 
-            $(bookItemHtml).appendTo($list);
+                const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
-            await App.sleep(50); //yield for ui thread
+                const bookItemHtml = this.fromTemplate(bookItemTemplate, {
+                    id: book.id,
+                    cover: book.cover,
+                    title: this.truncateMiddle(book.title, (viewType === 'list' ? 100 : 50)),
+                    author: book.author,
+                    pubDate: pubDate,
+                    importedAt: book.importedAt,
+                    bookDescText: bookDesc.text,
+                    progress: bookProgress,
+                });
+
+                $(bookItemHtml).appendTo($list);
+
+                r();
+
+            }));
         }
+
+        await Promise.all(promises);
 
         this.showView('library');
         this.hideMessageBoard();
