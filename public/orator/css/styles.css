@@ -292,7 +292,7 @@ label.btn-import-books {
     background-repeat: no-repeat;
     background-position-x: center;
     background-position-y: 0;
-    animation: animateLibBackground 120s ease-in-out infinite alternate;
+    animation: animateLibBackground 30s cubic-bezier(0.39, 0.58, 0.57, 1) infinite alternate;
 }
 
 @keyframes animateLibBackground {
@@ -300,7 +300,7 @@ label.btn-import-books {
         background-position-y: top;
     }
     to {
-        background-position-y: bottom;
+        background-position-y: -200px;
     }
 }
 

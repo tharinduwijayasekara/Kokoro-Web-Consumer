@@ -293,6 +293,9 @@ const App = {
 
         this.$app.on('click', '#btn-reader-playpause', async (e) => {
             e.stopPropagation();
+
+            this.requestWakeLock();
+            
             if (ReaderService.isPlaying) {
                 ReaderService.stop();
                 return;
@@ -309,6 +312,8 @@ const App = {
         this.$app.on('click', '.reader-paragraph', async (e) => {
             e.stopPropagation();
 
+            this.requestWakeLock();
+            
             if (SettingsService.isActive()) {
                 ReaderService.hidePlaybackSettings();
                 return;
