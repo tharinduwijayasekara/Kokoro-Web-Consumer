@@ -294,11 +294,7 @@ const SettingsService = {
             }
         
             .reader-container .reader-paragraph.active {
-                background-color: ${config.highlightColor}ff !important;
-            }
-            
-            .reader-container p:has(.reader-paragraph.active) {
-                background-color: ${config.highlightColor}ff !important;
+                background-color: ${config.highlightColor} !important;
             }
         `);
 

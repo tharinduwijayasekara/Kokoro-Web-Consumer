@@ -82,7 +82,7 @@ span.navbar-brand {
     display: grid;
     justify-content: space-evenly;
     font-size: 2rem;
-    background: linear-gradient(180deg,rgba(20, 20, 20, 1) -40%, rgba(255, 255, 255, 0) 100%);
+    background: linear-gradient(180deg, rgba(20, 20, 20, 1) -40%, rgba(255, 255, 255, 0) 100%);
 }
 
 .orator-view-reader nav.navbar.navbar-dark {
@@ -331,17 +331,15 @@ label.btn-import-books {
 .library-list-wrapper {
     background: linear-gradient(
             to bottom,
-            rgba(20, 20, 20, 0) 0px,         /* Start (Transparent) */
-            rgba(20, 20, 20, 0.05) 15px,
+            rgba(20, 20, 20, 0) 0px, /* Start (Transparent) */ rgba(20, 20, 20, 0.05) 15px,
             rgba(20, 20, 20, 0.22) 45px,
-            rgba(20, 20, 20, 0.5) 75px,      /* 50% darkness at 25% (75px) */
-            rgba(20, 20, 20, 0.7) 105px,
+            rgba(20, 20, 20, 0.5) 75px, /* 50% darkness at 25% (75px) */ rgba(20, 20, 20, 0.7) 105px,
             rgba(20, 20, 20, 0.82) 135px,
             rgba(20, 20, 20, 0.9) 165px,
             rgba(20, 20, 20, 0.95) 195px,
             rgba(20, 20, 20, 0.98) 235px,
             rgba(20, 20, 20, 0.995) 270px,
-            rgba(20, 20, 20, 1) 300px       /* End (Solid) */
+            rgba(20, 20, 20, 1) 300px /* End (Solid) */
     );
 }
 
@@ -356,7 +354,7 @@ label.btn-import-books {
 }
 
 .library-text-wrapper textarea {
-    width:100%;
+    width: 100%;
     height: 10rem;
     padding: 10px;
     margin-right: 20px;
@@ -537,6 +535,19 @@ label.btn-import-books {
     font-weight: 400;
     font-size: 13pt;
     line-height: 15pt;
+    transition: all 0.5s ease;
+}
+
+.reader-container p span {
+    border-radius: 3px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: all 0.25s ease;
+}
+
+.reader-container p span.active {
+    padding: 0 2px;
+    margin: 0 -2px;
 }
 
 .reader-container p span.italic {
@@ -545,10 +556,6 @@ label.btn-import-books {
 
 .reader-container .reader-paragraph {
     scroll-margin-top: 100px;
-}
-
-.reader-container .reader-paragraph.active {
-    background-color: #fcd47e52;
 }
 
 #playback-chapters {

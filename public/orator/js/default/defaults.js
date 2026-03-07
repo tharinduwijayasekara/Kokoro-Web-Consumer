@@ -169,3 +169,7 @@ const LIBRARY_CURRENT_READ_TITLES = [
     "Always forward, always down...",
     "One does not simply not read another chapter"
 ];
+
+const DEFAULT_REPLACEMENTS = {
+    'breathed': "breethed"
+};

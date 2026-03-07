@@ -315,7 +315,9 @@ const ReaderService = {
                     .replaceAll("##**", "'")
                     .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());
 
-                if (this.hasLettersOrNumbers(text)) fetchTasks.push(this.fetchAndLoad(text, tempC, tempP));
+                if (this.hasLettersOrNumbers(text)) {
+                    fetchTasks.push(this.fetchAndLoad(text, tempC, tempP));
+                }
 
                 [tempC, tempP] = this.getNextParagraphId(tempC, tempP);
             }
@@ -403,6 +405,13 @@ const ReaderService = {
                 if (!rep[0] || !rep[1]) return;
                 text = text.replaceAll(rep[0], rep[1]);
             });
+
+            Object.entries(DEFAULT_REPLACEMENTS).forEach(rep => {
+                if (!rep[0] || !rep[1]) return;
+                text = text.replaceAll(rep[0], rep[1]);
+            });
+
+            text = `. ${text}`;
         }
 
         let cacheKey = [
@@ -516,7 +525,7 @@ const ReaderService = {
     getParagraphBreath(cIdx, pIdx, sound) {
         if (pIdx === this.book.chapters[cIdx].length - 1 && this.book.chapters[cIdx].length > 5) {
             // If last chapter paragraph, take a longer breath
-            return 1000;
+            return 1500;
         }
 
         this.currentFullParagraphDuration += sound.duration();
@@ -524,11 +533,11 @@ const ReaderService = {
         const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
         const isContinuation = text.startsWith(ORATOR_P_CONTD);
         if (isContinuation) {
-            return 200;
+            return 100;
         }
 
         const duration = this.currentFullParagraphDuration;
-        const silence = parseInt(Math.min(900, duration * 60));
+        const silence = parseInt(Math.min(1000, duration * 60));
 
         this.currentFullParagraphDuration = 0;
         return silence;

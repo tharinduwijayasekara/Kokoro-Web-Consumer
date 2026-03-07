@@ -181,7 +181,7 @@ const App = {
         if (str.length > max) {
             return `${str.substring(0, take)} ... ${str.substring(str.length - take, str.length)}`;
         }
-        
+
         return str;
     },
 
@@ -311,7 +311,7 @@ const App = {
             e.stopPropagation();
 
             this.requestWakeLock();
-            
+
             if (ReaderService.isPlaying) {
                 ReaderService.stop();
                 return;
@@ -329,7 +329,7 @@ const App = {
             e.stopPropagation();
 
             this.requestWakeLock();
-            
+
             if (SettingsService.isActive()) {
                 ReaderService.hidePlaybackSettings();
                 return;
@@ -507,9 +507,11 @@ const App = {
     },
 
     splitSentences(string) {
-        if (string.length < 500) return [string];
+        const strings = string
+            .replaceAll('—', ' — ') // normalize em dashes
+            .replace(/\s+/g, ' ') // remove doubles spaces that maybe caused by em dash normalization
+            .split(/(?<=[.?!—])\s+/); // split
 
-        const strings = string.split(/(?<=[.?])\s+/);
         const response = [];
 
         for (let i = 0; i < strings.length; i++) {
@@ -522,9 +524,11 @@ const App = {
             const prevIdx = response.length - 1;
             let prev = response[prevIdx];
 
-            if (prev.length + part.length < 500 || part.length < 50) {
-                prev = `${prev} ${part}`;
-                response[prevIdx] = prev;
+            if (
+                !this.hasEvenSpeechMarks(prev)
+                || part.length < 100
+            ) {
+                response[prevIdx] = [prev, part].join(' ');
                 continue;
             }
 
@@ -532,6 +536,16 @@ const App = {
         }
 
         return response;
+    },
+
+    hasEvenSpeechMarks(text) {
+        // 1. Matches all double quotes (", “, ”)
+        // 2. Matches single quotes (', ‘, ’) ONLY if they are NOT preceded by a letter
+        const speechMarkRegex = /["“”]|(?<!\p{L})['‘’]/gu;
+
+        const matches = text.match(speechMarkRegex);
+
+        return !matches || matches.length % 2 === 0;
     },
 
     async loadFileAsync(file) {
