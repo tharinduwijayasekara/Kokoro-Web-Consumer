@@ -120,9 +120,12 @@ const ORATOR_FONTS = [
     "BradleyHand",
     "Crimson Pro",
     "EB Garamond",
+    "Google Sans",
+    "Handlee",
+    "Libre Baskerville",
     "Libre Caslon Text",
     "Radley",
-    "Handlee"
+    "Roboto"
 ];
 
 const ORATOR_P_CONTD = "##::##::ATTACH_TO_PREV_SPAN::##::##";

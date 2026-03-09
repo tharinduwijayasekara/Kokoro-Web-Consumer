@@ -22,9 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 200,
-    minBufferSize: 100,
-    maxBufferSize: 200,
+    bufferSize: 300,
+    minBufferSize: 200,
+    maxBufferSize: 300,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -207,14 +207,16 @@ const ReaderService = {
 
             const paragraphHtml = paragraph
                 .replaceAll("**##", `<span class="italic">`)
-                .replaceAll("##**", `</span>`);
+                .replaceAll("##**", `</span>`)
+                .trim();
 
-            const spanHtml = `
-                <span id="reader-paragraph-${chapterId}-${paragraphId}" class="reader-paragraph" data-paragraph-identifier="${chapterIdToRender}-${paragraphId}">
-                    ${paragraphHtml}
-                </span>
+            let spanHtml = `
+                <span id="reader-paragraph-${chapterId}-${paragraphId}" 
+                class="reader-paragraph" 
+                data-paragraph-identifier="${chapterIdToRender}-${paragraphId}">${paragraphHtml}</span>
             `;
 
+            if (isContinuation) spanHtml = `<span> </span>${spanHtml}`;
             $(spanHtml).appendTo($currentParagraph);
         });
 
@@ -481,7 +483,7 @@ const ReaderService = {
             const sound = new Howl({
                 src: [url],
                 format: ['mp3'],
-                html5: false,
+                html5: true,
                 onload: () => {
                     if (playIdentifier !== this.playIdentifier) {
                         resolve(null);

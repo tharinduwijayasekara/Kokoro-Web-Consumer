@@ -239,6 +239,8 @@ const App = {
     setEventHandlers() {
         this.$app.on('click', '.orator-btn-delete-book', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             const id = $(e.currentTarget).data('id');
 
             if (confirm("Delete this book?")) {
@@ -248,6 +250,8 @@ const App = {
         });
 
         this.$app.find('#epub-input').on('change', async (e) => {
+            this.requestWakeLock();
+
             console.log(e);
 
             const files = e.target.files;
@@ -270,22 +274,27 @@ const App = {
 
         this.$app.on('click', '.book-item', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             const id = $(e.currentTarget).data('id');
 
             console.log("About to load book for reading", id);
 
-            this.requestWakeLock();
             StorageService.enablePersistence();
             ReaderService.init(id);
         });
 
         this.$app.on('click', '#btn-reader-back', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             ReaderService.closeBook();
         });
 
         this.$app.on('click', '.playback-chapter-item', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             const id = $(e.currentTarget).data('id');
 
             console.log("About to load up chapter index", id);
@@ -294,22 +303,27 @@ const App = {
 
         this.$app.on('click', '#btn-reader-chapters', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             this.$app.find('#playback-chapters').addClass('active');
         });
 
         this.$app.on('click', '#btn-reader-previous', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             ReaderService.goToPreviousChapter();
         });
 
         this.$app.on('click', '#btn-reader-next', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             ReaderService.goToNextChapter();
         });
 
         this.$app.on('click', '#btn-reader-playpause', async (e) => {
             e.stopPropagation();
-
             this.requestWakeLock();
 
             if (ReaderService.isPlaying) {
@@ -322,12 +336,13 @@ const App = {
 
         this.$app.on('click', '#btn-reader-recenter', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             ReaderService.scrollToParagraph(null, null);
         });
 
         this.$app.on('click', '.reader-paragraph', async (e) => {
             e.stopPropagation();
-
             this.requestWakeLock();
 
             if (SettingsService.isActive()) {
@@ -345,13 +360,36 @@ const App = {
             ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
         });
 
+        this.$app.on('click', '.reader-paragraph-wrapper', async (e) => {
+            e.stopPropagation();
+            this.requestWakeLock();
+
+            if (SettingsService.isActive()) {
+                ReaderService.hidePlaybackSettings();
+                return;
+            }
+
+            if ($('#view-reader').hasClass('reader-fullscreen')) {
+                $('#view-reader').removeClass('reader-fullscreen');
+                return;
+            }
+
+            const $firstParagraph = $(e.currentTarget).find('.reader-paragraph').first();
+            const paragraphIdentifier = $firstParagraph.data('paragraph-identifier');
+            const [cIdx, pIdx] = paragraphIdentifier.split('-');
+            ReaderService.play(parseInt(cIdx), parseInt(pIdx), 3);
+        });
+
         this.$app.on('click', '#btn-reader-fullscreen', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             ReaderService.toggleFullscreen();
         });
 
         this.$app.on('click', '#btn-reader-settings', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
 
             if (SettingsService.isActive()) {
                 ReaderService.hidePlaybackSettings();
@@ -363,16 +401,22 @@ const App = {
 
         this.$app.on('click', '.speech-cust-add-btn', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             SettingsService.addNewSpeechReplacement();
         });
 
         this.$app.on('click', '.speech-replacement-remove', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             SettingsService.removeSpeechReplacement(e.currentTarget);
         });
 
         this.$app.on('click', '.orator-backdrop', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             $(e.currentTarget).parent().removeClass('active');
         });
 
@@ -383,6 +427,7 @@ const App = {
 
         this.$app.on('click', '.reader-container-wrapper', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
 
             if (SettingsService.isActive()) {
                 ReaderService.hidePlaybackSettings();
@@ -397,6 +442,8 @@ const App = {
 
         this.$app.on('click', '.btn-library-view-toggle', async (e) => {
             e.stopPropagation();
+            this.requestWakeLock();
+
             this.handleViewToggle();
         });
 
@@ -527,6 +574,7 @@ const App = {
             if (
                 !this.hasEvenSpeechMarks(prev)
                 || part.length < 100
+                || prev.length < 100
             ) {
                 response[prevIdx] = [prev, part].join(' ');
                 continue;
@@ -562,6 +610,8 @@ const App = {
     },
 
     async importUserInput() {
+        this.requestWakeLock();
+
         const text = $('#userTextInput').val().trim();
         if (!text) return;
 
@@ -575,15 +625,17 @@ const App = {
             paragraphs.push(...this.splitSentences(paragraph.trim()));
         }
 
+        if (!paragraphs) return;
+
         const chapters = [paragraphs];
 
-        const title = "Text (" + new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString() + ")";
+        const title = paragraphs[0].length > 200 ? `${paragraphs[0].substring(0, 200)}...` : paragraphs[0];
 
         const importedBook = {
             id: `user-text-${Date.now()}`,
             title: title,
             author: "You",
-            cover: '',
+            cover: null,
             chapters: chapters,
             meta: {},
             importedAt: new Date().toLocaleDateString(),
