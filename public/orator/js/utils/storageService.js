@@ -57,7 +57,7 @@ const StorageService = {
 
     async cleanupOldAudios() {
         const threshold = new Date();
-        threshold.setDate(threshold.getDate() - 2);
+        threshold.setDate(threshold.getDate() - 30);
 
         try {
             const deleteCount = await this.db.audios

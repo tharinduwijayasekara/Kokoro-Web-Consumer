@@ -22,9 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 300,
-    minBufferSize: 200,
-    maxBufferSize: 300,
+    bufferSize: 10000,
+    minBufferSize: 1000,
+    maxBufferSize: 10000,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -42,6 +42,8 @@ const ReaderService = {
     durationPerCharacter: 0,
 
     currentFullParagraphDuration: 0,
+
+    useHtml5Player: true,
 
     async init(bookId) {
         this.$app = App.$app;
@@ -120,6 +122,8 @@ const ReaderService = {
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
         this.scrollToParagraph(progressTracker[0], progressTracker[1]);
+
+        Howler.pool = 10;
     },
 
     updateTempOratorConfig(config) {
@@ -373,7 +377,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 1000)
+        }, 3000)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -382,7 +386,7 @@ const ReaderService = {
         const playIdentifier = this.playIdentifier;
 
         let ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
-        let voice = 'af_heart(1)+af_aoede(1)+af_sky(1)';
+        let voice = 'af_heart(1)+af_aoede(1)';
         let speed = 1.0;
         let model = "kokoro";
 
@@ -417,11 +421,14 @@ const ReaderService = {
         }
 
         let cacheKey = [
-            this.tempOratorConfig.updatedAt ?? '-init-config-',
+            //this.tempOratorConfig.updatedAt ?? '-init-config-',
             this.book.importId ?? '--',
-            cIdx,
-            pIdx
+            ttsUrl, voice, speed,
+            text,
+            //cIdx, pIdx
         ].join(":");
+
+        cacheKey = new Hashes.MD5().hex(cacheKey);
 
         console.log(`Checking cached audios ${cacheKey}`);
 
@@ -483,7 +490,8 @@ const ReaderService = {
             const sound = new Howl({
                 src: [url],
                 format: ['mp3'],
-                html5: true,
+                html5: this.useHtml5Player,
+                preload: true,
                 onload: () => {
                     if (playIdentifier !== this.playIdentifier) {
                         resolve(null);
@@ -534,12 +542,14 @@ const ReaderService = {
 
         const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
         const isContinuation = text.startsWith(ORATOR_P_CONTD);
+        const multiplier = this.useHtml5Player ? 20 : 60;
+
         if (isContinuation) {
-            return 100;
+            return this.useHtml5Player ? 5 : 100;
         }
 
         const duration = this.currentFullParagraphDuration;
-        const silence = parseInt(Math.min(1000, duration * 60));
+        const silence = parseInt(Math.min(1000, duration * multiplier));
 
         this.currentFullParagraphDuration = 0;
         return silence;
