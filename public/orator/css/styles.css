@@ -530,7 +530,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 }
 
 .reader-container p {
-    padding: 10px;
+    padding: 10px 5px;
     color: #121212;
     margin: 0;
     border-radius: 7px;
@@ -539,7 +539,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     font-weight: 400;
     font-size: 13pt;
     line-height: 15pt;
-    transition: all 0.5s ease;
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reader-container p span {
