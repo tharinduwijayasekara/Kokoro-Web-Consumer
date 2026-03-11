@@ -22,9 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 10000,
-    minBufferSize: 1000,
-    maxBufferSize: 10000,
+    bufferSize: 500,
+    minBufferSize: 400,
+    maxBufferSize: 500,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -269,7 +269,7 @@ const ReaderService = {
         App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0);
 
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
-        await this.fillBuffer(chapterId, paragraphId, bufferSize, true);
+        await this.fillBuffer(chapterId, paragraphId, 10, true);
 
         console.log("Calling play next");
         this.playNext();
@@ -290,14 +290,16 @@ const ReaderService = {
         const playIdentifier = this.playIdentifier;
         this.isBuffering = true;
 
-        let maxBatchSize = 3;
+        let maxBatchSize = isFromPlay ? 10 : 3;
 
-        if (this.currentBuffer.length < 5 && size >= 10) {
-            maxBatchSize = 2;
-        }
+        if (!isFromPlay) {
+            if (this.currentBuffer.length < 5 && size >= 10) {
+                maxBatchSize = 2;
+            }
 
-        if (this.currentBuffer.length > 50 && size >= 10) {
-            maxBatchSize = 5;
+            if (this.currentBuffer.length > 50 && size >= 10) {
+                maxBatchSize = 5;
+            }
         }
 
         const batchSize = Math.min(needed, maxBatchSize);
@@ -339,11 +341,13 @@ const ReaderService = {
             console.log("Buffer fill completed");
         } finally {
             this.isBuffering = false;
+            this.$bufferHealth.find('.spinner-border').removeClass('active');
+            this.computeBufferedTime().then((bt) =>
+                this.$bufferHealth.find('span').text(`${this.currentBuffer.length} (${bt} min)`)
+            );
+
             console.log("Buffering complete, buffer health at: ", this.currentBuffer.length);
         }
-
-        this.$bufferHealth.find('.spinner-border').removeClass('active');
-        this.$bufferHealth.find('span').text(this.currentBuffer.length);
 
         if (StorageService.storagePersisted) {
             this.$bufferHealth.find('i').addClass("persisted");
@@ -377,7 +381,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 3000)
+        }, 100)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -568,10 +572,13 @@ const ReaderService = {
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
         this.scrollToParagraph(current.cIdx, current.pIdx);
 
-        this.$bufferHealth.find("span").text(this.currentBuffer.length);
+        this.computeBufferedTime().then((bt) =>
+            this.$bufferHealth.find('span').text(`${this.currentBuffer.length} (${bt} min)`)
+        );
+
         current.sound.play();
 
-        if (this.currentBuffer.length < ((this.bufferSize * 75) / 100)) {
+        if (this.currentBuffer.length < 50) {
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
@@ -612,8 +619,19 @@ const ReaderService = {
             left: this.secondsToHms(this.durationPerCharacter * chars.left),
         }
 
-        this.$chapterTimingsLeft.text(timings.read);
+        this.$chapterTimingsLeft.text(`${timings.read}`);
         this.$chapterTimingsRight.text(`${timings.left}/${timings.total}`);
+    },
+
+    async computeBufferedTime() {
+        let totalTime = 0;
+
+        for (const para of this.currentBuffer) {
+            if (para.pIdx % 100 === 0) await App.sleep(10);
+            totalTime += para.sound.duration();
+        }
+
+        return Math.ceil(totalTime / 60);
     },
 
     secondsToHms(seconds) {
@@ -699,4 +717,6 @@ const ReaderService = {
     hidePlaybackSettings() {
         this.$app.find('#playback-settings').removeClass('active');
     }
+
+
 };
