@@ -34,6 +34,7 @@ const ReaderService = {
     initialBufferFetched: 0,
 
     bookLength: 0,
+    bookCharsLength: 0,
 
     tempOratorConfig: undefined,
 
@@ -104,7 +105,7 @@ const ReaderService = {
         await this.renderChaptersList();
         await this.renderChapterOnScreen(progressTracker[0]);
 
-        this.calculateBookLength();
+        await this.calculateBookLength();
         this.updateProgress(progressTracker[0], progressTracker[1]);
 
         if (!this.bufferrer) {
@@ -130,10 +131,18 @@ const ReaderService = {
         this.tempOratorConfig = config;
     },
 
-    calculateBookLength() {
+    async calculateBookLength() {
         let bookLength = 0;
-        this.book.chapters.forEach(chapter => bookLength += chapter.length);
+        let bookCharsLength = 0;
+
+        this.book.chapters.forEach(async (chapter) => {
+            bookLength += chapter.length;
+            chapter.forEach(p => bookCharsLength += p.length);
+            await App.sleep(5);
+        });
+
         this.bookLength = bookLength;
+        this.bookCharsLength = bookCharsLength;
     },
 
     async closeBook() {
@@ -614,13 +623,18 @@ const ReaderService = {
         paragraphsLeft.map(p => chars.left = chars.left + p.length);
 
         const timings = {
-            total: this.secondsToHms(this.durationPerCharacter * chars.total),
-            read: this.secondsToHms(this.durationPerCharacter * chars.read),
-            left: this.secondsToHms(this.durationPerCharacter * chars.left),
+            total: this.secondsToMinutes(this.durationPerCharacter * chars.total),
+            read: this.secondsToMinutes(this.durationPerCharacter * chars.read),
+            left: this.secondsToMinutes(this.durationPerCharacter * chars.left),
+            book: this.secondsToHms(this.durationPerCharacter * this.bookCharsLength).substring(0, 5)
         }
 
-        this.$chapterTimingsLeft.text(`${timings.read}`);
-        this.$chapterTimingsRight.text(`${timings.left}/${timings.total}`);
+        this.$chapterTimingsLeft.text(`${timings.read} min`);
+        this.$chapterTimingsRight.text(`${timings.left}/${timings.total} min | ${timings.book}`);
+    },
+
+    secondsToMinutes(seconds) {
+        return Math.ceil(seconds / 60);
     },
 
     async computeBufferedTime() {
@@ -631,7 +645,7 @@ const ReaderService = {
             totalTime += para.sound.duration();
         }
 
-        return Math.ceil(totalTime / 60);
+        return this.secondsToMinutes(totalTime);
     },
 
     secondsToHms(seconds) {

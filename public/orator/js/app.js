@@ -573,8 +573,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || part.length < 100
-                || prev.length < 100
+                || prev.length < 1000
             ) {
                 response[prevIdx] = [prev, part].join(' ');
                 continue;

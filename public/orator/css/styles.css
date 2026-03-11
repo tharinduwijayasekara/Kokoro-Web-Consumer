@@ -559,10 +559,8 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 }
 
 .reader-container .reader-paragraph {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 50px;
     padding: 0;
-    padding-top: 0.25em;
-    padding-bottom: 0.25em;'
 }
 
 #playback-chapters {
@@ -672,11 +670,11 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 }
 
 .buffer-health {
-    color: #acacac;
+    color: #909090;
     text-align: center;
     padding-bottom: 5px;
     font-size: 0.7rem;
-    text-transform: uppercase;
+    text-transform: lowercase;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-column-gap: 10px;
@@ -692,9 +690,10 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 
 .buffer-health .spinner-border {
     opacity: 0;
-    transition: opacity 1s;
+    transition: all 1s;
     height: 10px;
-    width: 10px
+    width: 10px;
+    margin-left: -15px;
 }
 
 .buffer-health-info {
@@ -720,6 +719,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 
 .buffer-health .spinner-border.active {
     opacity: 1;
+    margin-left: 0;
 }
 
 div#message-board-wrapper {
