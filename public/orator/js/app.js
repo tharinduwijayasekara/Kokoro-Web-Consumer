@@ -704,6 +704,8 @@ const App = {
     },
 
     async changeLibraryBackground() {
+        if (!this.$app.find('#view-library.active')) return;
+
         console.log("Updating library background");
         const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
         this.currentLibraryImageIdx = index;

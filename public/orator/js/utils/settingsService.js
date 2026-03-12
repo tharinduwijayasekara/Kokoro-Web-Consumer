@@ -280,7 +280,7 @@ const SettingsService = {
         $(button).closest('.speech-cust-item').remove();
     },
 
-    applyStyles(config) {
+    async applyStyles(config) {
         const hlColorWoTrans = config.highlightColor.substring(0,7);
 
         $('#app-styles').html(`
@@ -298,6 +298,12 @@ const SettingsService = {
             .reader-container .reader-paragraph.active {
                 background-color: ${config.highlightColor} !important;
             }
+            
+            /*
+            .reader-container .highlight {
+                background-color: ${config.highlightColor} !important;
+            }
+            */
             
             .playback-chapter-item.active {
                 background-color: ${hlColorWoTrans}60 !important;

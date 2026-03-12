@@ -134,7 +134,7 @@ const ReaderService = {
 
         App.showView('reader');
 
-        this.$container.find('.reader-paragraph').removeClass('active');
+        this.$container.find('.reader-paragraph.active').removeClass('active');
         this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
 
         await App.sleep(10);
@@ -261,7 +261,7 @@ const ReaderService = {
             $(spanHtml).appendTo($currentParagraph);
         });
 
-        this.$chaptersList.find('.playback-chapter-item').removeClass('active');
+        this.$chaptersList.find('.playback-chapter-item.active').removeClass('active');
         this.$chaptersList.find(`#toc-chapter-${chapterIdToRender}`).addClass('active');
 
         this.currentChapterOnScreen = chapterIdToRender;
@@ -292,7 +292,7 @@ const ReaderService = {
             return;
         }
 
-        this.renderChapterOnScreen(currentChapter + 1);
+        await this.renderChapterOnScreen(currentChapter + 1);
         await App.sleep(50);
         this.scrollToParagraph(this.currentChapterOnScreen, 0);
     },
@@ -618,7 +618,7 @@ const ReaderService = {
 
         this.updateProgress(current.cIdx, current.pIdx);
 
-        this.$container.find('.reader-paragraph').removeClass('active');
+        this.$container.find('.reader-paragraph.active').removeClass('active');
         this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
         this.scrollToParagraph(current.cIdx, current.pIdx);
 
@@ -798,5 +798,26 @@ const ReaderService = {
 
         console.log(`Timer updated to ${this.bookTimer[bookId]}`);
     },
+
+    async updateHighlight() {
+        await App.sleep(200);
+
+        const $target = this.$app.find('.reader-paragraph.active');
+        const $highlight = this.$container.find('.highlight');
+
+        if (!$highlight) return;
+
+        if (!$target) {
+            $highlight.css('height', 0);
+            return;
+        }
+
+        const [top, height] = [
+            Math.max(0, $target.position().top - 3),
+            $target.height() + 8,
+        ];
+
+        $highlight.css('top', `${top}px`).css('height', `${height}px`);
+    }
 
 };
