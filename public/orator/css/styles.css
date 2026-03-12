@@ -550,7 +550,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     font-weight: 400;
     font-size: 13pt;
     line-height: 15pt;
-    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reader-container p.hidden {
@@ -566,7 +566,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     border-radius: 3px;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
-    transition: all 0.25s ease;
+    transition: all 0.5s ease-out;
 }
 
 .reader-container p span.active {
