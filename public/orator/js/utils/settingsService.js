@@ -295,7 +295,7 @@ const SettingsService = {
                 background-color: ${config.backgroundColor} !important;
             }
             
-            .reader-container p:has(.reader-paragraph.active) {
+            .reader-container .reader-paragraph.active {
                 background-color: ${config.highlightColor} !important;
             }
             
@@ -307,8 +307,10 @@ const SettingsService = {
         backgroundColor = tinycolor(config.backgroundColor);
         if (backgroundColor.isDark()) {
             $('#playback-controls').addClass('dark-mode');
+            $('.reader-container-wrapper').addClass('dark-mode');
         } else {
             $('#playback-controls').removeClass('dark-mode');
+            $('.reader-container-wrapper').removeClass('dark-mode');
         }
     }
 

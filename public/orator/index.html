@@ -84,6 +84,7 @@
             </nav>
             <div class="library-top-image d-flex justify-content-center align-items-center text-light">
                 <h1 class="library-top-text">Your Library</h1>
+                <p></p>
             </div>
             <div class="library-list-wrapper">
                 <div class="library-list-header-buttons">
@@ -384,6 +385,7 @@
                             </br>
                             Imported on: {{importedAt}}
                             </br>
+                            Reading time: {{readingTime}}
                         </p>
                     </div>
                     <button class="btn btn-sm orator-btn-delete-book" data-id="{{id}}">
@@ -395,8 +397,8 @@
                 </div>
             </div>
         </div>
-        <div class="book-item-progress-container">
-            <div class="book-item-progress" style="width: {{progress}}%"></div>
+        <div class="book-item-progress-container win7-progress">
+            <div class="book-item-progress win7-progress-fill" style="width: {{progress}}%"></div>
         </div>
     </div>
 </script>
@@ -412,8 +414,8 @@
             <button class="btn btn-sm orator-btn-delete-book" data-id="{{id}}">
                 <i class="bi bi-x" style="font-size: 25px"></i>
             </button>
-            <div class="book-item-progress-container">
-                <div class="book-item-progress" style="width: {{progress}}%"></div>
+            <div class="book-item-progress-container win7-progress">
+                <div class="book-item-progress win7-progress-fill" style="width: {{progress}}%"></div>
             </div>
         </div>
     </div>

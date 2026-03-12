@@ -75,6 +75,7 @@ const App = {
     async renderLibrary() {
         await StorageService.getOratorJson();
         let books = await StorageService.getBooks();
+        const orator = await StorageService.getOratorJson();
 
         console.log("Rendering library, got orator json and books");
 
@@ -116,6 +117,10 @@ const App = {
 
         const promises = [];
 
+        const booksById = {};
+
+        const readingTimers = orator.timers;
+
         for (const book of books) {
             promises.push(new Promise(r => {
 
@@ -151,6 +156,10 @@ const App = {
 
                 const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
+                let readingTime = readingTimers?.[book.id] ?? 0;
+                readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60*60));
+                readingTime = this.pluralize(readingTime, 'hour');
+
                 const bookItemHtml = this.fromTemplate(bookItemTemplate, {
                     id: book.id,
                     cover: book.cover,
@@ -160,9 +169,12 @@ const App = {
                     importedAt: book.importedAt,
                     bookDescText: bookDesc.text,
                     progress: bookProgress,
+                    readingTime: readingTime,
                 });
 
                 $(bookItemHtml).appendTo($list);
+
+                booksById[book.id] = book;
 
                 r();
 
@@ -171,8 +183,25 @@ const App = {
 
         await Promise.all(promises);
 
+        if (readingTimers) {
+            const total = Object.entries(readingTimers).map(bookTimer => {
+                const [_, time] = bookTimer;
+                return !isNaN(time) ? time : 0;
+            })
+                .reduce((p, v) => p + v, 0); // sum it up
+
+            if (total) {
+                const hours = Math.round(total / (60 * 60));
+                $('.library-top-image p').text(`Total Reading Time: ${this.pluralize(hours, 'hour')}`);
+            }
+        }
+
         this.showView('library');
         this.hideMessageBoard();
+    },
+
+    pluralize(number, unit) {
+        return [number, number === 1 ? unit: `${unit}s`].join(' ');
     },
 
     truncateMiddle(str, max) {
@@ -217,6 +246,10 @@ const App = {
         const progress = StorageService.orator.reading;
         const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
+        let readingTime = orator.timers?.[book.id] ?? 0;
+        readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60*60));
+        readingTime = this.pluralize(readingTime, 'hour');
+
         const bookItemHtml = this.fromTemplate('book-item-list', {
             id: book.id,
             cover: book.cover,
@@ -226,6 +259,7 @@ const App = {
             importedAt: book.importedAt,
             bookDescText: "",
             progress: bookProgress,
+            readingTime: readingTime
         });
 
         this.$app.find('.library-currently-reading').html(
@@ -234,6 +268,8 @@ const App = {
                 bookItemHtml
             ].join('')
         );
+
+        this.$app.find('.library-currently-reading .book-item').addClass('win7-progress-fill');
     },
 
     setEventHandlers() {
@@ -573,7 +609,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prev.length < 1000
+                || prev.length < 200
             ) {
                 response[prevIdx] = [prev, part].join(' ');
                 continue;

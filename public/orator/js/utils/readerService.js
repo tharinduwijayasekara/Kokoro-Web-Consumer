@@ -47,6 +47,9 @@ const ReaderService = {
 
     useHtml5Player: false,
 
+    bookTimer: {},
+    bookTimerUpdatedAt: 0,
+
     async init(bookId) {
         this.$app = App.$app;
         this.$banner = this.$app.find('.error-banner');
@@ -113,19 +116,43 @@ const ReaderService = {
             this.setBufferrer();
         }
 
+        this.bookTimer[bookId] = orator.timers?.[bookId] ?? 0;
+
         await SettingsService.init();
 
         history.pushState({page: 'book', id: bookId});
         App.currentPage = "book";
-        App.showView('reader');
 
-        App.sleep(1000);
+        await this.reveal(progressTracker);
+
+        Howler.pool = 10;
+    },
+
+    async reveal(progressTracker) {
+        const $paragraphs = this.$wrapper.find('p');
+        $paragraphs.addClass('hidden');
+
+        App.showView('reader');
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
-        this.scrollToParagraph(progressTracker[0], progressTracker[1]);
 
-        Howler.pool = 10;
+        await App.sleep(10);
+
+        let counter = {i: 0, max: 10};
+        for (const paragraph of $paragraphs) {
+            if (counter.i >= counter.max) {
+                $paragraphs.removeClass('hidden');
+                await App.sleep(200);
+                break;
+            }
+
+            $(paragraph).removeClass('hidden');
+            await App.sleep(20);
+            counter.i++;
+        }
+
+        this.scrollToParagraph(progressTracker[0], progressTracker[1]);
     },
 
     updateTempOratorConfig(config) {
@@ -206,7 +233,6 @@ const ReaderService = {
 
         const chapter = this.book.chapters[chapterIdToRender];
         this.$container.empty();
-
         this.$container.attr('data-chapter-id', chapterId);
 
         let $currentParagraph = null;
@@ -288,7 +314,7 @@ const ReaderService = {
         App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0);
 
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
-        await this.fillBuffer(chapterId, paragraphId, 10, true);
+        await this.fillBuffer(chapterId, paragraphId, 3, true);
 
         console.log("Calling play next");
         this.playNext();
@@ -551,6 +577,7 @@ const ReaderService = {
                     sound.unload(); // Free memory
                     URL.revokeObjectURL(url);
                     if (this.isPlaying) {
+                        this.addToBookTimer(sound.duration());
                         setTimeout(() => this.playNext(), silence)
                     }
                 }
@@ -637,7 +664,7 @@ const ReaderService = {
         paragraphsRead.map(p => chars.read = chars.read + p.length);
         paragraphsLeft.map(p => chars.left = chars.left + p.length);
 
-        chars.bookRead = this.cumulativeChapterCharCount[current.cIdx] + chars.read;
+        chars.bookRead = this.cumulativeChapterCharCount[Math.max(current.cIdx - 1)] + chars.read;
         chars.bookLeft = chars.book - chars.bookRead;
 
         const timings = {
@@ -669,6 +696,8 @@ const ReaderService = {
     },
 
     secondsToHms(seconds) {
+        if (!seconds) return "00:00:00";
+
         const SECONDS_PER_DAY = 86400;
         const HOURS_PER_DAY = 24;
 
@@ -750,7 +779,24 @@ const ReaderService = {
 
     hidePlaybackSettings() {
         this.$app.find('#playback-settings').removeClass('active');
-    }
+    },
 
+    async addToBookTimer(seconds) {
+        if (!seconds) return;
+        const bookId = this.book.id;
+        this.bookTimer[bookId] += seconds;
+
+        const now = Date.now();
+        if (now < (this.bookTimerUpdatedAt + 10000)) return;
+
+        const orator = await StorageService.getOratorJson();
+        if (!orator.timers) orator.timers = {};
+
+        orator.timers[bookId] = this.bookTimer[bookId];
+        this.bookTimerUpdatedAt = Date.now();
+        await StorageService.writeOratorJson(orator);
+
+        console.log(`Timer updated to ${this.bookTimer[bookId]}`);
+    },
 
 };

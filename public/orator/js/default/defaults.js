@@ -19,6 +19,9 @@ const DEFAULT_ORATOR_JSON = {
             bookId: "chapterid::paragraphid::book-progress-percent"
         },
         currentlyReading: 'bookid',
+        timers: {
+            bookId: 0
+        }
     }
 };
 
