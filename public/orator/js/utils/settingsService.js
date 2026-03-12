@@ -281,6 +281,8 @@ const SettingsService = {
     },
 
     applyStyles(config) {
+        const hlColorWoTrans = config.highlightColor.substring(0,7);
+
         $('#app-styles').html(`
             .reader-container p {
                 font-family: '${config.fontFamily}' !important;
@@ -295,6 +297,10 @@ const SettingsService = {
             
             .reader-container p:has(.reader-paragraph.active) {
                 background-color: ${config.highlightColor} !important;
+            }
+            
+            .playback-chapter-item.active {
+                background-color: ${hlColorWoTrans}60 !important;
             }
         `);
 

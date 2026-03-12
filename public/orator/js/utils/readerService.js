@@ -22,9 +22,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 500,
-    minBufferSize: 400,
-    maxBufferSize: 500,
+    bufferSize: 100,
+    minBufferSize: 50,
+    maxBufferSize: 100,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -35,6 +35,7 @@ const ReaderService = {
 
     bookLength: 0,
     bookCharsLength: 0,
+    cumulativeChapterCharCount: [],
 
     tempOratorConfig: undefined,
 
@@ -44,7 +45,7 @@ const ReaderService = {
 
     currentFullParagraphDuration: 0,
 
-    useHtml5Player: true,
+    useHtml5Player: false,
 
     async init(bookId) {
         this.$app = App.$app;
@@ -118,7 +119,7 @@ const ReaderService = {
         App.currentPage = "book";
         App.showView('reader');
 
-        App.sleep(50);
+        App.sleep(1000);
 
         this.$container.find('.reader-paragraph').removeClass('active');
         this.$container.find(`#reader-paragraph-${progressTracker[0]}-${progressTracker[1]}`).addClass('active');
@@ -138,6 +139,7 @@ const ReaderService = {
         this.book.chapters.forEach(async (chapter) => {
             bookLength += chapter.length;
             chapter.forEach(p => bookCharsLength += p.length);
+            this.cumulativeChapterCharCount.push(bookCharsLength);
             await App.sleep(5);
         });
 
@@ -237,6 +239,14 @@ const ReaderService = {
         this.$chaptersList.find(`#toc-chapter-${chapterIdToRender}`).addClass('active');
 
         this.currentChapterOnScreen = chapterIdToRender;
+
+        const targetElement = document.getElementById(`toc-chapter-${chapterIdToRender}`);
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start' // This respects the scroll-margin-top
+            });
+        }
     },
 
     async goToPreviousChapter() {
@@ -352,7 +362,7 @@ const ReaderService = {
             this.isBuffering = false;
             this.$bufferHealth.find('.spinner-border').removeClass('active');
             this.computeBufferedTime().then((bt) =>
-                this.$bufferHealth.find('span').text(`${this.currentBuffer.length} (${bt} min)`)
+                this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
             );
 
             console.log("Buffering complete, buffer health at: ", this.currentBuffer.length);
@@ -361,6 +371,10 @@ const ReaderService = {
         if (StorageService.storagePersisted) {
             this.$bufferHealth.find('i').addClass("persisted");
         }
+    },
+
+    prepareBufferHealthText(bufferTimeMins) {
+        return `Next ${this.currentBuffer.length} lines ready (${bufferTimeMins} minutes of reading time)`;
     },
 
     hasLettersOrNumbers(str) {
@@ -582,12 +596,12 @@ const ReaderService = {
         this.scrollToParagraph(current.cIdx, current.pIdx);
 
         this.computeBufferedTime().then((bt) =>
-            this.$bufferHealth.find('span').text(`${this.currentBuffer.length} (${bt} min)`)
+            this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
         );
 
         current.sound.play();
 
-        if (this.currentBuffer.length < 50) {
+        if (this.currentBuffer.length < 20) {
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
@@ -616,21 +630,27 @@ const ReaderService = {
             total: 0,
             read: 0,
             left: 0,
+            book: this.bookCharsLength
         };
 
         chapter.map(p => chars.total = chars.total + p.length);
         paragraphsRead.map(p => chars.read = chars.read + p.length);
         paragraphsLeft.map(p => chars.left = chars.left + p.length);
 
+        chars.bookRead = this.cumulativeChapterCharCount[current.cIdx] + chars.read;
+        chars.bookLeft = chars.book - chars.bookRead;
+
         const timings = {
             total: this.secondsToMinutes(this.durationPerCharacter * chars.total),
             read: this.secondsToMinutes(this.durationPerCharacter * chars.read),
             left: this.secondsToMinutes(this.durationPerCharacter * chars.left),
-            book: this.secondsToHms(this.durationPerCharacter * this.bookCharsLength).substring(0, 5)
+            book: this.secondsToHms(this.durationPerCharacter * chars.book).substring(0, 5),
+            bookRead: this.secondsToHms(this.durationPerCharacter * chars.bookRead).substring(0, 5),
+            bookLeft: this.secondsToHms(this.durationPerCharacter * chars.bookLeft).substring(0, 5),
         }
 
         this.$chapterTimingsLeft.text(`${timings.read} min`);
-        this.$chapterTimingsRight.text(`${timings.left}/${timings.total} min | ${timings.book}`);
+        this.$chapterTimingsRight.text(`${timings.left} min of ${timings.total} min • ${timings.bookLeft} of ${timings.book} in book`);
     },
 
     secondsToMinutes(seconds) {
