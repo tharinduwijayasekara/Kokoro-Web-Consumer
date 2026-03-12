@@ -675,7 +675,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     text-align: center;
     padding-bottom: 5px;
     font-size: 0.7rem;
-    text-transform: lowercase;
+    text-transform: none;
     display: grid;
     grid-template-columns: 1fr;
     grid-column-gap: 5px;
