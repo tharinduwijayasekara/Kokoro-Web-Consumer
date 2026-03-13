@@ -19,7 +19,7 @@ const ImportText = {
         }
     },
 
-    async importFromText(text, returnBook = true) {
+    async importFromText(text) {
         const paragraphsRaw = text.split(/\r?\n|\r|\n/);
         const paragraphs = [];
 
@@ -57,10 +57,7 @@ const ImportText = {
             importId: Date.now(),
         }
 
-        if (returnBook) return importedBook;
-
-        await StorageService.db.books.put(importedBook);
-        App.renderLibrary();
+        return importedBook;
     }
 
 };

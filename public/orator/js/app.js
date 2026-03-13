@@ -656,7 +656,10 @@ const App = {
         if (!text) return;
 
         App.showMessageBoard("Orator", "Importing your text...", -1);
-        ImportText.importFromText(text);
+        const importedBook = await ImportText.importFromText(text, false);
+
+        await StorageService.db.books.put(importedBook);
+        App.renderLibrary();
     },
 
     async setLibraryBackgroundCarousel() {
