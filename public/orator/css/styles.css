@@ -130,8 +130,8 @@ span.navbar-brand {
 .orator-view-reader .navbar #navbar-book-name {
     font-size: 14px;
     line-height: 16px;
-    margin-bottom: 5px;
     text-transform: capitalize;
+    margin-bottom: 5px;
 }
 .orator-view-reader .navbar #navbar-chapter-name {
     font-size: 10px;
@@ -145,7 +145,7 @@ span.navbar-brand {
 }
 
 .orator-view-reader.reader-fullscreen nav.navbar.navbar-dark {
-    margin-top: -50px;
+    margin-top: -50px !important;
 }
 
 .author-item {
@@ -921,7 +921,7 @@ div#message-board-wrapper {
 }
 
 #playback-settings.active {
-    height: 65%;
+    height: 75%;
     border-top: 5px solid #212121;
 }
 

@@ -318,6 +318,9 @@ const SettingsService = {
             $('#playback-controls').removeClass('dark-mode');
             $('.reader-container-wrapper').removeClass('dark-mode');
         }
+
+        await App.sleep(1000);
+        ReaderService.scrollToParagraph(null, null);
     }
 
 }

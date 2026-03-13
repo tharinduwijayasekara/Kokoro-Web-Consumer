@@ -830,9 +830,9 @@ const ReaderService = {
         const $target = this.$app.find('.reader-paragraph.active');
         const $highlight = this.$container.find('.highlight');
 
-        if (!$highlight) return;
+        if (!$highlight.length) return;
 
-        if (!$target) {
+        if (!$target.length) {
             $highlight.css('height', 0);
             return;
         }
@@ -843,8 +843,6 @@ const ReaderService = {
         ];
 
         $highlight.css('top', `${top}px`).css('height', `${height}px`);
-
-        console.log("Updated highlight");
     }
 
 };

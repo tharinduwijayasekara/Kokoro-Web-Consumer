@@ -11,6 +11,7 @@ const App = {
         'js/utils/settingsService.js',
         'js/utils/importEpub.js',
         'js/utils/importEpubJsZip.js',
+        'js/utils/importText.js',
     ],
 
     async init() {
@@ -525,6 +526,10 @@ const App = {
             if (file.type === 'application/epub+zip' || file.type === 'application/epub') {
                 importedBook = await ImportEpub.handle(file);
             }
+
+            if (file.type === 'text/plain') {
+                importedBook = await ImportText.handle(file);
+            }
         } catch (e) {
             console.log("Error while importing", e);
         }
@@ -651,35 +656,7 @@ const App = {
         if (!text) return;
 
         App.showMessageBoard("Orator", "Importing your text...", -1);
-
-        const paragraphsRaw = text.split(/\r?\n|\r|\n/);
-        const paragraphs = [];
-
-        for (const paragraph of paragraphsRaw) {
-            if (!paragraph.trim()) continue;
-            paragraphs.push(...this.splitSentences(paragraph.trim()));
-        }
-
-        if (!paragraphs) return;
-
-        const chapters = [paragraphs];
-
-        const title = paragraphs[0].length > 200 ? `${paragraphs[0].substring(0, 200)}...` : paragraphs[0];
-
-        const importedBook = {
-            id: `user-text-${Date.now()}`,
-            title: title,
-            author: "You",
-            cover: null,
-            chapters: chapters,
-            meta: {},
-            importedAt: new Date().toLocaleDateString(),
-            importId: Date.now(),
-        }
-
-        await StorageService.db.books.put(importedBook);
-
-        App.renderLibrary();
+        ImportText.importFromText(text);
     },
 
     async setLibraryBackgroundCarousel() {
@@ -704,7 +681,7 @@ const App = {
     },
 
     async changeLibraryBackground() {
-        if (!this.$app.find('#view-library.active')) return;
+        if (!this.$app.find('#view-library.active').length) return;
 
         console.log("Updating library background");
         const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
