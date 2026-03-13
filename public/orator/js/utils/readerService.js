@@ -193,8 +193,8 @@ const ReaderService = {
 
     async updateProgress(cIdx, pIdx) {
         const chapter = this.book.chapters[cIdx];
-        const chapterProgress = (pIdx / chapter.length) * 100;
-        const completedChapters = this.book.chapters.slice(0, Math.max(0, cIdx - 1));
+        const chapterProgress = ((pIdx + 1) / chapter.length) * 100;
+        const completedChapters = this.book.chapters.slice(0, Math.max(0, cIdx));
 
         let bookProgress = pIdx;
         completedChapters.forEach(completedChapter => bookProgress += completedChapter.length);
@@ -668,8 +668,8 @@ const ReaderService = {
         }
 
         const chapter = this.book.chapters[current.cIdx];
-        const paragraphsRead = chapter.slice(0, current.pIdx);
-        const paragraphsLeft = chapter.slice(current.pIdx + 1, chapter.length - 1);
+        const paragraphsRead = chapter.slice(0, current.pIdx + 1);
+        const paragraphsLeft = chapter.slice(current.pIdx + 1, chapter.length);
 
         const chars = {
             total: 0,
