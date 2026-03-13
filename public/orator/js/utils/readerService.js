@@ -10,6 +10,8 @@ const ReaderService = {
     $wrapper: undefined,
     $container: undefined,
     $bookName: undefined,
+    $bookChapter: undefined,
+    $bookCover: undefined,
     $chaptersListHeader: undefined,
     $chaptersList: undefined,
 
@@ -50,12 +52,16 @@ const ReaderService = {
     bookTimer: {},
     bookTimerUpdatedAt: 0,
 
+    highlighter: undefined,
+
     async init(bookId) {
         this.$app = App.$app;
         this.$banner = this.$app.find('.error-banner');
         this.$wrapper = this.$app.find('.reader-container-wrapper');
         this.$container = this.$app.find('.reader-container');
         this.$bookName = this.$app.find('#navbar-book-name');
+        this.$bookChapter = this.$app.find('#navbar-chapter-name');
+        this.$bookCover = this.$app.find('.reader-nav-book-image');
         this.$chaptersListHeader = this.$app.find('.playback-chapter-header');
         this.$chaptersList = this.$app.find('.playback-chapters-list');
         this.$playPauseButton = this.$app.find('#btn-reader-playpause');
@@ -105,6 +111,7 @@ const ReaderService = {
         this.progressTracker = progressTracker;
 
         this.$bookName.text(book.title);
+        this.$bookCover.css('background-image', `url(${book.cover})`);
 
         await this.renderChaptersList();
         await this.renderChapterOnScreen(progressTracker[0]);
@@ -114,6 +121,10 @@ const ReaderService = {
 
         if (!this.bufferrer) {
             this.setBufferrer();
+        }
+
+        if (!this.highlighter) {
+            this.setHighlighter();
         }
 
         this.bookTimer[bookId] = orator.timers?.[bookId] ?? 0;
@@ -233,6 +244,7 @@ const ReaderService = {
 
         const chapter = this.book.chapters[chapterIdToRender];
         this.$container.empty();
+        this.$container.html(`<div class="highlight"></div>`);
         this.$container.attr('data-chapter-id', chapterId);
 
         let $currentParagraph = null;
@@ -260,6 +272,12 @@ const ReaderService = {
             if (isContinuation) spanHtml = `<span> </span>${spanHtml}`;
             $(spanHtml).appendTo($currentParagraph);
         });
+
+        this.$bookChapter.html(
+            (chapter[0] ?? "")
+                .replaceAll("**##", `<span class="italic">`)
+                .replaceAll("##**", `</span>`)
+        );
 
         this.$chaptersList.find('.playback-chapter-item.active').removeClass('active');
         this.$chaptersList.find(`#toc-chapter-${chapterIdToRender}`).addClass('active');
@@ -799,8 +817,15 @@ const ReaderService = {
         console.log(`Timer updated to ${this.bookTimer[bookId]}`);
     },
 
+    setHighlighter() {
+        this.highlighter = setInterval(
+            () => requestAnimationFrame(() => this.updateHighlight()),
+            500
+        );
+    },
+
     async updateHighlight() {
-        await App.sleep(200);
+        if (!$('#view-reader').hasClass('active')) return;
 
         const $target = this.$app.find('.reader-paragraph.active');
         const $highlight = this.$container.find('.highlight');
@@ -814,10 +839,12 @@ const ReaderService = {
 
         const [top, height] = [
             Math.max(0, $target.position().top - 3),
-            $target.height() + 8,
+            $target.height() + 5,
         ];
 
         $highlight.css('top', `${top}px`).css('height', `${height}px`);
+
+        console.log("Updated highlight");
     }
 
 };

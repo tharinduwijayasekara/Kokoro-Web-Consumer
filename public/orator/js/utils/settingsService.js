@@ -295,15 +295,15 @@ const SettingsService = {
                 background-color: ${config.backgroundColor} !important;
             }
             
+            /*
             .reader-container .reader-paragraph.active {
                 background-color: ${config.highlightColor} !important;
             }
+            */
             
-            /*
             .reader-container .highlight {
                 background-color: ${config.highlightColor} !important;
             }
-            */
             
             .playback-chapter-item.active {
                 background-color: ${hlColorWoTrans}60 !important;
