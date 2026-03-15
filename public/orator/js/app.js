@@ -14,6 +14,9 @@ const App = {
         'js/utils/importText.js',
     ],
 
+    audioPipelineHook: undefined,
+    hiss: undefined,
+
     async init() {
         console.log("Orator initializing...");
 
@@ -30,11 +33,14 @@ const App = {
             this.setEventHandlers();
             document.getElementById('styles-for-init').remove();
 
-            setTimeout(() => {
-                this.renderCurrentlyReading();
-                this.renderLibrary();
-                this.setLibraryBackgroundCarousel();
-            }, 500);
+            this.registerAudioPipelineHook();
+            this.registerHiss();
+
+            await this.sleep(500);
+
+            this.renderCurrentlyReading();
+            this.renderLibrary();
+            this.setLibraryBackgroundCarousel();
 
         } catch (e) {
             console.log("Initialization failed.", e);
@@ -692,6 +698,22 @@ const App = {
         const url = this.libraryImages[index];
 
         $('#view-library').attr("style", `background-image: url(${url})`);
+    },
+
+    registerAudioPipelineHook() {
+        this.audioPipelineHook = $('#audio-pipeline-hook')[0];
+        this.audioPipelineHook.volume = 0.001;
+    },
+
+    registerHiss() {
+        const hiss = new Howl({
+           src: "audio/lo-fi-tape-hiss-noise_150bpm.wav",
+           loop: true,
+           html5: false,
+           volume: 0.02,
+        });
+
+        this.hiss = hiss;
     }
 
 }

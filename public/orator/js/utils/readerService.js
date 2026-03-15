@@ -24,9 +24,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 100,
-    minBufferSize: 50,
-    maxBufferSize: 100,
+    bufferSize: 50,
+    minBufferSize: 40,
+    maxBufferSize: 50,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -131,7 +131,7 @@ const ReaderService = {
 
         await SettingsService.init();
 
-        history.pushState({page: 'book', id: bookId});
+        history.pushState({page: 'book', id: bookId}, "openedbook");
         App.currentPage = "book";
 
         await this.reveal(progressTracker);
@@ -317,6 +317,17 @@ const ReaderService = {
 
     async play(chapterId, paragraphId, bufferSize) {
         this.stop();
+
+        if (App.audioPipelineHook) {
+            App.audioPipelineHook.play();
+        }
+
+        if (App.hiss) {
+            App.hiss.play();
+            if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                Howler.ctx.resume(); // --- for ios
+            }
+        }
 
         this.bufferSize = this.maxBufferSize;
 
@@ -559,6 +570,7 @@ const ReaderService = {
         return new Promise((resolve) => {
 
             const sound = new Howl({
+                volume: 2,
                 src: [url],
                 format: ['mp3'],
                 html5: this.useHtml5Player,
@@ -726,6 +738,8 @@ const ReaderService = {
     },
 
     async scrollToParagraph(cIdx, pIdx) {
+        this.updateHighlight();
+        
         if (cIdx === null && pIdx === null) {
             [cIdx, pIdx] = this.progressTracker;
         }
@@ -820,7 +834,7 @@ const ReaderService = {
     setHighlighter() {
         this.highlighter = setInterval(
             () => requestAnimationFrame(() => this.updateHighlight()),
-            500
+            1000
         );
     },
 
