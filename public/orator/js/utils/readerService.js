@@ -320,7 +320,7 @@ const ReaderService = {
 
         if (App.audioPipelineHook) {
             App.audioPipelineHook.play();
-            setTimeout(() => App.audioPipelineHook.pause(), 5000);
+            setTimeout(() => App.audioPipelineHook.stop(), 5000);
         }
 
         if (App.hiss) {
@@ -835,7 +835,7 @@ const ReaderService = {
     setHighlighter() {
         this.highlighter = setInterval(
             () => requestAnimationFrame(() => this.updateHighlight()),
-            1000
+            5000
         );
     },
 
@@ -853,8 +853,8 @@ const ReaderService = {
         }
 
         const [top, height] = [
-            Math.max(0, $target.position().top - 3),
-            $target.height() + 5,
+            Math.max(0, $target.position().top - 5),
+            $target.height() + 8,
         ];
 
         $highlight.css('top', `${top}px`).css('height', `${height}px`);

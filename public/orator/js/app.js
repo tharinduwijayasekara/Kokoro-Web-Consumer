@@ -164,7 +164,7 @@ const App = {
                 const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
                 let readingTime = readingTimers?.[book.id] ?? 0;
-                readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60*60));
+                readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60 * 60));
                 readingTime = this.pluralize(readingTime, 'hour');
 
                 const bookItemHtml = this.fromTemplate(bookItemTemplate, {
@@ -208,7 +208,7 @@ const App = {
     },
 
     pluralize(number, unit) {
-        return [number, number === 1 ? unit: `${unit}s`].join(' ');
+        return [number, number === 1 ? unit : `${unit}s`].join(' ');
     },
 
     truncateMiddle(str, max) {
@@ -254,7 +254,7 @@ const App = {
         const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
 
         let readingTime = orator.timers?.[book.id] ?? 0;
-        readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60*60));
+        readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60 * 60));
         readingTime = this.pluralize(readingTime, 'hour');
 
         const bookItemHtml = this.fromTemplate('book-item-list', {
@@ -702,15 +702,13 @@ const App = {
 
     registerAudioPipelineHook() {
         this.audioPipelineHook = $('#audio-pipeline-hook')[0];
-        this.audioPipelineHook.volume = 0.001;
     },
 
     registerHiss() {
         const hiss = new Howl({
-           src: "audio/lo-fi-tape-hiss-noise_150bpm.wav",
-           loop: true,
-           html5: false,
-           volume: 0.02,
+            src: "audio/hiss.mp3",
+            loop: true,
+            html5: false,
         });
 
         this.hiss = hiss;
