@@ -320,6 +320,7 @@ const ReaderService = {
 
         if (App.audioPipelineHook) {
             App.audioPipelineHook.play();
+            setTimeout(() => App.audioPipelineHook.pause(), 5000);
         }
 
         if (App.hiss) {

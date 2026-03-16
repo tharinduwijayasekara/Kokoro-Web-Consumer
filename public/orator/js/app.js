@@ -620,7 +620,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prev.length < 200
+                || prev.split(' ').length < 5
             ) {
                 response[prevIdx] = [prev, part].join(' ');
                 continue;
