@@ -178,6 +178,7 @@ span.navbar-brand {
     display: grid !important;
     grid-template-rows: auto auto;
     align-content: center;
+    justify-items: center;
 }
 
 .library-top-image p {
@@ -520,9 +521,10 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     padding: 0;
     padding-top: 3px;
     max-width: 400px;
-    margin: 0;
+    margin: auto;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    grid-column-gap: 10px;
 }
 
 .reader-fullscreen #playback-controls {
@@ -599,10 +601,10 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     left: 0;
     right: 0;
     border-radius: 7px;
-    transition: 
-        top 0.5s cubic-bezier(0.20, 0.10, 0, 1), 
-        height 1s cubic-bezier(0.20, 0.10, 0, 1), 
-        background-color 0.5s ease-in-out;
+    transition:
+            top 0.4s cubic-bezier(0.20, 0.10, 0, 1),
+            height 0.5s cubic-bezier(0.20, 0.10, 0, 1),
+            background-color 0.5s ease-in-out;
 }
 
 .reader-container p {
@@ -890,7 +892,16 @@ div#message-board-wrapper {
             rgba(255,255,255,0) 100%
     );
 
-    animation: win7-shine 5s ease-in-out infinite;
+    background: linear-gradient(
+            90deg,
+            rgba(255,255,255,0.0) 0%,
+            rgba(255,255,255,0.29) 45%,
+            rgba(255,255,255,0.3) 50%,
+            rgba(255,255,255,0.29) 55%,
+            rgba(255,255,255,0) 100%
+    );
+
+    animation: win7-shine 10s ease-in-out infinite;
     transform: rotate(20deg);
 }
 

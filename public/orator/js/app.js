@@ -604,7 +604,7 @@ const App = {
         const strings = string
             .replaceAll('—', ' — ') // normalize em dashes
             .replace(/\s+/g, ' ') // remove doubles spaces that maybe caused by em dash normalization
-            .split(/(?<=[.?!—])\s+/); // split
+            .split(/(?<=[.?!])\s+/); // split
 
         const response = [];
 
@@ -659,7 +659,10 @@ const App = {
         this.requestWakeLock();
 
         const text = $('#userTextInput').val().trim();
-        if (!text) return;
+        if (!text) {
+            this.$app.find('#epub-input').trigger('click');
+            return;
+        };
 
         App.showMessageBoard("Orator", "Importing your text...", -1);
         const importedBook = await ImportText.importFromText(text, false);
@@ -706,7 +709,7 @@ const App = {
 
     registerHiss() {
         const hiss = new Howl({
-            src: "audio/hiss.mp3",
+            src: "audio/hiss-v3.mp3",
             loop: true,
             html5: false,
         });

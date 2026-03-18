@@ -85,7 +85,7 @@ const SettingsService = {
                     preview: true,
                     opacity: true,
                     hue: true,
-                    interaction: { input: true, save: true }
+                    interaction: {input: true, save: true}
                 }
             });
         };
@@ -220,6 +220,12 @@ const SettingsService = {
             ReaderService.stop();
         }
 
+        const isFontChanged = (
+            newConfig.fontFamily !== this.config.fontFamily
+            || newConfig.fontSize !== this.config.fontSize
+            || newConfig.lineHeight !== this.config.lineHeight
+        );
+
         console.log("Monitoring config", this.config, newConfig);
 
         this.saving = true;
@@ -229,6 +235,11 @@ const SettingsService = {
 
         ReaderService.updateTempOratorConfig(newConfig);
         await this.saveSettings(newConfig);
+
+        if (isFontChanged) {
+            await App.sleep(1000);
+            ReaderService.scrollToParagraph(null, null);
+        }
 
         if (isSpeechServiceChanged) this.loadSettings(newConfig);
 
@@ -281,7 +292,9 @@ const SettingsService = {
     },
 
     async applyStyles(config) {
-        const hlColorWoTrans = config.highlightColor.substring(0,7);
+        const hlColorWoTrans = config.highlightColor.substring(0, 7);
+        const hlColorDarkened = this.darkenHex(config.highlightColor, 30);
+        const scrollMarginTop = config.lineHeight * (config.lineHeight < 25 ? 3 : 1);
 
         $('#app-styles').html(`
             .reader-container p {
@@ -295,6 +308,10 @@ const SettingsService = {
                 background-color: ${config.backgroundColor} !important;
             }
             
+            .reader-container .reader-paragraph {
+                scroll-margin-top: ${scrollMarginTop}pt !important;
+            }
+            
             /*
             .reader-container .reader-paragraph.active {
                 background-color: ${config.highlightColor} !important;
@@ -303,6 +320,7 @@ const SettingsService = {
             
             .reader-container .highlight {
                 background-color: ${config.highlightColor} !important;
+                background: linear-gradient(180deg, ${config.highlightColor} 0%, ${hlColorDarkened} 100%) !important;
             }
             
             .playback-chapter-item.active {
@@ -318,9 +336,22 @@ const SettingsService = {
             $('#playback-controls').removeClass('dark-mode');
             $('.reader-container-wrapper').removeClass('dark-mode');
         }
+    },
 
-        await App.sleep(1000);
-        ReaderService.scrollToParagraph(null, null);
+    darkenHex(hex, amount = 20) {
+        // Remove hash if present
+        hex = hex.replace(/^#/, '');
+
+        // Parse r, g, b, and a (default alpha to FF if not present)
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+        let a = hex.length === 8 ? hex.substring(6, 8) : '';
+
+        // Apply darkening and clamp between 0 and 255
+        const darken = (val) => Math.max(0, val - amount).toString(16).padStart(2, '0');
+
+        return `#${darken(r)}${darken(g)}${darken(b)}${a}`;
     }
 
 }

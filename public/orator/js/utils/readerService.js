@@ -320,7 +320,6 @@ const ReaderService = {
 
         if (App.audioPipelineHook) {
             App.audioPipelineHook.play();
-            setTimeout(() => App.audioPipelineHook.stop(), 5000);
         }
 
         if (App.hiss) {
@@ -770,6 +769,10 @@ const ReaderService = {
 
         this.abortController = new AbortController();
 
+        if (App.audioPipelineHook) {
+            App.audioPipelineHook.pause();
+        }
+
         Howler.stop();
 
         this.$playPauseButton.removeClass('playing');
@@ -853,8 +856,8 @@ const ReaderService = {
         }
 
         const [top, height] = [
-            Math.max(0, $target.position().top - 5),
-            $target.height() + 8,
+            Math.max(0, $target.position().top - 2),
+            $target.height() + 5,
         ];
 
         $highlight.css('top', `${top}px`).css('height', `${height}px`);
