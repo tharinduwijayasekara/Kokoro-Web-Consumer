@@ -38,8 +38,11 @@ const App = {
 
             await this.sleep(500);
 
-            this.renderCurrentlyReading();
-            this.renderLibrary();
+            await Promise.all([
+                this.renderCurrentlyReading(),
+                this.renderLibrary()
+            ]);
+
             this.setLibraryBackgroundCarousel();
 
         } catch (e) {
