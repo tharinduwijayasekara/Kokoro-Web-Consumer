@@ -187,8 +187,8 @@ const ReaderService = {
 
     async closeBook() {
         this.stop();
-        App.showView('library');
         App.renderCurrentlyReading();
+        App.renderLibrary();
     },
 
     async updateProgress(cIdx, pIdx) {

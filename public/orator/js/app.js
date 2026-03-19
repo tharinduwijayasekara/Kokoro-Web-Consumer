@@ -140,7 +140,15 @@ const App = {
                 if (author !== lastAuthor) {
 
                     lastAuthor = author;
-                    $(`<div class="author-item">${author}</div>`)
+
+                    let authorItemClass = [
+                        'author-item',
+                        author === TEXT_INPUT_AUTHOR ? 'text-input-author' : '',
+                    ]
+                        .join(' ')
+                        .trim();
+
+                    $(`<div class="${authorItemClass}">${author}</div>`)
                         .appendTo($list)
 
                 }
@@ -298,12 +306,17 @@ const App = {
             console.log(e);
 
             const files = e.target.files;
+            let importedBook = undefined;
 
             try {
                 for (const file of files) {
                     console.log("New file selected for import", file);
                     this.showMessageBoard("Importing...");
-                    if (file) await this.handleImport(file);
+
+                    if (file) {
+                        importedBook = await this.handleImport(file);
+                    }
+
                     this.showMessageBoard("Importing...");
                 }
             } catch (e) {
@@ -312,7 +325,10 @@ const App = {
 
             console.log("Import all files complete");
 
-            this.renderLibrary();
+            await this.renderLibrary();
+            if (files.length === 1 && importedBook) {
+                ReaderService.init(importedBook.id);
+            }
         });
 
         this.$app.on('click', '.book-item', async (e) => {
@@ -547,6 +563,8 @@ const App = {
         }
 
         await StorageService.db.books.put(importedBook);
+
+        return importedBook;
     },
 
     async urlToBase64(url) {
@@ -657,18 +675,25 @@ const App = {
 
     async importUserInput() {
         this.requestWakeLock();
+        StorageService.enablePersistence();
 
-        const text = $('#userTextInput').val().trim();
+        const $input = $('#userTextInput');
+        const text = $input.val().trim();
         if (!text) {
             this.$app.find('#epub-input').trigger('click');
             return;
-        };
+        }
 
         App.showMessageBoard("Orator", "Importing your text...", -1);
         const importedBook = await ImportText.importFromText(text, false);
-
         await StorageService.db.books.put(importedBook);
-        App.renderLibrary();
+
+        $input.val('');
+
+        await App.renderLibrary();
+
+        console.log("About to load book for reading", importedBook.id);
+        ReaderService.init(importedBook.id);
     },
 
     async setLibraryBackgroundCarousel() {

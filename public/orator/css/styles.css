@@ -242,6 +242,10 @@ span.navbar-brand {
     display: none;
 }
 
+#view-library[data-view="grid"] .author-item.text-input-author {
+    display: block;
+}
+
 #view-library[data-view="grid"] .book-item {
     width: 120px;
 }

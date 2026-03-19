@@ -49,7 +49,7 @@ const ImportText = {
         const importedBook = {
             id: `user-text-${Date.now()}`,
             title: `${title} (${date} ${time})`,
-            author: "You",
+            author: TEXT_INPUT_AUTHOR,
             cover: null,
             chapters: chapters,
             meta: {},
