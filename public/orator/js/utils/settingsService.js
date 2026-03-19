@@ -224,6 +224,7 @@ const SettingsService = {
             newConfig.fontFamily !== this.config.fontFamily
             || newConfig.fontSize !== this.config.fontSize
             || newConfig.lineHeight !== this.config.lineHeight
+            || newConfig.letterSpacing !== this.config.letterSpacing
         );
 
         console.log("Monitoring config", this.config, newConfig);
@@ -293,7 +294,7 @@ const SettingsService = {
 
     async applyStyles(config) {
         const hlColorWoTrans = config.highlightColor.substring(0, 7);
-        const hlColorDarkened = this.darkenHex(config.highlightColor, 30);
+        const hlColorDarkened = this.darkenHex(config.highlightColor, 20);
         const scrollMarginTop = config.lineHeight * (config.lineHeight < 25 ? 3 : 1);
 
         $('#app-styles').html(`
