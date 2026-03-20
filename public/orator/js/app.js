@@ -638,10 +638,12 @@ const App = {
             const part = strings[i];
             const prevIdx = response.length - 1;
             let prev = response[prevIdx];
+            let prevArr = prev.split(' ');
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prev.split(' ').length < 5
+                || prevArr.length < 5
+                || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
                 response[prevIdx] = [prev, part].join(' ');
                 continue;
@@ -651,6 +653,17 @@ const App = {
         }
 
         return response;
+    },
+
+    isTitleContraction(word) {
+        if (word.length < 2 || word.length > 5) return false;
+
+        const [firstChar, lastChar] = [word.charAt(0), word.charAt(word.length - 1)];
+
+        if (lastChar !== '.') return false;
+        if (firstChar !== firstChar.toUpperCase()) return false;
+
+        return true;
     },
 
     hasEvenSpeechMarks(text) {
