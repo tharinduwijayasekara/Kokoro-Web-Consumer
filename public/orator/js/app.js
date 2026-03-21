@@ -82,6 +82,18 @@ const App = {
         this.$app.find(`.orator-view-${viewName}`).addClass('active');
     },
 
+    getImportedDate(book) {
+        try {
+            return (new Date(book.importId)).toISOString().split('T')[0];
+        } catch (e) {
+            return book.importedAt;
+        }
+    },
+
+    getBookAuthor(book) {
+        return book.author === TEXT_INPUT_AUTHOR ? [book.author, this.getImportedDate(book)].join(' / ') : book.author;
+    },
+
     async renderLibrary() {
         await StorageService.getOratorJson();
         let books = await StorageService.getBooks();
@@ -92,8 +104,8 @@ const App = {
         if (books) {
             books = books.sort((a, b) => {
                 const comparators = {
-                    a: ((a.author ?? "Unknown Author") + a.title).toLowerCase(),
-                    b: ((b.author ?? "Unknown Author") + b.title).toLowerCase(),
+                    a: ((this.getBookAuthor(a) ?? "Unknown Author") + a.title).toLowerCase(),
+                    b: ((this.getBookAuthor(b) ?? "Unknown Author") + b.title).toLowerCase(),
                 }
 
                 return comparators.a < comparators.b ? -1 : 1
@@ -139,14 +151,14 @@ const App = {
                     text: ""
                 };
 
-                const author = book.author;
+                const author = this.getBookAuthor(book);
                 if (author !== lastAuthor) {
 
                     lastAuthor = author;
 
                     let authorItemClass = [
                         'author-item',
-                        author === TEXT_INPUT_AUTHOR ? 'text-input-author' : '',
+                        author.startsWith(`${TEXT_INPUT_AUTHOR} / `) ? 'text-input-author' : '',
                     ]
                         .join(' ')
                         .trim();

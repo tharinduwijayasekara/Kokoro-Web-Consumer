@@ -196,7 +196,7 @@ const ReaderService = {
         const chapterProgress = ((pIdx + 1) / chapter.length) * 100;
         const completedChapters = this.book.chapters.slice(0, Math.max(0, cIdx));
 
-        let bookProgress = pIdx;
+        let bookProgress = pIdx + 1;
         completedChapters.forEach(completedChapter => bookProgress += completedChapter.length);
         bookProgress = Math.ceil((bookProgress / this.bookLength) * 100);
 
@@ -606,7 +606,14 @@ const ReaderService = {
                     const silence = this.getParagraphBreath(cIdx, pIdx, sound);
                     sound.unload(); // Free memory
                     URL.revokeObjectURL(url);
+
                     if (this.isPlaying) {
+
+                        if (this.isAtEndOfBook(cIdx, pIdx)) {
+                            this.stop();
+                            return;
+                        }
+
                         this.addToBookTimer(sound.duration());
                         setTimeout(() => this.playNext(), silence)
                     }
@@ -614,6 +621,12 @@ const ReaderService = {
             })
 
         });
+    },
+
+    isAtEndOfBook(cIdx, pIdx) {
+        const lastChapter = this.book.chapters.length - 1;
+        const lastParagraph = this.book.chapters[lastChapter].length - 1;
+        return (cIdx === lastChapter && pIdx === lastParagraph);
     },
 
     getParagraphBreath(cIdx, pIdx, sound) {
@@ -739,7 +752,7 @@ const ReaderService = {
 
     async scrollToParagraph(cIdx, pIdx) {
         this.updateHighlight();
-        
+
         if (cIdx === null && pIdx === null) {
             [cIdx, pIdx] = this.progressTracker;
         }

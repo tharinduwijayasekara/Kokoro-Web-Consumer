@@ -21,12 +21,16 @@ const ImportText = {
 
     async importFromText(text) {
         const paragraphsRaw = text.split(/\r?\n|\r|\n/);
-        const paragraphs = [];
+        let paragraphs = [];
 
         const progress = {
             i: 0,
             count: paragraphsRaw.length,
         };
+
+        const chapters = [];
+
+        let consecutiveEmptyLines = 0;
 
         for (const paragraph of paragraphsRaw) {
             progress.i++;
@@ -34,13 +38,26 @@ const ImportText = {
             App.showMessageBoard("Importing...", `Processing your text`, percent);
             if ((progress.i % 100) === 0) await App.sleep(50);
 
-            if (!paragraph.trim()) continue;
+            const isEmptyParagraph = !paragraph.trim();
+            if (isEmptyParagraph) {
+                consecutiveEmptyLines++;
+
+                if (consecutiveEmptyLines > 2 && paragraphs.length > 0) {
+                    chapters.push(paragraphs);
+                    paragraphs = [];
+                }
+
+                continue;
+
+            }
+
+            consecutiveEmptyLines = 0;
             paragraphs.push(...App.splitSentences(paragraph.trim()));
         }
 
-        if (!paragraphs) return;
-
-        const chapters = [paragraphs];
+        if (paragraphs.length > 0) {
+            chapters.push(paragraphs);
+        }
 
         const title = paragraphs[0].length > 200 ? `${paragraphs[0].substring(0, 200)}...` : paragraphs[0];
         const date = (new Date()).toDateString();
