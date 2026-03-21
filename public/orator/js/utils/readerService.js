@@ -55,6 +55,9 @@ const ReaderService = {
     highlighter: undefined,
 
     async init(bookId) {
+        App.showMessageBoard("Orator", "Opening book...", 0);
+        await App.sleep(10);
+
         this.$app = App.$app;
         this.$banner = this.$app.find('.error-banner');
         this.$wrapper = this.$app.find('.reader-container-wrapper');
@@ -83,6 +86,9 @@ const ReaderService = {
         this.book = book;
         console.log("About to render book on screen", book);
 
+        App.showMessageBoard("Orator", "Opening book...", 50);
+        await App.sleep(10);
+
         const orator = await StorageService.getOratorJson();
         console.log("Orator json", orator);
 
@@ -110,11 +116,17 @@ const ReaderService = {
 
         this.progressTracker = progressTracker;
 
+        App.showMessageBoard("Orator", "Opening book...", 70);
+        await App.sleep(10);
+
         this.$bookName.text(book.title);
         this.$bookCover.css('background-image', `url(${book.cover})`);
 
         await this.renderChaptersList();
         await this.renderChapterOnScreen(progressTracker[0]);
+
+        App.showMessageBoard("Orator", "Opening book...", 80);
+        await App.sleep(10);
 
         await this.calculateBookLength();
         this.updateProgress(progressTracker[0], progressTracker[1]);
@@ -129,10 +141,16 @@ const ReaderService = {
 
         this.bookTimer[bookId] = orator.timers?.[bookId] ?? 0;
 
+        App.showMessageBoard("Orator", "Opening book...", 90);
+        await App.sleep(10);
+
         await SettingsService.init();
 
         history.pushState({page: 'book', id: bookId}, "openedbook");
         App.currentPage = "book";
+
+        App.showMessageBoard("Orator", "Opening book...", 100);
+        await App.sleep(10);
 
         await this.reveal(progressTracker);
 
@@ -140,6 +158,9 @@ const ReaderService = {
     },
 
     async reveal(progressTracker) {
+        App.hideMessageBoard();
+        this.lockedForPlayback = true;
+
         const $paragraphs = this.$wrapper.find('p');
         $paragraphs.addClass('hidden');
 
@@ -164,6 +185,10 @@ const ReaderService = {
         }
 
         this.scrollToParagraph(progressTracker[0], progressTracker[1]);
+
+        setTimeout(() => {
+            this.lockedForPlayback = false
+        }, 2000);
     },
 
     updateTempOratorConfig(config) {
@@ -316,6 +341,8 @@ const ReaderService = {
     },
 
     async play(chapterId, paragraphId, bufferSize) {
+        if (this.lockedForPlayback) return;
+
         this.stop();
 
         if (App.audioPipelineHook) {
