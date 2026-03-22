@@ -4,6 +4,7 @@ const DEFAULT_ORATOR_JSON = {
             ttsUrl: "https://kokoro.orator-audio.com/v1/audio/speech",
             voice: "af_heart(1)+af_aoede(1)+af_sky(1)",
             speed: 1.1,
+            pitch: 1.0,
             replacements: [],
             fontFamily: "Crimson Pro",
             fontSize: 12,
@@ -181,3 +182,5 @@ const DEFAULT_REPLACEMENTS = {
 };
 
 const TEXT_INPUT_AUTHOR = 'You';
+
+const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;

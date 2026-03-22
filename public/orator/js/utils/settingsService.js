@@ -10,6 +10,7 @@ const SettingsService = {
         this.$speechService = $('#speech-service-input');
         this.$speechVoice = $('#speech-voice-input');
         this.$speechSpeed = $('#speech-speed-input');
+        this.$speechPitch = $('#speech-pitch-input');
         this.$speechReplacements = $('.speech-cust-items');
 
         this.$fontInput = $('#font-input');
@@ -17,6 +18,7 @@ const SettingsService = {
         this.$fontLine = $('#font-line-input');
         this.$fontSpacing = $('#font-spacing-input');
 
+        config.pitch = config.pitch ?? 1.0;
         config.fontColor = config.fontColor ?? "#000000";
         config.highlightColor = config.highlightColor ?? "#00ff00";
         config.backgroundColor = config.backgroundColor ?? "#eeeeee";
@@ -141,6 +143,10 @@ const SettingsService = {
         }
 
         this.$speechSpeed.val(config.speed);
+        this.$speechSpeed.parent().find('span').text(config.speed);
+
+        this.$speechPitch.val(config.pitch);
+        this.$speechPitch.parent().find('span').text(config.pitch);
 
         if (config.replacements) {
 
@@ -214,6 +220,7 @@ const SettingsService = {
             newConfig.ttsUrl !== this.config.ttsUrl
             || newConfig.voice !== this.config.voice
             || newConfig.speed !== this.config.speed
+            || newConfig.pitch !== this.config.pitch
             || JSON.stringify(newConfig.replacements) !== JSON.stringify(this.config.replacements)
         ) {
             newConfig.updatedAt = Date.now();
@@ -257,6 +264,7 @@ const SettingsService = {
         config.ttsUrl = this.$speechService.val().trim();
         config.voice = this.$speechVoice.val().trim();
         config.speed = this.$speechSpeed.val().trim();
+        config.pitch = this.$speechPitch.val().trim();
 
         const replacements = [];
         this.$speechReplacements.find('.speech-cust-item').each((idx, rep) => {

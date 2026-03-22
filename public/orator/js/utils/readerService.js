@@ -159,7 +159,11 @@ const ReaderService = {
 
     async reveal(progressTracker) {
         App.hideMessageBoard();
+
         this.lockedForPlayback = true;
+        setTimeout(() => {
+            this.lockedForPlayback = false
+        }, 1000);
 
         const $paragraphs = this.$wrapper.find('p');
         $paragraphs.addClass('hidden');
@@ -185,10 +189,6 @@ const ReaderService = {
         }
 
         this.scrollToParagraph(progressTracker[0], progressTracker[1]);
-
-        setTimeout(() => {
-            this.lockedForPlayback = false
-        }, 2000);
     },
 
     updateTempOratorConfig(config) {
@@ -497,6 +497,7 @@ const ReaderService = {
         let ttsUrl = 'https://kokoro.orator-audio.com/v1/audio/speech'; // Get from config in the future
         let voice = 'af_heart(1)+af_aoede(1)';
         let speed = 1.0;
+        let pitch = 1.0;
         let model = "kokoro";
 
         // let ttsUrl = 'https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech'; // Get from config in the future
@@ -514,6 +515,7 @@ const ReaderService = {
             ttsUrl = this.tempOratorConfig.ttsUrl !== "" ? this.tempOratorConfig.ttsUrl : ttsUrl;
             voice = this.tempOratorConfig.voice !== "" ? this.tempOratorConfig.voice : voice;
             speed = this.tempOratorConfig.speed !== "" ? this.tempOratorConfig.speed : speed;
+            pitch = this.tempOratorConfig.pitch !== "" ? this.tempOratorConfig.pitch : pitch;
 
             const replacements = this.tempOratorConfig.replacements ?? [];
             replacements.forEach(rep => {
@@ -534,6 +536,7 @@ const ReaderService = {
             this.book.importId ?? '--',
             ttsUrl, voice, speed,
             text,
+            INVALIDATE_AUDIOS_GENERATED_AFTER
             //cIdx, pIdx
         ].join(":");
 
@@ -597,7 +600,8 @@ const ReaderService = {
         return new Promise((resolve) => {
 
             const sound = new Howl({
-                volume: 2,
+                volume: 1.5,
+                rate: pitch,
                 src: [url],
                 format: ['mp3'],
                 html5: this.useHtml5Player,
