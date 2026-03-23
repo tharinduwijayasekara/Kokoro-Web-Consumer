@@ -38,7 +38,7 @@ const App = {
             this.registerAudioPipelineHook();
             this.registerHiss();
 
-            await this.loadNews();
+            await this.race(this.loadNews(), 5000);
 
             await this.sleep(500);
 
@@ -52,6 +52,13 @@ const App = {
         } catch (e) {
             console.log("Initialization failed.", e);
         }
+    },
+
+    async race(promise, milliseconds) {
+        return Promise.race([
+            promise,
+            (new Promise(r => setTimeout(() => r(), milliseconds)))
+        ]);
     },
 
     async requestWakeLock() {
