@@ -267,6 +267,10 @@ span.navbar-brand {
     padding: 10px;
 }
 
+#view-library[data-view="grid"] .no-cover .book-details {
+    padding-top: 120px;
+}
+
 #view-library[data-view="grid"] .orator-btn-delete-book {
     position: absolute;
     top: 0px;
@@ -319,6 +323,7 @@ span.navbar-brand {
     padding-bottom: 0.5rem;
     font-family: 'Radley';
     font-weight: 400 !important;
+    word-break: break-word;
 }
 
 .book-header {

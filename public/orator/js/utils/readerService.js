@@ -188,6 +188,8 @@ const ReaderService = {
             counter.i++;
         }
 
+        await App.sleep(250);
+
         this.scrollToParagraph(progressTracker[0], progressTracker[1]);
     },
 

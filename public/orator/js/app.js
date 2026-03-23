@@ -27,6 +27,8 @@ const App = {
 
             this.showView('splash');
 
+            this.ensureCurrentVersion();
+
             await StorageService.init();
             console.log("Fetched orator configuration json", StorageService.orator);
 
@@ -35,6 +37,8 @@ const App = {
 
             this.registerAudioPipelineHook();
             this.registerHiss();
+
+            await this.loadNews();
 
             await this.sleep(500);
 
@@ -192,7 +196,7 @@ const App = {
 
                 const bookItemHtml = this.fromTemplate(bookItemTemplate, {
                     id: book.id,
-                    cover: book.cover,
+                    cover: book.cover ?? DEFAULT_BOOK_COVER,
                     title: this.truncateMiddle(book.title, (viewType === 'list' ? 100 : 50)),
                     author: book.author,
                     pubDate: pubDate,
@@ -202,7 +206,12 @@ const App = {
                     readingTime: readingTime,
                 });
 
-                $(bookItemHtml).appendTo($list);
+                const classes = [];
+                //if (!book.cover) classes.push('no-cover');
+
+                $(bookItemHtml)
+                    .addClass(classes.join(' '))
+                    .appendTo($list);
 
                 booksById[book.id] = book;
 
@@ -282,7 +291,7 @@ const App = {
 
         const bookItemHtml = this.fromTemplate('book-item-list', {
             id: book.id,
-            cover: book.cover,
+            cover: book.cover ?? DEFAULT_BOOK_COVER,
             title: book.title,
             author: book.author,
             pubDate: pubDate,
@@ -713,7 +722,7 @@ const App = {
         }
 
         App.showMessageBoard("Orator", "Importing your text...", -1);
-        const importedBook = await ImportText.importFromText(text, false);
+        const importedBook = await ImportText.importFromText(text);
         await StorageService.db.books.put(importedBook);
 
         $input.val('');
@@ -768,7 +777,36 @@ const App = {
         });
 
         this.hiss = hiss;
-    }
+    },
+
+    ensureCurrentVersion() {
+        const url = new URL(window.location.href);
+
+        if (parseInt(url.searchParams.get('v') ?? 0) !== CURRENT_VERSION) {
+            url.searchParams.set('v', CURRENT_VERSION);
+            window.location.href = url.toString();
+        }
+    },
+
+    async loadNews() {
+        const todaysDate = (new Date()).toISOString().split('T')[0];
+        const todaysUrl = `news/news-${todaysDate}.txt`;
+        const news = await fetch(todaysUrl, {
+            method: 'GET'
+        });
+
+        if (!news) return;
+
+        const text = await news.text();
+        if (!text) return;
+
+        const importedBook = await ImportText.importFromText(text, true);
+        importedBook.id = todaysUrl;
+        importedBook.title = `News Update SL: ${todaysDate}`;
+        await StorageService.db.books.put(importedBook);
+
+        if (!this.$app.find('#view-library.active').length) return;
+    },
 
 }
 

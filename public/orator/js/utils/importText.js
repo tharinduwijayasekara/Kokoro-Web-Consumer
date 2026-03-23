@@ -19,7 +19,7 @@ const ImportText = {
         }
     },
 
-    async importFromText(text) {
+    async importFromText(text, silent = false) {
         const paragraphsRaw = text.split(/\r?\n|\r|\n/);
         let paragraphs = [];
 
@@ -33,10 +33,12 @@ const ImportText = {
         let consecutiveEmptyLines = 0;
 
         for (const paragraph of paragraphsRaw) {
-            progress.i++;
-            const percent = Math.ceil((progress.i / progress.count) * 100);
-            App.showMessageBoard("Importing...", `Processing your text`, percent);
-            if ((progress.i % 100) === 0) await App.sleep(50);
+            if (!silent) {
+                progress.i++;
+                const percent = Math.ceil((progress.i / progress.count) * 100);
+                App.showMessageBoard("Importing...", `Processing your text`, percent);
+                if ((progress.i % 100) === 0) await App.sleep(50);
+            }
 
             const isEmptyParagraph = !paragraph.trim();
             if (isEmptyParagraph) {
