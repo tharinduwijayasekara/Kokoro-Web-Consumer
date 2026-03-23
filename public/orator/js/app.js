@@ -277,41 +277,51 @@ const App = {
 
         if (!orator.currentlyReading || !books) return;
 
-        const book = books.find(b => b.id === orator.currentlyReading);
-        if (!book) return;
+        const currentlyReadingList = (orator.currentlyReading ?? "").split('///---///');
 
-        let pubDate = book.meta?.pubdate ?? "";
-        if (pubDate) {
-            try {
-                pubDate = (new Date(pubDate)).toLocaleDateString();
-            } catch (e) {
+        const bookItemHtmls = [];
+
+        for (const bookId of currentlyReadingList) {
+
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            let pubDate = book.meta?.pubdate ?? "";
+            if (pubDate) {
+                try {
+                    pubDate = (new Date(pubDate)).toLocaleDateString();
+                } catch (e) {
+                }
             }
+
+            const progress = StorageService.orator.reading;
+            const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
+
+            let readingTime = orator.timers?.[book.id] ?? 0;
+            readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60 * 60));
+            readingTime = this.pluralize(readingTime, 'hour');
+
+            const bookItemHtml = this.fromTemplate('book-item-list', {
+                id: book.id,
+                cover: book.cover ?? DEFAULT_BOOK_COVER,
+                title: book.title,
+                author: book.author,
+                pubDate: pubDate,
+                importedAt: book.importedAt,
+                bookDescText: "",
+                progress: bookProgress,
+                readingTime: readingTime
+            });
+
+            bookItemHtmls.push(bookItemHtml);
+
         }
 
         const sectionTitle = this.getRandomOratorMessage(LIBRARY_CURRENT_READ_TITLES);
-        const progress = StorageService.orator.reading;
-        const bookProgress = ((progress[book.id] ?? "0::0::0").split('::'))[2];
-
-        let readingTime = orator.timers?.[book.id] ?? 0;
-        readingTime = isNaN(readingTime) ? 0 : Math.round(readingTime / (60 * 60));
-        readingTime = this.pluralize(readingTime, 'hour');
-
-        const bookItemHtml = this.fromTemplate('book-item-list', {
-            id: book.id,
-            cover: book.cover ?? DEFAULT_BOOK_COVER,
-            title: book.title,
-            author: book.author,
-            pubDate: pubDate,
-            importedAt: book.importedAt,
-            bookDescText: "",
-            progress: bookProgress,
-            readingTime: readingTime
-        });
-
         this.$app.find('.library-currently-reading').html(
             [
                 `<div class="library-currently-reading-header">${sectionTitle}</div>`,
-                bookItemHtml
+                bookItemHtmls.join('')
             ].join('')
         );
 

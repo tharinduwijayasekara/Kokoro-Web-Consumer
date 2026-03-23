@@ -92,7 +92,14 @@ const ReaderService = {
         const orator = await StorageService.getOratorJson();
         console.log("Orator json", orator);
 
-        orator.currentlyReading = bookId;
+        const currentlyReading = (orator.currentlyReading ?? "")
+            .split('///---///')
+            .filter(_bookId => _bookId !== bookId);
+
+        currentlyReading.unshift(bookId);
+        if (currentlyReading.length > 3) currentlyReading.pop();
+
+        orator.currentlyReading = currentlyReading.join('///---///');
         await StorageService.writeOratorJson(orator);
 
         this.updateTempOratorConfig(orator.config);
