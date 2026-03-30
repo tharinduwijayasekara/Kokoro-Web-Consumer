@@ -699,14 +699,14 @@ const ReaderService = {
 
         const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
         const isContinuation = text.startsWith(ORATOR_P_CONTD);
-        const multiplier = this.useHtml5Player ? 20 : 60;
+        const multiplier = this.useHtml5Player ? 20 : 40;
 
         if (isContinuation) {
             return this.useHtml5Player ? 5 : 100;
         }
 
         const duration = this.currentFullParagraphDuration;
-        const silence = parseInt(Math.min(1000, duration * multiplier));
+        const silence = parseInt(Math.min(800, duration * multiplier));
 
         this.currentFullParagraphDuration = 0;
         return silence;
@@ -817,7 +817,7 @@ const ReaderService = {
 
         let chapterNeededRender = false;
 
-        if (cIdx === null && pIdx === null) {
+        if (!cIdx && !pIdx) {
             [cIdx, pIdx] = this.progressTracker;
         }
 
@@ -830,11 +830,12 @@ const ReaderService = {
         const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
         targetElement.classList.add('active');
 
-        const safeArea = 300;
-        const elementHeight = Math.max(0, Math.ceil($(targetElement).offset().top)) + $(targetElement).height() + 20;
+        const safeArea = 200;
+        const elementHeight = Math.max(0, Math.ceil($(targetElement).offset().top)) + $(targetElement).height();
 
         if (
-            !chapterNeededRender
+            fuzzy
+            && !chapterNeededRender
             && elementHeight < safeArea
         ) {
             console.log("Skipping this scroll event");
@@ -842,11 +843,20 @@ const ReaderService = {
         }
 
         if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start' // This respects the scroll-margin-top
+            const container = this.$wrapper[0]; // unwrap jQuery to get the DOM element
+            const scrollMargin = parseInt(getComputedStyle(targetElement).scrollMarginTop) || 0;
+            const offset = targetElement.getBoundingClientRect().top
+                - container.getBoundingClientRect().top
+                + container.scrollTop
+                - scrollMargin;
+
+            container.scrollTo({
+                top: offset,
+                behavior: 'smooth'
             });
         }
+
+        return;
     },
 
     stop() {
@@ -897,6 +907,10 @@ const ReaderService = {
 
     toggleFullscreen() {
         this.$app.find('#view-reader').toggleClass('reader-fullscreen');
+    },
+
+    isFullscreen() {
+        return $('#view-reader').hasClass('reader-fullscreen');
     },
 
     showPlaybackSettings() {
