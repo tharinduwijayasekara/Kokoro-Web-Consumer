@@ -806,7 +806,7 @@ const App = {
     },
 
     async loadNews() {
-        const todaysDate = (new Date()).toISOString().split('T')[0];
+        const todaysDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
         const todaysUrl = `news/news-${todaysDate}.txt`;
         const news = await fetch(todaysUrl, {
             method: 'GET'

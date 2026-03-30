@@ -9,7 +9,7 @@ const DEFAULT_ORATOR_JSON = {
             fontFamily: "Crimson Pro",
             fontSize: 12,
             lineHeight: 16,
-            letterSpacing: 1,
+            letterSpacing: 0,
             fontColor: "#CACACA",
             highlightColor: "#226622",
             backgroundColor: "#121212",

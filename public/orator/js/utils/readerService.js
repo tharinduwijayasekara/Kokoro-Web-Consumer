@@ -54,6 +54,8 @@ const ReaderService = {
 
     highlighter: undefined,
 
+    lastUserIntTime: 0,
+
     async init(bookId) {
         App.showMessageBoard("Orator", "Opening book...", 0);
         await App.sleep(10);
@@ -333,6 +335,8 @@ const ReaderService = {
             return;
         }
 
+        this.updateUserIntTime();
+
         await this.renderChapterOnScreen(currentChapter - 1);
         await App.sleep(50);
         this.scrollToParagraph(this.currentChapterOnScreen, 0);
@@ -343,6 +347,8 @@ const ReaderService = {
         if (currentChapter >= this.book.chapters.length - 1) {
             return;
         }
+
+        this.updateUserIntTime();
 
         await this.renderChapterOnScreen(currentChapter + 1);
         await App.sleep(50);
@@ -376,6 +382,8 @@ const ReaderService = {
         this.isPlaying = true;
         this.$playPauseButton.addClass('playing');
 
+        this.resetUserIntTime();
+
         App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0);
 
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
@@ -383,6 +391,18 @@ const ReaderService = {
 
         console.log("Calling play next");
         this.playNext();
+    },
+
+    updateUserIntTime() {
+        this.lastUserIntTime = Date.now();
+    },
+
+    resetUserIntTime() {
+        this.lastUserIntTime = 0;
+    },
+
+    isUserInteracting() {
+        return (Date.now() - this.lastUserIntTime) < 10000
     },
 
     async fillBuffer(cIdx, pIdx, size, isFromPlay = false) {
@@ -701,9 +721,11 @@ const ReaderService = {
 
         this.updateProgress(current.cIdx, current.pIdx);
 
-        this.$container.find('.reader-paragraph.active').removeClass('active');
-        this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
-        this.scrollToParagraph(current.cIdx, current.pIdx);
+        if (!this.isUserInteracting()) {
+            this.$container.find('.reader-paragraph.active').removeClass('active');
+            this.$container.find(`#reader-paragraph-${current.cIdx}-${current.pIdx}`).addClass('active');
+            this.scrollToParagraph(current.cIdx, current.pIdx, true);
+        }
 
         this.computeBufferedTime().then((bt) =>
             this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
@@ -790,8 +812,10 @@ const ReaderService = {
         return hms.replace(/^(\d+)/, h => `${Number(h) + days * HOURS_PER_DAY}`.padStart(2, '0'));
     },
 
-    async scrollToParagraph(cIdx, pIdx) {
+    async scrollToParagraph(cIdx, pIdx, fuzzy = false) {
         this.updateHighlight();
+
+        let chapterNeededRender = false;
 
         if (cIdx === null && pIdx === null) {
             [cIdx, pIdx] = this.progressTracker;
@@ -799,11 +823,24 @@ const ReaderService = {
 
         if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
             await this.renderChapterOnScreen(cIdx);
+            chapterNeededRender = true;
             await App.sleep(50);
         }
 
         const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
         targetElement.classList.add('active');
+
+        const safeArea = Math.floor(window.innerHeight - 150);
+        const elementHeight = Math.max(0, Math.ceil($(targetElement).offset().top)) + $(targetElement).height() + 20;
+
+        if (
+            !chapterNeededRender
+            && elementHeight < safeArea
+        ) {
+            console.log("Skipping this scroll event");
+            return;
+        }
+
         if (targetElement) {
             targetElement.scrollIntoView({
                 behavior: 'smooth',
