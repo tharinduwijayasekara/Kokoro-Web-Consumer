@@ -119,17 +119,31 @@ const ORATOR_MESSAGES = [
     "Preparing for marathon chapter with no breaks."
 ];
 
+const ORATOR_FONT_FILES = [
+    'ACaslonPro',
+    'AGaramondPro+Italic',
+    'Athelas+Italic',
+    'BradleyHand',
+    'Inter+Italic',
+    'SamsungSans',
+];
+
 const ORATOR_FONTS = [
-    "Athelas",
+    'system-ui',
+    'ACaslonPro',
+    'AGaramondPro',
+    'Athelas',
     "BradleyHand",
     "Crimson Pro",
     "EB Garamond",
     "Google Sans",
     "Handlee",
+    'Inter',
     "Libre Baskerville",
     "Libre Caslon Text",
     "Radley",
-    "Roboto"
+    "Roboto",
+    'SamsungSans',
 ];
 
 const ORATOR_P_CONTD = "##::##::ATTACH_TO_PREV_SPAN::##::##";

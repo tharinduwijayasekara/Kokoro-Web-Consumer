@@ -1,31 +1,3 @@
-@font-face {
-    font-family: 'Athelas';
-    src: url('../fonts/Athelas-Regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Athelas';
-    src: url('../fonts/Athelas-Italic.woff2') format('woff2');
-    font-weight: normal;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'BradleyHand';
-    src: url('../fonts/BradleyHand-Regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'BradleyHand';
-    src: url('../fonts/BradleyHand-Regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: italic;
-}
-
 html, body {
     height: 100%;
     background: #121212;

@@ -830,7 +830,7 @@ const ReaderService = {
         const targetElement = document.getElementById(`reader-paragraph-${cIdx}-${pIdx}`);
         targetElement.classList.add('active');
 
-        const safeArea = Math.floor(window.innerHeight - 150);
+        const safeArea = 300;
         const elementHeight = Math.max(0, Math.ceil($(targetElement).offset().top)) + $(targetElement).height() + 20;
 
         if (

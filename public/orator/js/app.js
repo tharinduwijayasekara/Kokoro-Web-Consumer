@@ -29,6 +29,8 @@ const App = {
 
             this.ensureCurrentVersion();
 
+            this.registerOratorFonts();
+
             await StorageService.init();
             console.log("Fetched orator configuration json", StorageService.orator);
 
@@ -806,7 +808,7 @@ const App = {
     },
 
     async loadNews() {
-        const todaysDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+        const todaysDate = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
         const todaysUrl = `news/news-${todaysDate}.txt`;
         const news = await fetch(todaysUrl, {
             method: 'GET'
@@ -824,6 +826,40 @@ const App = {
 
         if (!this.$app.find('#view-library.active').length) return;
     },
+
+    registerOratorFonts() {
+        const basePath = 'fonts';
+        const styleEl = document.createElement('style');
+
+        const css = ORATOR_FONT_FILES.map(entry => {
+            const hasItalic = entry.endsWith('+Italic');
+            const fontName = hasItalic ? entry.replace('+Italic', '') : entry;
+
+            const regularSrc = `url('${basePath}/${fontName}-Regular.woff2') format('woff2')`;
+            const italicSrc = hasItalic
+                ? `url('${basePath}/${fontName}-Italic.woff2') format('woff2')`
+                : regularSrc;
+
+            return `
+            @font-face {
+                font-family: '${fontName}';
+                src: ${regularSrc};
+                font-weight: normal;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: '${fontName}';
+                src: ${italicSrc};
+                font-weight: normal;
+                font-style: italic;
+            }`
+                .trim();
+        })
+            .join('\n\n');
+
+        styleEl.textContent = css;
+        document.head.appendChild(styleEl);
+    }
 
 }
 
