@@ -339,6 +339,7 @@ const App = {
 
             if (confirm("Delete this book?")) {
                 await StorageService.db.books.delete(id);
+                this.renderCurrentlyReading();
                 this.renderLibrary();
             }
         });
@@ -351,13 +352,15 @@ const App = {
             const files = e.target.files;
             let importedBook = undefined;
 
+            const importTasks = [];
+
             try {
                 for (const file of files) {
                     console.log("New file selected for import", file);
                     this.showMessageBoard("Importing...");
 
                     if (file) {
-                        importedBook = await this.handleImport(file);
+                        importTasks.push(this.handleImport(file));
                     }
 
                     this.showMessageBoard("Importing...");
@@ -365,6 +368,9 @@ const App = {
             } catch (e) {
                 console.log("Error while importing files", e);
             }
+
+            const importedBooks = await Promise.all(importTasks);
+            importedBook = importedBooks.length === 1 ? importedBooks[0] : undefined;
 
             console.log("Import all files complete");
 
@@ -679,10 +685,12 @@ const App = {
             const prevIdx = response.length - 1;
             let prev = response[prevIdx];
             let prevArr = prev.split(' ');
+            let partArr = part.split(' ');
 
             if (
                 !this.hasEvenSpeechMarks(prev)
                 || prevArr.length < 20
+                || partArr.length < 20
                 || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
                 response[prevIdx] = [prev, part].join(' ');
