@@ -573,6 +573,22 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 
 .reader-container {
     position: relative;
+    transition:
+            transform 0.25s ease-in-out,
+            opacity 0.1s ease;
+
+}
+
+.reader-container.hide {
+    opacity: 0;
+}
+
+.reader-container.animate-to-left {
+    transform: translateX(-50px);
+}
+
+.reader-container.animate-to-right {
+    transform: translateX(50px);
 }
 
 .reader-container .highlight {

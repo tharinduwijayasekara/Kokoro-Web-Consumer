@@ -322,10 +322,7 @@ const ReaderService = {
 
         const targetElement = document.getElementById(`toc-chapter-${chapterIdToRender}`);
         if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start' // This respects the scroll-margin-top
-            });
+            this.scrollToElementInContainer(targetElement, this.$chaptersList[0]);
         }
     },
 
@@ -337,8 +334,8 @@ const ReaderService = {
 
         this.updateUserIntTime();
 
-        await this.renderChapterOnScreen(currentChapter - 1);
-        await App.sleep(50);
+        this.$container.addClass('animate-to-right').addClass('hide');
+        await this.animateRenderChapterOnScreen('backward', currentChapter - 1)
         this.scrollToParagraph(this.currentChapterOnScreen, 0);
     },
 
@@ -349,10 +346,26 @@ const ReaderService = {
         }
 
         this.updateUserIntTime();
-
-        await this.renderChapterOnScreen(currentChapter + 1);
-        await App.sleep(50);
+        await this.animateRenderChapterOnScreen('forward', currentChapter + 1)
         this.scrollToParagraph(this.currentChapterOnScreen, 0);
+    },
+
+    async animateRenderChapterOnScreen(direction, cIdx) {
+        const [forward, backward] = direction === 'forward' ?
+            ['animate-to-left', 'animate-to-right'] :
+            ['animate-to-right', 'animate-to-left'];
+
+        this.$container.addClass(forward).addClass('hide');
+        await App.sleep(100);
+
+        this.$container.removeClass(forward).addClass(backward);
+        await Promise.all([
+            await this.renderChapterOnScreen(cIdx),
+            await App.sleep(300),
+        ]);
+
+        this.$container.removeClass(backward).removeClass('hide');
+        await App.sleep(300);
     },
 
     async play(chapterId, paragraphId, bufferSize) {
@@ -822,7 +835,7 @@ const ReaderService = {
         }
 
         if (parseInt(this.$container.attr('data-chapter-id')) !== cIdx) {
-            await this.renderChapterOnScreen(cIdx);
+            await this.animateRenderChapterOnScreen('forward', cIdx);
             chapterNeededRender = true;
             await App.sleep(50);
         }
@@ -843,20 +856,23 @@ const ReaderService = {
         }
 
         if (targetElement) {
-            const container = this.$wrapper[0]; // unwrap jQuery to get the DOM element
-            const scrollMargin = parseInt(getComputedStyle(targetElement).scrollMarginTop) || 0;
-            const offset = targetElement.getBoundingClientRect().top
-                - container.getBoundingClientRect().top
-                + container.scrollTop
-                - scrollMargin;
-
-            container.scrollTo({
-                top: offset,
-                behavior: 'smooth'
-            });
+            this.scrollToElementInContainer(targetElement, this.$wrapper[0]);
         }
 
         return;
+    },
+
+    scrollToElementInContainer(targetElement, container) {
+        const scrollMargin = parseInt(getComputedStyle(targetElement).scrollMarginTop) || 0;
+        const offset = targetElement.getBoundingClientRect().top
+            - container.getBoundingClientRect().top
+            + container.scrollTop
+            - scrollMargin;
+
+        container.scrollTo({
+            top: offset,
+            behavior: 'smooth'
+        });
     },
 
     stop() {
@@ -942,11 +958,13 @@ const ReaderService = {
     setHighlighter() {
         this.highlighter = setInterval(
             () => requestAnimationFrame(() => this.updateHighlight()),
-            5000
+            1000
         );
     },
 
     async updateHighlight() {
+        console.log("Updating highlight");
+
         if (!$('#view-reader').hasClass('active')) return;
 
         const $target = this.$app.find('.reader-paragraph.active');
