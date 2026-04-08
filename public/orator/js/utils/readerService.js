@@ -402,6 +402,10 @@ const ReaderService = {
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
         await this.fillBuffer(chapterId, paragraphId, 3, true);
 
+        if (App.audioPipelineHook) {
+            App.audioPipelineHook.pause();
+        }
+
         console.log("Calling play next");
         this.playNext();
     },
@@ -642,7 +646,7 @@ const ReaderService = {
         return new Promise((resolve) => {
 
             const sound = new Howl({
-                volume: 1.5,
+                volume: this.useHtml5Player ? 1 : 1.5,
                 rate: pitch,
                 src: [url],
                 format: ['mp3'],
@@ -712,7 +716,7 @@ const ReaderService = {
 
         const text = this.book.chapters[cIdx][pIdx + 1] ?? "";
         const isContinuation = text.startsWith(ORATOR_P_CONTD);
-        const multiplier = this.useHtml5Player ? 20 : 40;
+        const multiplier = this.useHtml5Player ? 15 : 40;
 
         if (isContinuation) {
             return this.useHtml5Player ? 5 : 100;

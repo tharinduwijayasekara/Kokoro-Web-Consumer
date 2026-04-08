@@ -644,7 +644,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 }
 
 .reader-container .reader-paragraph {
-    scroll-margin-top: 70px;
+    scroll-margin-top: 50px;
     padding: 0;
 }
 
