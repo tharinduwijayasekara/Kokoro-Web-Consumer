@@ -206,6 +206,7 @@ span.navbar-brand {
     display: grid;
     /* grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); */
     grid-template-columns: repeat(auto-fill, 120px);
+    grid-template-columns: repeat(auto-fill, calc(100%/3 - 10px));
     grid-column-gap: 10px;
     justify-content: center;
 }
@@ -220,6 +221,7 @@ span.navbar-brand {
 
 #view-library[data-view="grid"] .book-item {
     width: 120px;
+    width: 100%;
 }
 
 #view-library[data-view="grid"] .book-item-contianer {
