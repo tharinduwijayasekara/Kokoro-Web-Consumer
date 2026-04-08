@@ -816,23 +816,31 @@ const App = {
     },
 
     async loadNews() {
+
+        const importFromDate = async (date) => {
+            const url = `news/news-${date}.txt`;
+            const news = await fetch(url, {
+                method: 'GET'
+            });
+
+            if (!news) return;
+
+            const text = await news.text();
+            if (!text) return;
+
+            const importedBook = await ImportText.importFromText(text, true);
+            importedBook.id = url;
+            importedBook.title = `News Update SL: ${date}`;
+            await StorageService.db.books.put(importedBook);
+        };
+
         const todaysDate = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
-        const todaysUrl = `news/news-${todaysDate}.txt`;
-        const news = await fetch(todaysUrl, {
-            method: 'GET'
-        });
+        const yesterdaysDate = new Date(Date.now() - (24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
 
-        if (!news) return;
-
-        const text = await news.text();
-        if (!text) return;
-
-        const importedBook = await ImportText.importFromText(text, true);
-        importedBook.id = todaysUrl;
-        importedBook.title = `News Update SL: ${todaysDate}`;
-        await StorageService.db.books.put(importedBook);
-
-        if (!this.$app.find('#view-library.active').length) return;
+        await Promise.all([
+            importFromDate(todaysDate),
+            importFromDate(yesterdaysDate),
+        ]);
     },
 
     registerOratorFonts() {
