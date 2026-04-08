@@ -40,7 +40,7 @@ const App = {
             this.registerAudioPipelineHook();
             this.registerHiss();
 
-            await this.race(this.loadNews(), 5000);
+            await this.race(this.loadNews(), 5 * 1000);
 
             await this.sleep(500);
 
@@ -286,7 +286,7 @@ const App = {
         for (const bookId of currentlyReadingList) {
 
             const book = books.find(b => b.id === bookId);
-            if (!book) return;
+            if (!book) continue;
 
             let pubDate = book.meta?.pubdate ?? "";
             if (pubDate) {
