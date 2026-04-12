@@ -281,6 +281,11 @@ const App = {
 
         const currentlyReadingList = (orator.currentlyReading ?? "").split('///---///');
 
+        const todaysDate = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
+        currentlyReadingList.push(
+            `news/news-${todaysDate}.txt`
+        )
+
         const bookItemHtmls = [];
 
         for (const bookId of currentlyReadingList) {

@@ -94,15 +94,17 @@ const ReaderService = {
         const orator = await StorageService.getOratorJson();
         console.log("Orator json", orator);
 
-        const currentlyReading = (orator.currentlyReading ?? "")
-            .split('///---///')
-            .filter(_bookId => _bookId !== bookId);
+        if (!bookId.startsWith('news/news-')) {
+            const currentlyReading = (orator.currentlyReading ?? "")
+                .split('///---///')
+                .filter(_bookId => _bookId !== bookId);
 
-        currentlyReading.unshift(bookId);
-        if (currentlyReading.length > 3) currentlyReading.pop();
+            currentlyReading.unshift(bookId);
+            if (currentlyReading.length > 3) currentlyReading.pop();
 
-        orator.currentlyReading = currentlyReading.join('///---///');
-        await StorageService.writeOratorJson(orator);
+            orator.currentlyReading = currentlyReading.join('///---///');
+            await StorageService.writeOratorJson(orator);
+        }
 
         this.updateTempOratorConfig(orator.config);
 
@@ -223,8 +225,14 @@ const ReaderService = {
 
     async closeBook() {
         this.stop();
-        App.renderCurrentlyReading();
-        App.renderLibrary();
+
+        App.showMessageBoard("Orator", "Closing book...", 90);
+        await App.race(App.loadNews(), 5 * 1000);
+
+        await Promise.all([
+            App.renderCurrentlyReading(),
+            App.renderLibrary()
+        ]);
     },
 
     async updateProgress(cIdx, pIdx) {

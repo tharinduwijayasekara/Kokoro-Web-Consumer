@@ -105,6 +105,7 @@ span.navbar-brand {
     text-transform: capitalize;
     margin-bottom: 5px;
 }
+
 .orator-view-reader .navbar #navbar-chapter-name {
     font-size: 10px;
     line-height: 12px;
@@ -206,7 +207,7 @@ span.navbar-brand {
     display: grid;
     /* grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); */
     grid-template-columns: repeat(auto-fill, 120px);
-    grid-template-columns: repeat(auto-fill, calc(100%/3 - 10px));
+    grid-template-columns: repeat(auto-fill, calc(100% / 3 - 10px));
     grid-column-gap: 10px;
     justify-content: center;
 }
@@ -441,13 +442,35 @@ label.btn-import-books {
 }
 
 #view-library .library-currently-reading .book-item .book-item-contianer .book-cover-thumb {
-    width: 100px;
-    height: 150px;
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
 }
 
 #view-library .library-currently-reading .book-item .book-item-contianer .book-details {
+    padding: 0;
     padding-left: 15px;
     padding-right: 5px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details .book-header > div {
+    min-width: 0;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details .fw-bold {
+    min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-bottom: 0px;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details .text-muted {
+    display: none;
+}
+
+#view-library .library-currently-reading .book-item .book-item-contianer .book-details .text-muted.visible-on-currently-reading {
+    display: block;
 }
 
 #view-library .library-currently-reading .book-item .book-item-contianer .book-details .book-description {
@@ -471,7 +494,7 @@ label.btn-import-books {
     background-color: #6e00b3;
 }
 
-img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
+img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     max-height: 0;
 }
 
@@ -575,9 +598,8 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
 
 .reader-container {
     position: relative;
-    transition:
-            transform 0.25s ease-in-out,
-            opacity 0.1s ease;
+    transition: transform 0.25s ease-in-out,
+    opacity 0.1s ease;
 
 }
 
@@ -600,10 +622,9 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""]{
     left: 0;
     right: 0;
     border-radius: 7px;
-    transition:
-            top 0.4s cubic-bezier(0.20, 0.10, 0, 1),
-            height 0.5s cubic-bezier(0.20, 0.10, 0, 1),
-            background-color 0.5s ease-in-out;
+    transition: top 0.4s cubic-bezier(0.20, 0.10, 0, 1),
+    height 0.5s cubic-bezier(0.20, 0.10, 0, 1),
+    background-color 0.5s ease-in-out;
 }
 
 .reader-container p {
@@ -882,22 +903,22 @@ div#message-board-wrapper {
 
     background: linear-gradient(
             90deg,
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.03) 20%,
-            rgba(255,255,255,0.08) 40%,
-            rgba(255,255,255,0.18) 55%,
-            rgba(255,255,255,0.08) 70%,
-            rgba(255,255,255,0.03) 85%,
-            rgba(255,255,255,0) 100%
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.03) 20%,
+            rgba(255, 255, 255, 0.08) 40%,
+            rgba(255, 255, 255, 0.18) 55%,
+            rgba(255, 255, 255, 0.08) 70%,
+            rgba(255, 255, 255, 0.03) 85%,
+            rgba(255, 255, 255, 0) 100%
     );
 
     background: linear-gradient(
             90deg,
-            rgba(255,255,255,0.0) 0%,
-            rgba(255,255,255,0.29) 45%,
-            rgba(255,255,255,0.3) 50%,
-            rgba(255,255,255,0.29) 55%,
-            rgba(255,255,255,0) 100%
+            rgba(255, 255, 255, 0.0) 0%,
+            rgba(255, 255, 255, 0.29) 45%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.29) 55%,
+            rgba(255, 255, 255, 0) 100%
     );
 
     animation: win7-shine 10s ease-in-out infinite;
