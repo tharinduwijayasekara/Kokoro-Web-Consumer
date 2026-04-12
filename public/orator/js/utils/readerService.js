@@ -333,10 +333,7 @@ const ReaderService = {
         }
 
         this.updateUserIntTime();
-
-        this.$container.addClass('animate-to-right').addClass('hide');
-        await this.animateRenderChapterOnScreen('backward', currentChapter - 1)
-        this.scrollToParagraph(this.currentChapterOnScreen, 0);
+        this.scrollToParagraph(currentChapter - 1, 0);
     },
 
     async goToNextChapter() {
@@ -346,8 +343,7 @@ const ReaderService = {
         }
 
         this.updateUserIntTime();
-        await this.animateRenderChapterOnScreen('forward', currentChapter + 1)
-        this.scrollToParagraph(this.currentChapterOnScreen, 0);
+        this.scrollToParagraph(currentChapter + 1, 0);
     },
 
     async animateRenderChapterOnScreen(direction, cIdx) {
@@ -834,7 +830,7 @@ const ReaderService = {
 
         let chapterNeededRender = false;
 
-        if (!cIdx && !pIdx) {
+        if (cIdx === undefined || pIdx === undefined) {
             [cIdx, pIdx] = this.progressTracker;
         }
 
