@@ -147,7 +147,7 @@ span.navbar-brand {
 }
 
 .library-top-image {
-    height: 40vh;
+    height: 30vh;
     display: grid !important;
     grid-template-rows: auto auto;
     align-content: center;
@@ -209,7 +209,7 @@ span.navbar-brand {
     grid-template-columns: repeat(auto-fill, 120px);
     grid-template-columns: repeat(auto-fill, calc(100% / 3 - 10px));
     grid-column-gap: 10px;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 #view-library[data-view="grid"] .author-item {
@@ -419,7 +419,7 @@ label.btn-import-books {
 }
 
 #view-library[data-view="grid"] .library-currently-reading {
-    padding: 0px 15px;
+    padding: 0px 10px;
 }
 
 #view-library .library-currently-reading .library-currently-reading-header {
