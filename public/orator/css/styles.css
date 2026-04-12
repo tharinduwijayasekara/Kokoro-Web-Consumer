@@ -369,17 +369,28 @@ label.btn-import-books {
 }
 
 .library-list-wrapper {
+    /*
     background: linear-gradient(
             to bottom,
-            rgba(20, 20, 20, 0) 0px, /* Start (Transparent) */ rgba(20, 20, 20, 0.05) 15px,
+            rgba(20, 20, 20, 0) 0px,  
+            rgba(20, 20, 20, 0.05) 15px,
             rgba(20, 20, 20, 0.22) 45px,
-            rgba(20, 20, 20, 0.5) 75px, /* 50% darkness at 25% (75px) */ rgba(20, 20, 20, 0.7) 105px,
+            rgba(20, 20, 20, 0.5) 75px, 
+            rgba(20, 20, 20, 0.7) 105px,
             rgba(20, 20, 20, 0.82) 135px,
             rgba(20, 20, 20, 0.9) 165px,
             rgba(20, 20, 20, 0.95) 195px,
             rgba(20, 20, 20, 0.98) 235px,
             rgba(20, 20, 20, 0.995) 270px,
-            rgba(20, 20, 20, 1) 300px /* End (Solid) */
+            rgba(20, 20, 20, 1) 300px
+    );
+    */
+    background: linear-gradient(
+        to bottom, 
+        rgba(20, 20, 20, 0) 0px, 
+        rgba(20, 20, 20, 0.01) 100px,
+        rgba(30, 20, 30, 40) 30vh,
+        rgba(40, 20, 40, 100) 40vh
     );
 }
 

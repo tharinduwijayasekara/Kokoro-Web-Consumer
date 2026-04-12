@@ -280,6 +280,9 @@ const App = {
         if (!orator.currentlyReading || !books) return;
 
         const currentlyReadingList = (orator.currentlyReading ?? "").split('///---///');
+        if (currentlyReadingList.length === 0) {
+            return;
+        }
 
         const todaysDate = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
         currentlyReadingList.push(
