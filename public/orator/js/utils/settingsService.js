@@ -246,7 +246,7 @@ const SettingsService = {
 
         if (isFontChanged) {
             await App.sleep(1000);
-            ReaderService.scrollToParagraph(null, null);
+            ReaderService.scrollToParagraph(undefined, undefined);
         }
 
         if (isSpeechServiceChanged) this.loadSettings(newConfig);

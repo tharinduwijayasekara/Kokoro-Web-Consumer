@@ -454,7 +454,7 @@ const App = {
             e.stopPropagation();
             this.requestWakeLock();
 
-            ReaderService.scrollToParagraph(null, null);
+            ReaderService.scrollToParagraph(undefined, undefined);
         });
 
         this.$app.on('click', '.reader-paragraph', async (e) => {
