@@ -697,7 +697,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prevArr.length < 10
+                || prevArr.length < 50
                 || partArr.length < 10
                 || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
@@ -824,7 +824,6 @@ const App = {
     },
 
     async loadNews() {
-
         const importFromDate = async (date) => {
             const url = `news/news-${date}.txt`;
             const news = await fetch(url, {
@@ -842,13 +841,11 @@ const App = {
             await StorageService.db.books.put(importedBook);
         };
 
-        const todaysDate = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
-        const yesterdaysDate = new Date(Date.now() - (24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+        const dates = Array.from({ length: 5 }, (_, i) =>
+            new Date(Date.now() - (i * 24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' })
+        );
 
-        await Promise.all([
-            importFromDate(todaysDate),
-            importFromDate(yesterdaysDate),
-        ]);
+        await Promise.all(dates.map(importFromDate));
     },
 
     registerOratorFonts() {

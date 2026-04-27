@@ -24,9 +24,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 50,
-    minBufferSize: 40,
-    maxBufferSize: 50,
+    bufferSize: 500,
+    minBufferSize: 400,
+    maxBufferSize: 500,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,

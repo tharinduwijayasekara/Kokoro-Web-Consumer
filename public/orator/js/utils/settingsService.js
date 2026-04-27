@@ -329,7 +329,8 @@ const SettingsService = {
             
             .reader-container .highlight {
                 background-color: ${config.highlightColor} !important;
-                background: linear-gradient(180deg, ${config.highlightColor} 0%, ${hlColorDarkened} 100%) !important;
+                border: 1px solid ${hlColorDarkened} !important;
+                /*background: linear-gradient(180deg, ${config.highlightColor} 0%, ${hlColorDarkened} 100%) !important;*/
             }
             
             .playback-chapter-item.active {
