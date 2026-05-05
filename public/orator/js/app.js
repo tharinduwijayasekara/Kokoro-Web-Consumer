@@ -244,6 +244,8 @@ const App = {
             }
         }
 
+        this.$app.find('.library-storage-quota').text(await StorageService.availableStorageGB());
+
         this.showView('library');
         this.hideMessageBoard();
     },

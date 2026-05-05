@@ -24,9 +24,9 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 500,
-    minBufferSize: 400,
-    maxBufferSize: 500,
+    bufferSize: 50,
+    minBufferSize: 40,
+    maxBufferSize: 70,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -56,6 +56,8 @@ const ReaderService = {
 
     lastUserIntTime: 0,
 
+    hasEnoughStorage: false,
+
     async init(bookId) {
         App.showMessageBoard("Orator", "Opening book...", 0);
         await App.sleep(10);
@@ -81,6 +83,8 @@ const ReaderService = {
         }
 
         this.abortController = new AbortController();
+
+        this.hasEnoughStorage = await StorageService.hasEnoughStorage();
 
         const books = await StorageService.getBooks();
         const book = books.find(b => b.id == bookId);
@@ -638,10 +642,12 @@ const ReaderService = {
 
             blob = await response.blob();
 
-            await StorageService.db.audios.put({
-                id: cacheKey,
-                blob: blob
-            });
+            if (this.hasEnoughStorage) {
+                await StorageService.db.audios.put({
+                    id: cacheKey,
+                    blob: blob
+                });
+            }
         }
 
         const url = URL.createObjectURL(blob);

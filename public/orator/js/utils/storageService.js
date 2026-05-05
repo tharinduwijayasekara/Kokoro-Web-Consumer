@@ -57,7 +57,7 @@ const StorageService = {
 
     async cleanupOldAudios() {
         const threshold = new Date();
-        threshold.setDate(threshold.getDate() - 30);
+        threshold.setDate(threshold.getDate() - 5);
 
         try {
             const deleteCount = await this.db.audios
@@ -90,6 +90,19 @@ const StorageService = {
 
         console.log(`Storage is ${isPersisted ? "persistent" : "temporary"}`);
         return isPersisted;
-    }
+    },
 
+    async hasEnoughStorage(requiredBytes = 10 * 1024 * 1024 * 1024) {
+        if (!navigator.storage?.estimate) return null;
+        const {usage, quota} = await navigator.storage.estimate();
+        const hasEnoughStorage = (quota - usage) >= requiredBytes;
+        return true;
+    },
+
+    async availableStorageGB() {
+        if (!navigator.storage?.estimate) return "Cannot measure storage";
+        const { usage, quota } = await navigator.storage.estimate();
+        const toGB = bytes => (bytes / (1024 ** 3)).toFixed(2);
+        return `${toGB(usage)} of ${toGB(quota)} GB used`;
+    },
 };
