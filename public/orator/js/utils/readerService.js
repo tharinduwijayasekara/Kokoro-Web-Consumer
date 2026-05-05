@@ -90,7 +90,7 @@ const ReaderService = {
 
         this.abortController = new AbortController();
 
-        this.hasEnoughStorage = await StorageService.hasEnoughStorage();
+        this.hasEnoughStorage = true;
 
         const books = await StorageService.getBooks();
         const book = books.find(b => b.id == bookId);
