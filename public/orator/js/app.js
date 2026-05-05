@@ -12,6 +12,7 @@ const App = {
         'js/utils/importEpub.js',
         'js/utils/importEpubJsZip.js',
         'js/utils/importText.js',
+        'js/utils/loginService.js',
     ],
 
     audioPipelineHook: undefined,
@@ -36,6 +37,12 @@ const App = {
 
             this.setEventHandlers();
             document.getElementById('styles-for-init').remove();
+
+            const isAuthenticated = await LoginService.checkAuth();
+            if (!isAuthenticated) {
+                this.showView('register-login');
+                return;
+            }
 
             this.registerAudioPipelineHook();
             this.registerHiss();
@@ -341,6 +348,9 @@ const App = {
     },
 
     setEventHandlers() {
+
+        LoginService.setEventHandlers();
+
         this.$app.on('click', '.orator-btn-delete-book', async (e) => {
             e.stopPropagation();
             this.requestWakeLock();
@@ -843,8 +853,8 @@ const App = {
             await StorageService.db.books.put(importedBook);
         };
 
-        const dates = Array.from({ length: 5 }, (_, i) =>
-            new Date(Date.now() - (i * 24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' })
+        const dates = Array.from({length: 5}, (_, i) =>
+            new Date(Date.now() - (i * 24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'})
         );
 
         await Promise.all(dates.map(importFromDate));

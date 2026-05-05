@@ -76,6 +76,63 @@
         </div>
     </div>
 
+    <div id="view-register-login" class="orator-view orator-view-register-login">
+        <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100 p-4">
+
+            <div class="text-center mb-4">
+                <img src="images/icon-v4.png?v=4" width="96" class="mb-3">
+                <h2>Welcome to Orator</h2>
+                <p>Please login or create an account</p>
+            </div>
+
+            <div class="w-100" style="max-width: 400px;">
+
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mb-3" id="authTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-login">Login</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-register">Register</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <!-- LOGIN -->
+                    <div class="tab-pane fade show active" id="tab-login">
+                        <form id="form-login">
+                            <div class="mb-3">
+                                <input id="login-email" type="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="mb-3">
+                                <input id="login-password" type="password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <button class="btn btn-primary w-100">Login</button>
+                        </form>
+                    </div>
+
+                    <!-- REGISTER -->
+                    <div class="tab-pane fade" id="tab-register">
+                        <form id="form-register">
+                            <div class="mb-3">
+                                <input id="register-name" type="text" class="form-control" placeholder="Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <input id="register-email" type="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="mb-3">
+                                <input id="register-password" type="password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <button class="btn btn-success w-100">Register</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="view-library" class="orator-view orator-view-library bg-dark">
         <div class="library-container flex-grow-1 overflow-auto">
             <nav class="navbar navbar-dark bg-dark px-3 shadow">

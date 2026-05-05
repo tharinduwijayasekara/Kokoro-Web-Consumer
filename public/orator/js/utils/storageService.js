@@ -22,7 +22,7 @@ const StorageService = {
     async seedDefaults() {
         const orator = await this.db.data.get('orator');
         if (!orator || !orator.orator) {
-            await this.writeOratorJson(DEFAULT_ORATOR_JSON);
+            await this.writeOratorJson(DEFAULT_ORATOR_JSON, {skipSync: true});
             console.log("Default orator json updated");
         }
     },
@@ -30,14 +30,15 @@ const StorageService = {
     async getOratorJson() {
         const orator = await this.db.data.get('orator');
         if (!orator || !orator.orator) {
-            return DEFAULT_ORATOR_JSON;
+            this.orator = DEFAULT_ORATOR_JSON;
+            return this.orator;
         }
 
         this.orator = orator.orator;
         return this.orator;
     },
 
-    async writeOratorJson(orator) {
+    async writeOratorJson(orator, { skipSync = false } = {}) {
         if (!orator.orator) {
             orator = {orator: orator};
         }
@@ -49,6 +50,10 @@ const StorageService = {
 
         console.log("Orator json updated");
         this.orator = await this.getOratorJson();
+
+        if (!skipSync && typeof LoginService !== 'undefined') {
+            LoginService.updateUserOratorJson(this.orator);
+        }
     },
 
     async getBooks() {
@@ -101,7 +106,7 @@ const StorageService = {
 
     async availableStorageGB() {
         if (!navigator.storage?.estimate) return "Cannot measure storage";
-        const { usage, quota } = await navigator.storage.estimate();
+        const {usage, quota} = await navigator.storage.estimate();
         const toGB = bytes => (bytes / (1024 ** 3)).toFixed(2);
         return `${toGB(usage)} of ${toGB(quota)} GB used`;
     },
