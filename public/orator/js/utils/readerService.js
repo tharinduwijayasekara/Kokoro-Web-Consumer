@@ -477,7 +477,7 @@ const ReaderService = {
                     .replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "")
                     .replaceAll("**##", "'")
                     .replaceAll("##**", "'")
-                    .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());
+                    .replace(/\b[A-Z]{5,}\b/g, m => m.charAt(0) + m.slice(1).toLowerCase());
 
                 if (this.hasLettersOrNumbers(text)) {
                     const key = `${tempC}-${tempP}`;
