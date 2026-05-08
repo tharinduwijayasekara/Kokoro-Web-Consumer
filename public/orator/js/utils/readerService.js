@@ -542,6 +542,12 @@ const ReaderService = {
                         .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());
 
                     if (this.hasLettersOrNumbers(text)) {
+                        // Once cache is healthy, slow down background requests
+                        if (this.blobCache.size >= 100) {
+                            console.log("Blob cache > 100, throttling prefetch");
+                            await App.sleep(3000);
+                        }
+
                         await this.fetchAndCache(text, tempC, tempP);
                         fetched++;
                     }
