@@ -38,11 +38,10 @@ const App = {
             this.setEventHandlers();
             document.getElementById('styles-for-init').remove();
 
-            const isAuthenticated = await LoginService.checkAuth();
-            if (!isAuthenticated) {
-                this.showView('register-login');
-                return;
-            }
+            LoginService.checkAuth()
+                .then((isAuthenticated) => {
+                    if (!isAuthenticated) this.showView('register-login');
+                });
 
             this.registerAudioPipelineHook();
             this.registerHiss();
@@ -252,6 +251,8 @@ const App = {
         }
 
         this.$app.find('.library-storage-quota').text(await StorageService.availableStorageGB());
+
+        if (this.$app.find('#view-register-login.active').length) return;
 
         this.showView('library');
         this.hideMessageBoard();

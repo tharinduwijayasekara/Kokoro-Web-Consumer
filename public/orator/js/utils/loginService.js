@@ -15,8 +15,6 @@ const LoginService = {
             return false;
         }
 
-        App.showMessageBoard("Orator", "Starting sync...", 20)
-
         try {
             const response = await fetch('https://api.orator-audio.com/api/user', {
                 method: 'GET',
@@ -35,27 +33,28 @@ const LoginService = {
 
             this.user = user;
 
-            const remoteOratorJson = await this.fetchUserOratorJson();
-            if (
-                remoteOratorJson
-                && remoteOratorJson.reading
-                && (
-                    (Object.keys(remoteOratorJson.reading).length > 1 && Object.keys(orator.reading).length === 1)
-                    || (Object.keys(remoteOratorJson.reading).length !== Object.keys(orator.reading).length)
-                )
-            ) {
-                console.log("Only one key in local orator reading list, going to use remote");
+            if (Object.keys(orator.reading).length === 1) {
+                console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
 
-                const merged = {
-                    ...orator,
-                    ...remoteOratorJson,
-                    login_token: token,
-                    user: user,
-                };
+                const remoteOratorJson = await this.fetchUserOratorJson();
+                if (
+                    remoteOratorJson
+                    && remoteOratorJson.reading
+                    && (Object.keys(remoteOratorJson.reading).length !== Object.keys(orator.reading).length)
+                ) {
+                    console.log("Only one key in local orator reading list, going to use remote");
 
-                console.log("Merging remote orator json");
+                    const merged = {
+                        ...orator,
+                        ...remoteOratorJson,
+                        login_token: token,
+                        user: user,
+                    };
 
-                await StorageService.writeOratorJson(merged, {skipSync: true});
+                    console.log("Merging remote orator json");
+
+                    await StorageService.writeOratorJson(merged, {skipSync: true});
+                }
             }
 
             return true;
@@ -63,8 +62,6 @@ const LoginService = {
         } catch (e) {
             console.log("Auth check failed", e);
             return false;
-        } finally {
-            App.hideMessageBoard()
         }
     },
 
