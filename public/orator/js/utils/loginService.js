@@ -220,6 +220,8 @@ const LoginService = {
 
         } catch (e) {
             console.log("Error fetching user orator json", e);
+        } finally {
+            App.hideMessageBoard();
         }
     },
 

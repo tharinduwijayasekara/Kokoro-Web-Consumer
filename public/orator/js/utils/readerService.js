@@ -543,9 +543,9 @@ const ReaderService = {
 
                     if (this.hasLettersOrNumbers(text)) {
                         // Once cache is healthy, slow down background requests
-                        if (this.blobCache.size >= 100) {
+                        if (this.blobCache.size >= 800) {
                             console.log("Blob cache > 100, throttling prefetch");
-                            await App.sleep(3000);
+                            await App.sleep(2000);
                         }
 
                         await this.fetchAndCache(text, tempC, tempP);
