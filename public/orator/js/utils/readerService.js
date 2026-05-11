@@ -254,9 +254,6 @@ const ReaderService = {
         completedChapters.forEach(completedChapter => bookProgress += completedChapter.length);
         bookProgress = Math.ceil((bookProgress / this.bookLength) * 100);
 
-        this.$chapterProgress.width(`${chapterProgress}%`);
-        this.$bookProgress.width(`${bookProgress}%`);
-
         const progressTrackerString = `${cIdx}::${pIdx}::${bookProgress}`;
         this.progressTracker = progressTrackerString.split('::').map(v => parseInt(v));
 
@@ -900,6 +897,12 @@ const ReaderService = {
 
         this.$chapterTimingsLeft.text(`${timings.read} min`);
         this.$chapterTimingsRight.text(`${timings.left} min of ${timings.total} min • ${timings.bookLeft} of ${timings.book} in book`);
+
+        const chapterProgress = (chars.read / chars.total) * 100;
+        const bookProgress = (chars.bookRead / chars.book) * 100;
+
+        this.$chapterProgress.width(`${chapterProgress}%`);
+        this.$bookProgress.width(`${bookProgress}%`);
     },
 
     secondsToMinutes(seconds) {
