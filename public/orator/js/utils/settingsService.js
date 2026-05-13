@@ -42,15 +42,42 @@ const SettingsService = {
 
             this.$settings.find('.check-box-group-voice.kokoro').append(
                 `
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="${voice}" id="kv_${voice}">
-                    <label class="form-check-label" for="kv_${voice}">
-                        ${voice.replaceAll('_', ' ').toUpperCase()}
-                    </label>
+                <div class="kokoro-voice-item">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${voice}" id="kv_${voice}">
+                        <label class="form-check-label" for="kv_${voice}">
+                            ${voice.replaceAll('_', ' ').toUpperCase()}
+                        </label>
+                    </div>
+                    <div class="kokoro-voice-blend-controls">
+                        <button class="btn btn-sm btn-outline-secondary blend-decrease" data-voice="${voice}">-</button>
+                        <input type="number" class="blend-amount-input" id="kv_amount_${voice}" value="1" min="1" max="10" readonly>
+                        <button class="btn btn-sm btn-outline-secondary blend-increase" data-voice="${voice}">+</button>
+                    </div>
                 </div>
                 `
             )
 
+        });
+
+        this.$settings.find('.check-box-group-voice.kokoro').on('click', '.blend-increase, .blend-decrease', (e) => {
+            const $btn = $(e.currentTarget);
+            const voice = $btn.data('voice');
+            const $input = $(`#kv_amount_${voice}`);
+            let val = parseInt($input.val());
+
+            if ($btn.hasClass('blend-increase')) {
+                if (val < 10) val++;
+            } else {
+                if (val > 1) val--;
+            }
+
+            $input.val(val);
+            this.monitorConfig();
+        });
+
+        this.$settings.find('.check-box-group-voice.kokoro').on('change', 'input[type="checkbox"]', () => {
+            this.monitorConfig();
         });
 
         EDGETTS_VOICES.forEach((voice) => {
@@ -128,10 +155,12 @@ const SettingsService = {
         if (selectedSpeechService === 'kokoro') {
             config.voice
                 .split('+')
-                .map(voice => {
-                    voice = voice.substring(0, voice.indexOf('('))
+                .map(v => {
+                    const voice = v.substring(0, v.indexOf('('));
+                    const amount = v.substring(v.indexOf('(') + 1, v.indexOf(')'));
                     if (KOKORO_VOICES.indexOf(voice) >= 0) {
                         this.$settings.find(`.check-box-group-voice.${selectedSpeechService} #kv_${voice}`).prop('checked', true);
+                        this.$settings.find(`.check-box-group-voice.${selectedSpeechService} #kv_amount_${voice}`).val(amount);
                     }
                 });
         }
@@ -255,9 +284,21 @@ const SettingsService = {
     },
 
     buildConfigJson() {
-        let speechVoice = $('.check-box-group-voice.active input:checked').map((i, el) => $(el).val()).get();
-        if (speechVoice.length > 1) speechVoice = speechVoice.map(voice => `${voice}(1)`);
-        speechVoice = speechVoice.join("+");
+        let speechVoice = "";
+        const selectedService = this.$speechService.val();
+
+        if (selectedService.includes('kokoro')) {
+            speechVoice = $('.check-box-group-voice.kokoro input:checked').map((i, el) => {
+                const voice = $(el).val();
+                const amount = $(`#kv_amount_${voice}`).val();
+                return `${voice}(${amount})`;
+            }).get().join("+");
+        } else if (selectedService === DEFAULT_EDGE_TTS_URL) {
+            speechVoice = $('.check-box-group-voice.edgetts input:checked').map((i, el) => $(el).val()).get().join("+");
+        } else {
+            speechVoice = this.$speechVoice.val();
+        }
+
         this.$speechVoice.val(speechVoice);
 
         const config = structuredClone(this.config);
