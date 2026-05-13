@@ -80,6 +80,21 @@ const SettingsService = {
             this.monitorConfig();
         });
 
+        this.$settings.find('.check-box-group-voice.edgetts').on('change', 'input[type="radio"]', () => {
+            this.monitorConfig();
+        });
+
+        this.$speechService.on('change', () => {
+            const selectedService = this.$speechService.val();
+            if (selectedService === DEFAULT_EDGE_TTS_URL) {
+                const $edgeVoices = this.$settings.find('.check-box-group-voice.edgetts input[type="radio"]');
+                if ($edgeVoices.length > 0 && !this.$settings.find('.check-box-group-voice.edgetts input[type="radio"]:checked').length) {
+                    $edgeVoices.first().prop('checked', true);
+                }
+            }
+            this.monitorConfig();
+        });
+
         EDGETTS_VOICES.forEach((voice) => {
 
             this.$settings.find('.check-box-group-voice.edgetts').append(
@@ -166,8 +181,8 @@ const SettingsService = {
         }
 
         if (selectedSpeechService === 'edgetts') {
-            if (EDGETTS_VOICES.indexOf(selectedSpeechService) >= 0) {
-                this.$settings.find(`.check-box-group-voice.${selectedSpeechService} #kv_${config.voice}`).prop('checked', true);
+            if (EDGETTS_VOICES.indexOf(config.voice) >= 0) {
+                this.$settings.find(`.check-box-group-voice.${selectedSpeechService} #ev_${config.voice}`).prop('checked', true);
             }
         }
 
