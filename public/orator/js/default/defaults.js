@@ -41,6 +41,7 @@ const KOKORO_VOICES = [
     "af_nova",
     "af_river",
     "af_sarah",
+    "af_jadzia",
     "af_sky",
     "am_adam",
     "am_echo",
@@ -53,7 +54,6 @@ const KOKORO_VOICES = [
     "am_santa",
     "bf_alice",
     "bf_emma",
-    "bf_isabella",
     "bf_lily",
     "bm_daniel",
     "bm_fable",
@@ -197,7 +197,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 7;
+const CURRENT_VERSION = 8;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
