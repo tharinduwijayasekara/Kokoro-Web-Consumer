@@ -837,6 +837,7 @@ const App = {
     },
 
     async loadNews() {
+        const downloadedIds = [];
         const importFromDate = async (date) => {
             const url = `news/news-${date}.txt`;
             const news = await fetch(url, {
@@ -852,6 +853,7 @@ const App = {
             importedBook.id = url;
             importedBook.title = `News Update SL: ${date}`;
             await StorageService.db.books.put(importedBook);
+            downloadedIds.push(url);
         };
 
         const dates = Array.from({length: 5}, (_, i) =>
@@ -859,6 +861,16 @@ const App = {
         );
 
         await Promise.all(dates.map(importFromDate));
+
+        // Delete all the news items that were loaded before leaving only the ones that were just downloaded
+        const allBooks = await StorageService.db.books.toArray();
+        const newsToDelete = allBooks.filter(book =>
+            book.id.startsWith('news/') && !downloadedIds.includes(book.id)
+        );
+
+        for (const book of newsToDelete) {
+            await StorageService.db.books.delete(book.id);
+        }
     },
 
     registerOratorFonts() {
