@@ -386,11 +386,11 @@ label.btn-import-books {
     );
     */
     background: linear-gradient(
-        to bottom, 
-        rgba(20, 20, 20, 0) 0px, 
-        rgba(20, 20, 20, 0.01) 100px,
-        rgba(30, 20, 30, 40) 30vh,
-        rgba(40, 20, 40, 100) 40vh
+            to bottom,
+            rgba(20, 20, 20, 0) 0px,
+            rgba(20, 20, 20, 0.01) 100px,
+            rgba(30, 20, 30, 40) 30vh,
+            rgba(40, 20, 40, 100) 40vh
     );
 }
 
@@ -1058,7 +1058,6 @@ label.form-label {
 
 .check-box-group.check-box-group-voice {
     display: none;
-    grid-template-columns: 1fr 1fr 1fr;
     font-size: 9pt;
     margin-top: -5px;
     padding: 0 10px;
@@ -1066,13 +1065,14 @@ label.form-label {
     border-top: none;
     padding-top: 15px;
     border-radius: 0 0 10px 10px;
-    grid-gap: 10px;
+    grid-gap: 2px;
+    padding-bottom: 15px;
 }
 
 .kokoro-voice-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
     padding: 5px;
     border: 1px solid #444;
     border-radius: 5px;
@@ -1082,13 +1082,14 @@ label.form-label {
 .kokoro-voice-item .form-check {
     padding-left: 1.5em;
     margin-bottom: 0;
+    min-height: auto;
 }
 
 .kokoro-voice-blend-controls {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 2px;
+    gap: 5px;
 }
 
 .kokoro-voice-blend-controls .btn {
@@ -1119,6 +1120,10 @@ label.form-label {
 
 .check-box-group.check-box-group-voice.active {
     display: grid;
+}
+
+.check-box-group.check-box-group-voice.edgetts.active {
+    padding-bottom: 5px;
 }
 
 .check-box-group-title {
