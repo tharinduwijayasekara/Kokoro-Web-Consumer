@@ -710,8 +710,8 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prevArr.length < 50
-                || partArr.length < 10
+                || prevArr.length < 10
+                || partArr.length < 5
                 || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
                 response[prevIdx] = [prev, part].join(' ');
@@ -864,9 +864,10 @@ const App = {
 
         // Delete all the news items that were loaded before leaving only the ones that were just downloaded
         const allBooks = await StorageService.db.books.toArray();
-        const newsToDelete = allBooks.filter(book =>
-            book.id.startsWith('news/') && !downloadedIds.includes(book.id)
-        );
+        const newsToDelete = allBooks.filter(book => {
+            const id = String(book.id);
+            return id.startsWith('news/') && !downloadedIds.includes(id);
+        });
 
         for (const book of newsToDelete) {
             await StorageService.db.books.delete(book.id);
