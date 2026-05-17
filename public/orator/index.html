@@ -278,19 +278,31 @@
                                         <label for="font-size-input" class="form-label">Font Size</label>
                                         <input type="range" class="form-range" min="5" max="20" id="font-size-input"
                                                data-show-on-change="true">
-                                        <div><span></span> PT.</div>
+                                        <div class="font-size-controls">
+                                            <span></span> PT.
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-size-input">-</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-size-input">+</button>
+                                        </div>
                                     </div>
                                     <div class="form-slider-stack">
                                         <label for="font-line-input" class="form-label">Line Height</label>
                                         <input type="range" class="form-range" min="5" max="40" id="font-line-input"
                                                data-show-on-change="true">
-                                        <div><span></span> PT.</div>
+                                        <div class="font-size-controls">
+                                            <span></span> PT.
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-line-input">-</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-line-input">+</button>
+                                        </div>
                                     </div>
                                     <div class="form-slider-stack">
                                         <label for="font-spacing-input" class="form-label">Letter Spacing</label>
                                         <input type="range" class="form-range" min="-1" max="2" step="1"
                                                id="font-spacing-input" data-show-on-change="true">
-                                        <div><span></span></div>
+                                        <div class="font-size-controls">
+                                            <span></span>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-spacing-input">-</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-spacing-input">+</button>
+                                        </div>
                                     </div>
 
                                     <div class="color-settings">
@@ -339,11 +351,11 @@
                                     <div class="form-floating mb-3">
                                         <input disabled type="text" class="form-control" id="speech-voice-input"
                                                placeholder="af_heart">
-                                        <label for="speech-speed-input">Voice</label>
+                                        <label for="speech-voice-input">Voice</label>
 
                                         <div class="check-box-group check-box-group-voice kokoro active">
                                             <div class="check-box-group-title">You can select multiple voices to blend
-                                                them together. You can also finetune the blending image by
+                                                them together. You can also fine-tune your voice blend by
                                                 controlling the blend amount for each voice.
                                             </div>
                                             <!-- rendered at runtime -->

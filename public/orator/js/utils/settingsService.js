@@ -152,6 +152,31 @@ const SettingsService = {
             });
 
         });
+
+        this.$settings.on('click', '.font-increase, .font-decrease', (e) => {
+            const $btn = $(e.currentTarget);
+            const targetId = $btn.data('target');
+            const $input = $(`#${targetId}`);
+            const step = parseFloat($input.attr('step')) || 1;
+            let val = parseFloat($input.val());
+
+            if ($btn.hasClass('font-increase')) {
+                val += step;
+            } else {
+                val -= step;
+            }
+
+            const min = parseFloat($input.attr('min'));
+            const max = parseFloat($input.attr('max'));
+
+            if (!isNaN(min) && val < min) val = min;
+            if (!isNaN(max) && val > max) val = max;
+
+            $input.val(val);
+            $input.parent().find('span').text(val); // Manually update span
+            $input.trigger('change'); // Trigger change for app.js if needed
+            this.monitorConfig();
+        });
     },
 
     loadSettings(config) {
@@ -302,7 +327,7 @@ const SettingsService = {
         let speechVoice = "";
         const selectedService = this.$speechService.val();
 
-        if (selectedService.includes('kokoro')) {
+        if (selectedService === DEFAULT_KOKORO_URL) {
             speechVoice = $('.check-box-group-voice.kokoro input:checked').map((i, el) => {
                 const voice = $(el).val();
                 const amount = $(`#kv_amount_${voice}`).val();
