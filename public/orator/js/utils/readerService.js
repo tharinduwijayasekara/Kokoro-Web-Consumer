@@ -26,7 +26,7 @@ const ReaderService = {
 
     bufferSize: 50,
     minBufferSize: 40,
-    maxBufferSize: 50,
+    maxBufferSize: 70,
     currentBuffer: [],
     isBuffering: false,
     bufferrer: undefined,
@@ -57,12 +57,6 @@ const ReaderService = {
     lastUserIntTime: 0,
 
     hasEnoughStorage: false,
-
-    blobCache: new Map(),       // "cIdx-pIdx" → { url, text, cIdx, pIdx }
-    blobCacheMaxSize: 1000,
-    prefetchBuffer: [],         // tracks [cIdx, pIdx] pairs queued for prefetch
-    isPrefetching: false,
-    prefetcher: undefined,
 
     async init(bookId) {
         App.showMessageBoard("Orator", "Opening book...", 0);
@@ -458,7 +452,7 @@ const ReaderService = {
         const batchSize = Math.min(needed, maxBatchSize);
 
         try {
-            const loadTasks = [];
+            const fetchTasks = [];
             let tempC = cIdx;
             let tempP = pIdx;
 
@@ -477,32 +471,26 @@ const ReaderService = {
                     .replace(/\b[A-Z]{5,}\b/g, m => m.charAt(0) + m.slice(1).toLowerCase());
 
                 if (this.hasLettersOrNumbers(text)) {
-                    const key = `${tempC}-${tempP}`;
-                    // Fetch into blob cache if not already there
-                    if (!this.blobCache.has(key)) {
-                        await this.fetchAndCache(text, tempC, tempP);
-                    }
-                    // Then Howl-load from blob cache
-                    loadTasks.push(this.loadFromCache(tempC, tempP));
+                    fetchTasks.push(this.fetchAndLoad(text, tempC, tempP));
                 }
 
                 [tempC, tempP] = this.getNextParagraphId(tempC, tempP);
             }
 
             if (isFromPlay) {
-                this.initialBufferSize = loadTasks.length;
+                this.initialBufferSize = fetchTasks.length;
                 this.initialBufferFetched = 0;
             }
 
-            const results = await Promise.all(loadTasks);
+            const results = await Promise.all(fetchTasks);
             this.currentBuffer.push(...results.filter(result => result !== null));
 
             console.log("Buffer fill completed");
         } finally {
             this.isBuffering = false;
             this.$bufferHealth.find('.spinner-border').removeClass('active');
-            this.computeBufferedTime().then(([bt, ct]) =>
-                this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt, ct))
+            this.computeBufferedTime().then((bt) =>
+                this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
             );
 
             console.log("Buffering complete, buffer health at: ", this.currentBuffer.length);
@@ -513,58 +501,8 @@ const ReaderService = {
         }
     },
 
-    async fillPrefetchCache(cIdx, pIdx, size) {
-        if (this.isPrefetching) return;
-
-        this.isPrefetching = true;
-        this.$bufferHealth.find('.spinner-border').addClass("active");
-
-        try {
-            let tempC = cIdx;
-            let tempP = pIdx;
-            let fetched = 0;
-
-            while (fetched < size) {
-                if (this.playIdentifier === undefined) break;
-
-                const key = `${tempC}-${tempP}`;
-                if (!this.blobCache.has(key)) {
-                    let text = this.getParagraphText(tempC, tempP);
-                    if (!text) break;
-
-                    text = text
-                        .replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "")
-                        .replaceAll("**##", "'")
-                        .replaceAll("##**", "'")
-                        .replace(/\b[A-Z]{2,}\b/g, m => m.toLowerCase());
-
-                    if (this.hasLettersOrNumbers(text)) {
-                        // Once cache is healthy, slow down background requests
-                        if (this.blobCache.size >= 800) {
-                            console.log("Blob cache > 100, throttling prefetch");
-                            await App.sleep(2000);
-                        }
-
-                        await this.fetchAndCache(text, tempC, tempP);
-                        fetched++;
-                    }
-                }
-
-                const [nextC, nextP] = this.getNextParagraphId(tempC, tempP);
-                if (nextC === tempC && nextP === tempP) break; // end of book
-                [tempC, tempP] = [nextC, nextP];
-            }
-        } finally {
-            this.isPrefetching = false;
-            this.$bufferHealth.find('.spinner-border').removeClass('active');
-        }
-    },
-
-    prepareBufferHealthText(bufferTimeMins, cachedTimeMins) {
-        const howlCount = this.currentBuffer.length;
-        const cachedCount = this.blobCache.size;
-        const totalCount = howlCount + cachedCount;
-        return `Next ${totalCount} lines ready (${cachedTimeMins} min cached • ${bufferTimeMins} min loaded)`;
+    prepareBufferHealthText(bufferTimeMins) {
+        return `Next ${this.currentBuffer.length} lines ready (${bufferTimeMins} minutes of reading time)`;
     },
 
     hasLettersOrNumbers(str) {
@@ -576,53 +514,29 @@ const ReaderService = {
         if (this.bufferrer) return;
 
         this.bufferrer = setInterval(() => {
-            if (!this.isPlaying) return;
 
-            // ── Howl buffer (20 loaded & ready) ──────────────────────────────
-            if (!this.isBuffering) {
-                if (this.currentBuffer.length >= this.maxBufferSize) this.bufferSize = this.minBufferSize;
-                if (this.currentBuffer.length < this.minBufferSize) this.bufferSize = this.maxBufferSize;
+            if (!this.isPlaying || this.isBuffering) return;
 
-                if (this.currentBuffer.length <= this.bufferSize) {
-                    const current = this.currentBuffer[0];
-                    const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
+            if (this.currentBuffer.length >= this.maxBufferSize) this.bufferSize = this.minBufferSize;
+            if (this.currentBuffer.length < this.minBufferSize) this.bufferSize = this.maxBufferSize;
+            if (this.currentBuffer.length > this.bufferSize) return;
 
-                    console.log("Inside bufferrer: last available audio in current buffer", last);
-                    if (last) {
-                        let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
-                        console.log("About to call fill buffer with", nextC, nextP);
-                        this.fillBuffer(nextC, nextP, this.bufferSize);
-                    }
-                }
-            }
+            const current = this.currentBuffer[0];
+            const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
 
-            // ── Blob prefetch cache (1000 fetched ahead) ──────────────────────
-            if (!this.isPrefetching) {
-                const last = this.currentBuffer[this.currentBuffer.length - 1];
-                const blobCacheTip = last || this.currentBuffer[0];
+            console.log("Inside bufferrer: last available audio in current buffer", last);
+            if (!last) return;
 
-                if (blobCacheTip) {
-                    let [prefetchC, prefetchP] = this.getNextParagraphId(blobCacheTip.cIdx, blobCacheTip.pIdx);
+            let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
-                    // Skip positions already in blob cache to find the real frontier
-                    while (this.blobCache.has(`${prefetchC}-${prefetchP}`)) {
-                        [prefetchC, prefetchP] = this.getNextParagraphId(prefetchC, prefetchP);
-                    }
+            console.log("About to call fill buffer with", nextC, nextP);
+            this.fillBuffer(nextC, nextP, this.bufferSize);
 
-                    const blobCacheGap = this.blobCacheMaxSize - this.blobCache.size;
-                    if (blobCacheGap > 0) {
-                        this.fillPrefetchCache(prefetchC, prefetchP, Math.min(50, blobCacheGap));
-                    }
-                }
-            }
-        }, 100);
+        }, 500)
     },
 
-    async fetchAndCache(text, cIdx, pIdx) {
-        const key = `${cIdx}-${pIdx}`;
-        if (this.blobCache.has(key)) return true;
-
-        console.log("Fetch and cache", cIdx, pIdx, text.substring(0, 30));
+    async fetchAndLoad(text, cIdx, pIdx) {
+        console.log("Fetch and load", cIdx, pIdx, text.substring(0, 30));
 
         const playIdentifier = this.playIdentifier;
 
@@ -666,6 +580,8 @@ const ReaderService = {
         ].join(":");
 
         cacheKey = new Hashes.MD5().hex(cacheKey);
+
+        console.log(`Checking cached audios ${cacheKey}`);
 
         let blob = (await StorageService.db.audios.get(cacheKey))?.blob;
 
@@ -716,35 +632,11 @@ const ReaderService = {
             }
         }
 
-        // Evict oldest entry if blob cache is full
-        if (this.blobCache.size >= this.blobCacheMaxSize) {
-            const oldestKey = this.blobCache.keys().next().value;
-            const oldest = this.blobCache.get(oldestKey);
-            URL.revokeObjectURL(oldest.url);
-            this.blobCache.delete(oldestKey);
-        }
-
         const url = URL.createObjectURL(blob);
-        this.blobCache.set(key, { url, text, cIdx, pIdx });
-
-        this.computeBufferedTime().then(([bt, ct]) =>
-            this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt, ct))
-        );
-
-        return true;
-    },
-
-    async loadFromCache(cIdx, pIdx) {
-        const key = `${cIdx}-${pIdx}`;
-        const cached = this.blobCache.get(key);
-        if (!cached) return null;
-
-        const { url, text } = cached;
         const shortText = text.substring(0, 20);
-        const pitch = this.tempOratorConfig?.pitch ?? 1.0;
-        const playIdentifier = this.playIdentifier;
 
         return new Promise((resolve) => {
+
             const sound = new Howl({
                 volume: this.useHtml5Player ? 1 : 1.5,
                 rate: pitch,
@@ -771,29 +663,32 @@ const ReaderService = {
                             }
                         }
 
-                        resolve({ shortText, cIdx, pIdx, sound, url, text });
+                        resolve({shortText, cIdx, pIdx, sound, url, text})
                     }
                 },
                 onloadError: () => {
                     console.log("Howler failed to load", cIdx, pIdx);
+                    URL.revokeObjectURL(url);
                     resolve(null);
                 },
                 onend: () => {
                     const silence = this.getParagraphBreath(cIdx, pIdx, sound);
-                    sound.unload();
-                    // Note: do NOT revoke the url here — it stays in blobCache for potential re-use
+                    sound.unload(); // Free memory
+                    URL.revokeObjectURL(url);
 
                     if (this.isPlaying) {
+
                         if (this.isAtEndOfBook(cIdx, pIdx)) {
                             this.stop();
                             return;
                         }
 
                         this.addToBookTimer(sound.duration());
-                        setTimeout(() => this.playNext(), silence);
+                        setTimeout(() => this.playNext(), silence)
                     }
                 }
             });
+
         });
     },
 
@@ -841,8 +736,8 @@ const ReaderService = {
             this.scrollToParagraph(current.cIdx, current.pIdx, true);
         }
 
-        this.computeBufferedTime().then(([bt, ct]) =>
-            this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt, ct))
+        this.computeBufferedTime().then((bt) =>
+            this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
         );
 
         current.sound.play();
@@ -910,22 +805,14 @@ const ReaderService = {
     },
 
     async computeBufferedTime() {
-        let loadedTime = 0;
+        let totalTime = 0;
 
         for (const para of this.currentBuffer) {
             if (para.pIdx % 100 === 0) await App.sleep(10);
-            loadedTime += para.sound.duration();
+            totalTime += para.sound.duration();
         }
 
-        let cachedTime = loadedTime;
-
-        if (this.durationPerCharacter > 0) {
-            this.blobCache.forEach(entry => {
-                cachedTime += (entry.text?.length ?? 0) * this.durationPerCharacter;
-            });
-        }
-
-        return [this.secondsToMinutes(loadedTime), this.secondsToMinutes(cachedTime)];
+        return this.secondsToMinutes(totalTime);
     },
 
     secondsToHms(seconds) {
@@ -973,8 +860,6 @@ const ReaderService = {
         if (targetElement) {
             this.scrollToElementInContainer(targetElement, this.$wrapper[0]);
         }
-
-        return;
     },
 
     scrollToElementInContainer(targetElement, container) {
@@ -993,7 +878,6 @@ const ReaderService = {
     stop() {
         this.isPlaying = false;
         this.isBuffering = false;
-        this.isPrefetching = false;
 
         if (this.abortController) {
             this.abortController.abort("User requested stop");
@@ -1010,15 +894,11 @@ const ReaderService = {
         this.$playPauseButton.removeClass('playing');
 
         this.currentBuffer.forEach(item => {
+            URL.revokeObjectURL(item.url);
             item.sound.unload();
-            // Don't revoke URLs — they're owned by blobCache now
         });
 
         this.currentBuffer = [];
-
-        // Clear blob cache and revoke all object URLs
-        this.blobCache.forEach(entry => URL.revokeObjectURL(entry.url));
-        this.blobCache.clear();
     },
 
     getParagraphText(c, p) {
