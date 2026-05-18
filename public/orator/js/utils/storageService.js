@@ -43,6 +43,8 @@ const StorageService = {
             orator = {orator: orator};
         }
 
+        orator.orator.lastUpdatedAt = new Date().toISOString();
+
         await this.db.data.put({
             key: "orator",
             ...orator
