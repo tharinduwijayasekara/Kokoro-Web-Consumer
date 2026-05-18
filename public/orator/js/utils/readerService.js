@@ -24,10 +24,26 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 50,
-    minBufferSize: 40,
-    maxBufferSize: 70,
+    bufferSize: 5000,
+    howlerPreloadLimit: 20,
+
     currentBuffer: [],
+
+    // --- Don't delete the sample current buffer element; it's for remembering what I'm returning on fetch and load
+    sampleCurrentBufferElement: {
+        shortText: "shortText",
+        cIdx: "cIdx",
+        pIdx: "pIdx",
+        text: "text",
+
+        blob: "blob",
+        url: "url",
+
+        sound: null,
+        loaded: false,
+        loading: false,
+    },
+
     isBuffering: false,
     bufferrer: undefined,
     isPlaying: false,
@@ -170,6 +186,10 @@ const ReaderService = {
         await this.reveal(progressTracker);
 
         Howler.pool = 10;
+
+        if (!this.howlerPreloader) {
+            this.setHowlerPreloader();
+        }
     },
 
     async reveal(progressTracker) {
@@ -389,8 +409,6 @@ const ReaderService = {
             }
         }
 
-        this.bufferSize = this.maxBufferSize;
-
         if (chapterId === -10 && paragraphId === -12) {
             console.log("Start playback from previously stopped position", this.progressTracker);
             [chapterId, paragraphId] = this.progressTracker;
@@ -517,9 +535,7 @@ const ReaderService = {
 
             if (!this.isPlaying || this.isBuffering) return;
 
-            if (this.currentBuffer.length >= this.maxBufferSize) this.bufferSize = this.minBufferSize;
-            if (this.currentBuffer.length < this.minBufferSize) this.bufferSize = this.maxBufferSize;
-            if (this.currentBuffer.length > this.bufferSize) return;
+            if (this.currentBuffer.length >= this.bufferSize) return;
 
             const current = this.currentBuffer[0];
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
@@ -573,7 +589,6 @@ const ReaderService = {
         }
 
         let cacheKey = [
-            this.book.importId ?? '--',
             ttsUrl, voice, speed,
             text,
             INVALIDATE_AUDIOS_GENERATED_AFTER
@@ -635,61 +650,157 @@ const ReaderService = {
         const url = URL.createObjectURL(blob);
         const shortText = text.substring(0, 20);
 
+        if (
+            playIdentifier === this.playIdentifier
+            && this.initialBufferFetched < this.initialBufferSize
+        ) {
+            this.updateInitialBufferProgress();
+        }
+
+        return {
+            shortText,
+            cIdx,
+            pIdx,
+            text,
+
+            blob,
+            url,
+
+            sound: null,
+            loaded: false,
+            loading: false,
+        };
+    },
+
+    updateInitialBufferProgress() {
+
+        this.initialBufferFetched++;
+
+        if (this.initialBufferFetched > this.initialBufferSize) {
+            return;
+        }
+
+        const percent = Math.ceil(
+            (this.initialBufferFetched / this.initialBufferSize) * 100
+        );
+
+        console.log("Initial buffer percent", percent);
+
+        if (percent < 100) {
+
+            App.showMessageBoard(
+                "Spinning up Orator...",
+                App.getRandomOratorMessage(),
+                percent
+            );
+
+        } else {
+
+            App.hideMessageBoard();
+        }
+    },
+
+    async loadSound(bufferItem, playIdentifier) {
+
+        if (!bufferItem || bufferItem.loaded || bufferItem.loading) {
+            return bufferItem;
+        }
+
+        bufferItem.loading = true;
+
         return new Promise((resolve) => {
 
             const sound = new Howl({
                 volume: this.useHtml5Player ? 1 : 1.5,
-                rate: pitch,
-                src: [url],
+                rate: this.tempOratorConfig?.pitch ?? 1,
+                src: [bufferItem.url],
                 format: ['mp3'],
                 html5: this.useHtml5Player,
                 preload: true,
+
                 onload: () => {
+
                     if (playIdentifier !== this.playIdentifier) {
                         resolve(null);
-                    } else {
-                        console.log("Howler finished loading", cIdx, pIdx);
-
-                        this.initialBufferFetched++;
-
-                        if (this.initialBufferFetched <= this.initialBufferSize) {
-                            const percent = Math.ceil((this.initialBufferFetched / this.initialBufferSize) * 100);
-                            console.log("Initial buffer percent", percent);
-
-                            if (percent < 100) {
-                                App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), percent);
-                            } else {
-                                App.hideMessageBoard();
-                            }
-                        }
-
-                        resolve({shortText, cIdx, pIdx, sound, url, text})
+                        return;
                     }
+
+                    console.log("Howler finished loading", bufferItem.cIdx, bufferItem.pIdx);
+
+                    bufferItem.sound = sound;
+                    bufferItem.loaded = true;
+                    bufferItem.loading = false;
+
+                    resolve(bufferItem);
                 },
+
                 onloadError: () => {
-                    console.log("Howler failed to load", cIdx, pIdx);
-                    URL.revokeObjectURL(url);
+
+                    console.log("Howler failed loading", bufferItem.cIdx, bufferItem.pIdx);
+
+                    bufferItem.loading = false;
+                    URL.revokeObjectURL(bufferItem.url);
                     resolve(null);
                 },
+
                 onend: () => {
-                    const silence = this.getParagraphBreath(cIdx, pIdx, sound);
-                    sound.unload(); // Free memory
-                    URL.revokeObjectURL(url);
+
+                    const silence = this.getParagraphBreath(
+                        bufferItem.cIdx,
+                        bufferItem.pIdx,
+                        sound
+                    );
+
+                    sound.unload();
+
+                    bufferItem.sound = null;
+                    bufferItem.loaded = false;
 
                     if (this.isPlaying) {
 
-                        if (this.isAtEndOfBook(cIdx, pIdx)) {
+                        if (this.isAtEndOfBook(
+                            bufferItem.cIdx,
+                            bufferItem.pIdx
+                        )) {
                             this.stop();
                             return;
                         }
 
                         this.addToBookTimer(sound.duration());
-                        setTimeout(() => this.playNext(), silence)
+
+                        setTimeout(() => this.playNext(), silence);
                     }
                 }
             });
 
         });
+    },
+
+    setHowlerPreloader() {
+
+        if (this.howlerPreloader) return;
+
+        this.howlerPreloader = setInterval(async () => {
+
+            if (!this.isPlaying) return;
+
+            const playIdentifier = this.playIdentifier;
+
+            const nextItems = this.currentBuffer
+                .filter(item => item && !item.loaded && !item.loading)
+                .slice(0, this.howlerPreloadLimit);
+
+            for (const item of nextItems) {
+
+                if (playIdentifier !== this.playIdentifier) {
+                    return;
+                }
+
+                await this.loadSound(item, playIdentifier);
+            }
+
+        }, 500);
+
     },
 
     isAtEndOfBook(cIdx, pIdx) {
@@ -739,6 +850,19 @@ const ReaderService = {
         this.computeBufferedTime().then((bt) =>
             this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
         );
+
+
+        if (!current.loaded || !current.sound) {
+
+            console.log("Current item not loaded yet");
+
+            await this.loadSound(current, this.playIdentifier);
+
+            if (!current.sound) {
+                this.playNext();
+                return;
+            }
+        }
 
         current.sound.play();
 
@@ -805,11 +929,28 @@ const ReaderService = {
     },
 
     async computeBufferedTime() {
+
+        if (!this.durationPerCharacter || this.durationPerCharacter <= 0) {
+            return 0;
+        }
+
         let totalTime = 0;
 
-        for (const para of this.currentBuffer) {
-            if (para.pIdx % 100 === 0) await App.sleep(10);
-            totalTime += para.sound.duration();
+        for (let i = 0; i < this.currentBuffer.length; i++) {
+
+            if (i % 100 === 0) {
+                await App.sleep(10);
+            }
+
+            const para = this.currentBuffer[i];
+
+            if (!para?.text) {
+                continue;
+            }
+
+            totalTime += (
+                para.text.length * this.durationPerCharacter
+            );
         }
 
         return this.secondsToMinutes(totalTime);
