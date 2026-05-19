@@ -38,7 +38,13 @@ const StorageService = {
         return this.orator;
     },
 
-    async writeOratorJson(orator, { skipSync = false } = {}) {
+    async writeOratorJson(
+        orator,
+        {
+            skipSync = false,
+            syncBooks = false
+        } = {}
+    ) {
         if (!orator.orator) {
             orator = {orator: orator};
         }
@@ -54,7 +60,7 @@ const StorageService = {
         this.orator = await this.getOratorJson();
 
         if (!skipSync && typeof LoginService !== 'undefined') {
-            LoginService.updateUserOratorJson(this.orator);
+            LoginService.updateUserOratorJson(this.orator, {syncBooks: false});
         }
     },
 

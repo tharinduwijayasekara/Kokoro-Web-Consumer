@@ -36,13 +36,13 @@ const LoginService = {
             if (Object.keys(orator.reading).length === 1) {
                 console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
 
-                const remoteOratorJson = await this.fetchUserOratorJson();
+                const [remoteOratorJson, remoteBooks] = await this.fetchUserOratorJson();
                 if (
                     remoteOratorJson
                     && remoteOratorJson.reading
                     && (Object.keys(remoteOratorJson.reading).length !== Object.keys(orator.reading).length)
                 ) {
-                    console.log("Only one key in local orator reading list, going to use remote");
+                    console.log("Remote orator reading list is not the same, merging them");
 
                     const merged = {
                         ...orator,
@@ -132,7 +132,7 @@ const LoginService = {
         location.reload(); // cleanest reset (matches your versioning style)
     },
 
-    async updateUserOratorJson(oratorJson) {
+    async updateUserOratorJson(oratorJson, { syncBooks = false } = {}) {
 
         const now = Date.now();
 
@@ -146,7 +146,8 @@ const LoginService = {
             return;
         }
 
-        const token = (await StorageService.getOratorJson())?.login_token
+        const token = (await StorageService.getOratorJson())?.login_token;
+
         if (!token) {
             console.log("No token, skipping sync");
             return;
@@ -154,72 +155,91 @@ const LoginService = {
 
         this.oratorSyncInProgress = true;
 
+        const body = {
+            orator_json: oratorJson,
+        };
+
+        if (syncBooks) {
+
+            const books = await StorageService.getBooks();
+
+            body.books = books.map(book => {
+
+                // Remove base64 cover before sync
+                const { cover, ...bookWithoutCover } = book;
+
+                return JSON.stringify(bookWithoutCover);
+            });
+        }
+
         try {
 
+            const payload = JSON.stringify(body);
             const response = await fetch('https://api.orator-audio.com/api/orator', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    orator_json: oratorJson
-                })
+                body: payload
             });
 
             if (!response.ok) {
-                console.log("Failed to sync orator json");
+                console.log("Failed to sync orator json", response.status);
                 return;
             }
 
             this.lastOratorSyncAt = now;
+
             console.log("Orator json synced");
 
         } catch (e) {
+
             console.log("Error syncing orator json", e);
+
         } finally {
+
             this.oratorSyncInProgress = false;
         }
     },
 
     async fetchUserOratorJson() {
+        const token = (await StorageService.getOratorJson())?.login_token;
 
-        const token = (await StorageService.getOratorJson())?.login_token
         if (!token) {
             console.log("No token, cannot fetch user orator json");
-            return;
+            return [null, null];
         }
 
-        App.showMessageBoard("Orator", "Syncing your settings...", 70)
+        App.showMessageBoard("Orator", "Syncing your settings...", 70);
 
         try {
-
-            const response = await fetch('https://api.orator-audio.com/api/orator', {
+            const res = await fetch('https://api.orator-audio.com/api/orator', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
-            if (!response.ok) {
+            if (!res.ok) {
                 console.log("Failed to fetch user orator json");
-                return;
+                return [null, null];
             }
 
-            const data = await response.json();
+            const data = await res.json();
             console.log("Remote orator json", data);
 
-            if (!data.orator_json) {
+            if (!data?.orator_json) {
                 console.log("No remote orator json found");
-                return;
+                return [null, null];
             }
 
-            console.log("Fetched remote orator json");
-
-            return data.orator_json;
+            return [data.orator_json, data.books ?? null];
 
         } catch (e) {
             console.log("Error fetching user orator json", e);
+            return [null, null];
+
         } finally {
             App.hideMessageBoard();
         }

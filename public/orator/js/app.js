@@ -396,6 +396,12 @@ const App = {
             console.log("Import all files complete");
 
             await this.renderLibrary();
+
+            if (importedBooks.length > 0) {
+                const orator = await StorageService.getOratorJson();
+                await StorageService.writeOratorJson(orator, {syncBooks: true});
+            }
+
             if (files.length === 1 && importedBook) {
                 ReaderService.init(importedBook.id);
             }
