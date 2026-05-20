@@ -1035,8 +1035,25 @@ const ReaderService = {
         this.$playPauseButton.removeClass('playing');
 
         this.currentBuffer.forEach(item => {
-            URL.revokeObjectURL(item.url);
-            item.sound.unload();
+
+            try {
+                if (item?.url) {
+                    URL.revokeObjectURL(item.url);
+                }
+
+                if (item?.sound) {
+                    item.sound.stop();
+                    item.sound.unload();
+                    item.sound = null;
+                }
+
+                item.loaded = false;
+                item.loading = false;
+
+            } catch (e) {
+                console.log("Failed cleanup", e);
+            }
+
         });
 
         this.currentBuffer = [];
