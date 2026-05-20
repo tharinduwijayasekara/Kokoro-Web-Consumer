@@ -740,6 +740,7 @@ const ReaderService = {
 
                     bufferItem.loading = false;
                     URL.revokeObjectURL(bufferItem.url);
+                    bufferItem.url = null;
                     resolve(null);
                 },
 
@@ -752,6 +753,11 @@ const ReaderService = {
                     );
 
                     sound.unload();
+
+                    if (bufferItem.url) {
+                        URL.revokeObjectURL(bufferItem.url);
+                        bufferItem.url = null;
+                    }
 
                     bufferItem.sound = null;
                     bufferItem.loaded = false;
@@ -838,6 +844,7 @@ const ReaderService = {
         console.log("About to play next, current buffer length", this.currentBuffer.length);
 
         const current = this.currentBuffer.shift();
+        if (!current) return;
 
         this.updateProgress(current.cIdx, current.pIdx);
 
@@ -1017,6 +1024,8 @@ const ReaderService = {
     },
 
     stop() {
+        this.playIdentifier = null;
+
         this.isPlaying = false;
         this.isBuffering = false;
 
