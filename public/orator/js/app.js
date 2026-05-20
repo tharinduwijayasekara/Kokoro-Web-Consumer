@@ -716,8 +716,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prevArr.length < 50
-                || partArr.length < 25
+                || (prevArr.length + partArr.length) < 20
                 || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
                 response[prevIdx] = [prev, part].join(' ');
