@@ -24,7 +24,7 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 5000,
+    bufferSize: 1000,
     howlerPreloadLimit: 20,
 
     currentBuffer: [],
