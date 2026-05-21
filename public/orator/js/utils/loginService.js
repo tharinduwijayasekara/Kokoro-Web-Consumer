@@ -132,7 +132,7 @@ const LoginService = {
         location.reload(); // cleanest reset (matches your versioning style)
     },
 
-    async updateUserOratorJson(oratorJson, { syncBooks = false } = {}) {
+    async updateUserOratorJson(oratorJson, {syncBooks = false} = {}) {
 
         const now = Date.now();
 
@@ -155,33 +155,47 @@ const LoginService = {
 
         this.oratorSyncInProgress = true;
 
-        const body = {
-            orator_json: oratorJson,
-        };
+        const formData = new FormData();
+        formData.append('orator_json', JSON.stringify(oratorJson));
 
         if (syncBooks) {
 
+            /*
+            Solution for this:
+            -- Stringify the whole json.
+            -- Split into chunks less than 10MB each
+            -- Generate a unique id for each upload
+            -- Upload each chunk separately
+            -- Create an upload entry in the database with this id + user email
+            -- Keep appending chunks as we upload
+            -- Denote the final chunk as last chunk
+            -- Once upload has finished, destructure the json back to books and orator json on server and save
+            -- Delete the upload entry from the database to save space
+             */
+
             const books = await StorageService.getBooks();
-
-            body.books = books.map(book => {
-
-                // Remove base64 cover before sync
-                const { cover, ...bookWithoutCover } = book;
-
-                return JSON.stringify(bookWithoutCover);
+            const sanitizedBooks = books.map(book => {
+                const {cover, ...bookWithoutCover} = book;
+                return bookWithoutCover;
             });
+
+            // Convert books array into a JSON file
+            const booksBlob = new Blob(
+                [JSON.stringify(sanitizedBooks)],
+                {type: 'application/json'}
+            );
+
+            formData.append('books_file', booksBlob, 'books.json');
         }
 
         try {
 
-            const payload = JSON.stringify(body);
             const response = await fetch('https://api.orator-audio.com/api/orator', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: payload
+                body: formData
             });
 
             if (!response.ok) {
@@ -194,11 +208,8 @@ const LoginService = {
             console.log("Orator json synced");
 
         } catch (e) {
-
             console.log("Error syncing orator json", e);
-
         } finally {
-
             this.oratorSyncInProgress = false;
         }
     },

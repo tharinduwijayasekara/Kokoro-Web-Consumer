@@ -24,7 +24,7 @@ const ReaderService = {
     $chapterTimingsLeft: undefined,
     $chapterTimingsRight: undefined,
 
-    bufferSize: 1000,
+    bufferSize: 5000,
     howlerPreloadLimit: 20,
 
     currentBuffer: [],
@@ -520,7 +520,8 @@ const ReaderService = {
     },
 
     prepareBufferHealthText(bufferTimeMins) {
-        return `Next ${this.currentBuffer.length} lines ready (${bufferTimeMins} minutes of reading time)`;
+        const preloadedBufferLength = this.currentBuffer.filter(i => i.url).length;
+        return `Next ${preloadedBufferLength} loaded, ${this.currentBuffer.length} lines (${bufferTimeMins} mins) ready`;
     },
 
     hasLettersOrNumbers(str) {
@@ -548,7 +549,7 @@ const ReaderService = {
             console.log("About to call fill buffer with", nextC, nextP);
             this.fillBuffer(nextC, nextP, this.bufferSize);
 
-        }, 500)
+        }, 200)
     },
 
     async fetchAndLoad(text, cIdx, pIdx) {
@@ -647,7 +648,7 @@ const ReaderService = {
             }
         }
 
-        const url = URL.createObjectURL(blob);
+        const url = this.currentBuffer.length < this.howlerPreloadLimit ? URL.createObjectURL(blob) : null;
         const shortText = text.substring(0, 20);
 
         if (
@@ -703,6 +704,11 @@ const ReaderService = {
     async loadSound(bufferItem, playIdentifier) {
 
         if (!bufferItem || bufferItem.loaded || bufferItem.loading) {
+            return bufferItem;
+        }
+
+        if (!bufferItem.url) {
+            console.log("Missing URL for Howler load");
             return bufferItem;
         }
 
@@ -793,13 +799,17 @@ const ReaderService = {
             const playIdentifier = this.playIdentifier;
 
             const nextItems = this.currentBuffer
-                .filter(item => item && !item.loaded && !item.loading)
-                .slice(0, this.howlerPreloadLimit);
+                .slice(0, this.howlerPreloadLimit)
+                .filter(item => item && !item.loaded && !item.loading);
 
             for (const item of nextItems) {
 
                 if (playIdentifier !== this.playIdentifier) {
                     return;
+                }
+
+                if (!item.url && item.blob) {
+                    item.url = URL.createObjectURL(item.blob);
                 }
 
                 await this.loadSound(item, playIdentifier);
@@ -858,7 +868,6 @@ const ReaderService = {
             this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
         );
 
-
         if (!current.loaded || !current.sound) {
 
             console.log("Current item not loaded yet");
@@ -873,7 +882,7 @@ const ReaderService = {
 
         current.sound.play();
 
-        if (this.currentBuffer.length < 20) {
+        if (this.currentBuffer.length < this.howlerPreloadLimit) {
             const last = this.currentBuffer[this.currentBuffer.length - 1] || current;
             let [nextC, nextP] = this.getNextParagraphId(last.cIdx, last.pIdx);
 
