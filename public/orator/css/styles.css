@@ -161,7 +161,6 @@ span.navbar-brand {
 }
 
 .library-top-text {
-    /* height: 100%; */
     width: 100%;
     display: flex;
     justify-content: center;
@@ -169,6 +168,18 @@ span.navbar-brand {
     margin: 0;
     font-family: 'Crimson Pro', sans-serif;
     text-shadow: 0 0 2px black;
+}
+
+.library-top-subtext {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    font-size: 0.8em;
+    color: #bfc3ca;
+    text-shadow: 0 0 2px black;
+    padding-top: 15px;
 }
 
 #view-library .library-list-header-buttons i.bi-view-list {

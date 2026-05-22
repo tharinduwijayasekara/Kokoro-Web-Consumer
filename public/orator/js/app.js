@@ -39,9 +39,7 @@ const App = {
             document.getElementById('styles-for-init').remove();
 
             LoginService.checkAuth()
-                .then((isAuthenticated) => {
-                    if (!isAuthenticated) this.showView('register-login');
-                });
+                .then((isAuthenticated) => this.handleAuthenticationCheck(isAuthenticated));
 
             this.registerAudioPipelineHook();
             this.registerHiss();
@@ -60,6 +58,15 @@ const App = {
         } catch (e) {
             console.log("Initialization failed.", e);
         }
+    },
+
+    async handleAuthenticationCheck(isAuthenticated) {
+        if (!isAuthenticated) {
+            this.showView('register-login');
+            return;
+        }
+
+        this.$app.find('.library-top-subtext').text(`Welcome, ${LoginService.user.email}!`);
     },
 
     async race(promise, milliseconds) {
@@ -655,7 +662,7 @@ const App = {
         });
     },
 
-    async showMessageBoard(title, message, progress = -1) {
+    async showMessageBoard(title, message, progress = -1, timeout = null) {
         const $messageBoard = $('#message-board-wrapper').show();
         $messageBoard.find('.message-board-header').text(title);
         $messageBoard.find('.message-board-container p').html(message);
@@ -670,6 +677,10 @@ const App = {
             $progress.show()
                 .find('div')
                 .width(`${progress}%`);
+        }
+
+        if (timeout) {
+            setTimeout(() => this.hideMessageBoard(), timeout);
         }
     },
 

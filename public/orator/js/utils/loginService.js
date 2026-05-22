@@ -76,18 +76,19 @@ const LoginService = {
             return;
         }
 
-        const chunkSize = 10000000;
+        App.showMessageBoard("Orator", "Importing your library...", 1);
+
+        const remoteBooks = [];
+        const batchSize = 5;
 
         let start = 0;
-        let fullString = "";
-        let totalLength = null;
-
+        let totalBooks = null;
         let isFailure = false;
 
         try {
             while (true) {
                 const res = await fetch(
-                    `https://api.orator-audio.com/api/books?start=${start}&length=${chunkSize}`,
+                    `https://api.orator-audio.com/api/books?start=${start}&length=${batchSize}`,
                     {
                         method: 'GET',
                         headers: {
@@ -104,56 +105,75 @@ const LoginService = {
 
                 const data = await res.json();
 
-                if (!data.substring) {
-                    console.error("No book substring found in remote response");
+                if (!data.books) {
+                    console.error("No books found in remote response");
                     isFailure = true;
                     break;
                 }
 
-                // set total length once
-                if (totalLength === null) {
-                    totalLength = data.total_length;
+                if (totalBooks === null) {
+                    totalBooks = data.total_books ?? 0;
                 }
 
-                const chunk = data.substring;
+                const booksReceived = data.books.length;
 
-                fullString += chunk;
-                start += chunk.length;
+                start += booksReceived;
+                remoteBooks.push(...data.books);
 
-                console.log(`Imported ${start}/${totalLength}`);
+                console.log(`Imported ${start}/${totalBooks}`);
 
-                // progress callback hook (optional)
-                const percent = totalLength
-                    ? Math.round((start / totalLength) * 100)
+                const percent = totalBooks
+                    ? Math.round((start / totalBooks) * 100)
                     : null;
 
-                // stop condition 1: reached full length
-                if (totalLength && start >= totalLength) {
+                App.showMessageBoard("Orator", "Importing your library...", percent);
+
+                if (totalBooks && start >= totalBooks) {
                     break;
                 }
 
-                // stop condition 2: safety fallback (last chunk smaller than requested)
-                if (chunk.length < chunkSize) {
+                if (booksReceived < batchSize) {
                     break;
                 }
             }
 
             if (isFailure) {
                 console.error("Import failed midway");
+                App.showMessageBoard('Orator', 'Import failed.', 100, 2000);
                 return;
             }
 
             console.log("Import complete");
 
-            // FINAL PARSE
-            const books = JSON.parse(fullString);
-            console.log("Parsed remote books", books);
-
-            return books;
-
         } catch (err) {
             console.error("Unexpected error during import", err);
+            App.showMessageBoard('Orator', 'Import failed.', 100, 2000);
+        } finally {
+            App.hideMessageBoard();
         }
+
+        if (!remoteBooks) {
+            console.log("No remote books to import");
+            App.hideMessageBoard();
+            return;
+        }
+
+        for (let book of remoteBooks) {
+            if (!book) continue;
+
+            try {
+                book = JSON.parse(book);
+
+                if (!book.id) continue;
+
+                await StorageService.db.books.put(book);
+            } catch (e) {
+                console.error("Error importing book", book, e);
+            }
+        }
+
+        App.showMessageBoard("Orator", "Library sync complete", 100, 2000);
+        window.location.reload();
     },
 
     async login(email, password) {
