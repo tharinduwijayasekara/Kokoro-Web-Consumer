@@ -398,8 +398,7 @@ const App = {
             await this.renderLibrary();
 
             if (importedBooks.length > 0) {
-                const orator = await StorageService.getOratorJson();
-                await StorageService.writeOratorJson(orator, {syncBooks: true});
+                await StorageService.writeOratorJson((await StorageService.getOratorJson()), {syncBooks: true});
             }
 
             if (files.length === 1 && importedBook) {

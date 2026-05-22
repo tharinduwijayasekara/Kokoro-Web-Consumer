@@ -60,7 +60,7 @@ const StorageService = {
         this.orator = await this.getOratorJson();
 
         if (!skipSync && typeof LoginService !== 'undefined') {
-            LoginService.updateUserOratorJson(this.orator, {syncBooks: false});
+            LoginService.updateUserOratorJson(this.orator, {syncBooks: syncBooks});
         }
     },
 

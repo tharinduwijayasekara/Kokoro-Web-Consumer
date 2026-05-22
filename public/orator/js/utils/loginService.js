@@ -141,7 +141,7 @@ const LoginService = {
             return;
         }
 
-        if (now - this.lastOratorSyncAt < this.SYNC_INTERVAL) {
+        if ((now - this.lastOratorSyncAt < this.SYNC_INTERVAL) && !syncBooks) {
             console.log("Orator sync skipped (rate limited)");
             return;
         }
@@ -153,49 +153,21 @@ const LoginService = {
             return;
         }
 
+        console.log("Syncing orator json");
+
         this.oratorSyncInProgress = true;
-
-        const formData = new FormData();
-        formData.append('orator_json', JSON.stringify(oratorJson));
-
-        if (syncBooks) {
-
-            /*
-            Solution for this:
-            -- Stringify the whole json.
-            -- Split into chunks less than 10MB each
-            -- Generate a unique id for each upload
-            -- Upload each chunk separately
-            -- Create an upload entry in the database with this id + user email
-            -- Keep appending chunks as we upload
-            -- Denote the final chunk as last chunk
-            -- Once upload has finished, destructure the json back to books and orator json on server and save
-            -- Delete the upload entry from the database to save space
-             */
-
-            const books = await StorageService.getBooks();
-            const sanitizedBooks = books.map(book => {
-                const {cover, ...bookWithoutCover} = book;
-                return bookWithoutCover;
-            });
-
-            // Convert books array into a JSON file
-            const booksBlob = new Blob(
-                [JSON.stringify(sanitizedBooks)],
-                {type: 'application/json'}
-            );
-
-            formData.append('books_file', booksBlob, 'books.json');
-        }
 
         try {
 
             const response = await fetch('https://api.orator-audio.com/api/orator', {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: formData
+                body: JSON.stringify({
+                    orator_json: oratorJson,
+                })
             });
 
             if (!response.ok) {
@@ -207,11 +179,103 @@ const LoginService = {
 
             console.log("Orator json synced");
 
+            if (syncBooks) {
+                await this.syncBooks(token);
+            }
+
         } catch (e) {
             console.log("Error syncing orator json", e);
         } finally {
             this.oratorSyncInProgress = false;
         }
+    },
+
+    async syncBooks(token) {
+
+        console.log("Syncing books");
+
+        App.showMessageBoard("Orator", "Syncing your books...", 0);
+
+        try {
+
+            let books = await StorageService.getBooks();
+            if (!books) {
+                App.hideMessageBoard()
+                return;
+            }
+
+            books = books.sort((a, b) => {
+                return a.importId < b.importId ? -1 : 1
+            });
+
+            lastImportId = books[0].importId;
+
+            books = books.filter(book => book.importId === lastImportId);
+
+            console.log("Books to sync", books);
+
+            const bookStrings = JSON.stringify(books);
+
+            const uuid = Date.now();
+            const parts = bookStrings.match(/.{1,200000}/g);
+
+            const concurrency = 10;
+            const results = [];
+
+            let hasFailure = false;
+            let progress = 0;
+
+            for (let i = 0; i < parts.length; i += concurrency) {
+                if (hasFailure) break;
+
+                const batch = parts.slice(i, i + concurrency);
+
+                const batchPromises = batch.map(async (part, batchIndex) => {
+                    const index = i + batchIndex;
+
+                    const response = await fetch('https://api.orator-audio.com/api/books', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            uuid: uuid,
+                            books_string_part: part,
+                            uploaded: index,
+                            total: parts.length
+                        })
+                    });
+
+                    if (!response.ok) {
+                        console.log("Failed to sync book part", [index, response.status]);
+                        hasFailure = true;
+                        throw new Error(`Failed to sync book part ${index}`);
+                    }
+
+                    const data = await response.json();
+                    console.log(`Book part synced successfully ${index}`, data);
+
+                    progress++;
+
+                    const percent = Math.round((progress / parts.length) * 100);
+                    App.showMessageBoard("Orator", `Syncing your books... ${percent}%`, percent);
+                    return data;
+                });
+
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+            }
+
+            const allBooks = results.flat();
+            console.log("All books synced", allBooks);
+
+        } catch (e) {
+            console.log("Error syncing books", e);
+        } finally {
+            App.hideMessageBoard();
+        }
+
     },
 
     async fetchUserOratorJson() {
