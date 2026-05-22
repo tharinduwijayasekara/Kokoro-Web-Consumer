@@ -81,7 +81,7 @@ const ImportEpub = {
 
                 const progressPercent = (chapters.length / fileKeys.length) * 100;
                 App.showMessageBoard("Importing...", `Reading your epub file: ${file.name}`, parseInt(progressPercent));
-                await App.sleep(5);
+                await App.sleep(1);
             }
 
             console.log("Direct Zip Extraction Complete", chapters);

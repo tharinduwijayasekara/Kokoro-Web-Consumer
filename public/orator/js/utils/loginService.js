@@ -36,7 +36,7 @@ const LoginService = {
             if (Object.keys(orator.reading).length === 1) {
                 console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
 
-                const [remoteOratorJson, remoteBooks] = await this.fetchUserOratorJson();
+                const remoteOratorJson = await this.fetchUserOratorJson();
                 if (
                     remoteOratorJson
                     && remoteOratorJson.reading
@@ -54,6 +54,8 @@ const LoginService = {
                     console.log("Merging remote orator json");
 
                     await StorageService.writeOratorJson(merged, {skipSync: true});
+
+                    await this.importRemoteBooks();
                 }
             }
 
@@ -62,6 +64,95 @@ const LoginService = {
         } catch (e) {
             console.log("Auth check failed", e);
             return false;
+        }
+    },
+
+    async importRemoteBooks() {
+        console.log("Importing remote books");
+
+        const token = (await StorageService.getOratorJson())?.login_token;
+        if (!token) {
+            console.error("No valid token found for remote book import");
+            return;
+        }
+
+        const chunkSize = 10000000;
+
+        let start = 0;
+        let fullString = "";
+        let totalLength = null;
+
+        let isFailure = false;
+
+        try {
+            while (true) {
+                const res = await fetch(
+                    `https://api.orator-audio.com/api/books?start=${start}&length=${chunkSize}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (!res.ok) {
+                    console.error("Failed to fetch remote books", res.status);
+                    isFailure = true;
+                    break;
+                }
+
+                const data = await res.json();
+
+                if (!data.substring) {
+                    console.error("No book substring found in remote response");
+                    isFailure = true;
+                    break;
+                }
+
+                // set total length once
+                if (totalLength === null) {
+                    totalLength = data.total_length;
+                }
+
+                const chunk = data.substring;
+
+                fullString += chunk;
+                start += chunk.length;
+
+                console.log(`Imported ${start}/${totalLength}`);
+
+                // progress callback hook (optional)
+                const percent = totalLength
+                    ? Math.round((start / totalLength) * 100)
+                    : null;
+
+                // stop condition 1: reached full length
+                if (totalLength && start >= totalLength) {
+                    break;
+                }
+
+                // stop condition 2: safety fallback (last chunk smaller than requested)
+                if (chunk.length < chunkSize) {
+                    break;
+                }
+            }
+
+            if (isFailure) {
+                console.error("Import failed midway");
+                return;
+            }
+
+            console.log("Import complete");
+
+            // FINAL PARSE
+            const books = JSON.parse(fullString);
+            console.log("Parsed remote books", books);
+
+            return books;
+
+        } catch (err) {
+            console.error("Unexpected error during import", err);
         }
     },
 
@@ -159,16 +250,25 @@ const LoginService = {
 
         try {
 
-            const response = await fetch('https://api.orator-audio.com/api/orator', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    orator_json: oratorJson,
+            const fetchTasks = [
+                fetch('https://api.orator-audio.com/api/orator', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        orator_json: oratorJson,
+                    })
                 })
-            });
+            ];
+
+            if (syncBooks) {
+                fetchTasks.push(this.syncBooks(token, syncBooks));
+            }
+
+            const fetchTasksResponses = await Promise.all(fetchTasks);
+            const response = fetchTasksResponses[0];
 
             if (!response.ok) {
                 console.log("Failed to sync orator json", response.status);
@@ -179,10 +279,6 @@ const LoginService = {
 
             console.log("Orator json synced");
 
-            if (syncBooks) {
-                await this.syncBooks(token);
-            }
-
         } catch (e) {
             console.log("Error syncing orator json", e);
         } finally {
@@ -190,7 +286,7 @@ const LoginService = {
         }
     },
 
-    async syncBooks(token) {
+    async syncBooks(token, syncbooks) {
 
         console.log("Syncing books");
 
@@ -198,80 +294,72 @@ const LoginService = {
 
         try {
 
-            let books = await StorageService.getBooks();
-            if (!books) {
-                console.log("No books to sync");
-                App.hideMessageBoard()
-                return;
-            }
-
-            books = books.sort((a, b) => {
-                return a.importId < b.importId ? 1 : -1
-            });
-
-            const lastImportId = books[0].importId;
-            const importWindow = lastImportId - (5 * 60 * 1000); // 5 minutes ago
-
-            books = books.filter(book => book.importId > importWindow);
-            console.log("Books to sync", books);
-
-            if (!books) {
+            if (!syncbooks) {
                 console.log("No books to sync");
                 App.hideMessageBoard();
                 return;
             }
 
-            const bookStrings = JSON.stringify(books);
-
-            const uuid = Date.now();
-            const parts = bookStrings.match(/.{1,200000}/g);
-
-            const concurrency = 10;
             const results = [];
+            const concurrency = 10;
+            const batchesCount = Math.ceil(syncbooks.length / concurrency);
+            let currentBatch = 0;
 
-            let hasFailure = false;
-            let progress = 0;
+            for (let i = 0; i < syncbooks.length; i += concurrency) {
+                currentBatch++;
+                const syncBooksBatch = syncbooks.slice(i, i + concurrency);
+                const bookTitles = syncBooksBatch.map(book => book.title).join('</br>');
+                const batchProgress = `Syncing library: ${currentBatch} of ${batchesCount}`;
 
-            for (let i = 0; i < parts.length; i += concurrency) {
-                if (hasFailure) break;
+                const bookStrings = JSON.stringify(syncBooksBatch);
 
-                const batch = parts.slice(i, i + concurrency);
+                const uuid = Date.now();
+                const parts = bookStrings.match(/.{1,200000}/g);
 
-                const batchPromises = batch.map(async (part, batchIndex) => {
-                    const index = i + batchIndex;
+                let hasFailure = false;
+                let progress = 0;
 
-                    const response = await fetch('https://api.orator-audio.com/api/books', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            uuid: uuid,
-                            books_string_part: part,
-                            uploaded: index,
-                            total: parts.length
-                        })
+                for (let i = 0; i < parts.length; i += concurrency) {
+                    if (hasFailure) break;
+
+                    const batch = parts.slice(i, i + concurrency);
+
+                    const batchPromises = batch.map(async (part, batchIndex) => {
+                        const index = i + batchIndex;
+
+                        const response = await fetch('https://api.orator-audio.com/api/books', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                uuid: uuid,
+                                books_string_part: part,
+                                uploaded: index,
+                                total: parts.length
+                            })
+                        });
+
+                        if (!response.ok) {
+                            console.log("Failed to sync book part", [index, response.status]);
+                            hasFailure = true;
+                            throw new Error(`Failed to sync book part ${index}`);
+                        }
+
+                        const data = await response.json();
+                        console.log(`Book part synced successfully ${index}`, data);
+
+                        progress++;
+
+                        const percent = Math.round((progress / parts.length) * 100);
+                        App.showMessageBoard("Orator", `${batchProgress}</br>Titles:</br><div style="font-size: 0.7em;">${bookTitles}</div></br>${percent}%`, percent);
+                        return data;
                     });
 
-                    if (!response.ok) {
-                        console.log("Failed to sync book part", [index, response.status]);
-                        hasFailure = true;
-                        throw new Error(`Failed to sync book part ${index}`);
-                    }
-
-                    const data = await response.json();
-                    console.log(`Book part synced successfully ${index}`, data);
-
-                    progress++;
-
-                    const percent = Math.round((progress / parts.length) * 100);
-                    App.showMessageBoard("Orator", `Syncing your books... ${percent}%`, percent);
-                    return data;
-                });
-
-                const batchResults = await Promise.all(batchPromises);
-                results.push(...batchResults);
+                    const batchResults = await Promise.all(batchPromises);
+                    results.push(...batchResults);
+                }
             }
 
             const allBooks = results.flat();
@@ -290,7 +378,7 @@ const LoginService = {
 
         if (!token) {
             console.log("No token, cannot fetch user orator json");
-            return [null, null];
+            return null;
         }
 
         App.showMessageBoard("Orator", "Syncing your settings...", 70);
@@ -305,7 +393,7 @@ const LoginService = {
 
             if (!res.ok) {
                 console.log("Failed to fetch user orator json");
-                return [null, null];
+                return null;
             }
 
             const data = await res.json();
@@ -313,10 +401,10 @@ const LoginService = {
 
             if (!data?.orator_json) {
                 console.log("No remote orator json found");
-                return [null, null];
+                return null;
             }
 
-            return [data.orator_json, data.books ?? null];
+            return data.orator_json;
 
         } catch (e) {
             console.log("Error fetching user orator json", e);

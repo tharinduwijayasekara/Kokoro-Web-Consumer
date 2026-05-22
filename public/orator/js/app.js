@@ -373,7 +373,7 @@ const App = {
             const files = e.target.files;
             let importedBook = undefined;
 
-            const importTasks = [];
+            const importedBooks = [];
 
             try {
                 for (const file of files) {
@@ -381,7 +381,10 @@ const App = {
                     this.showMessageBoard("Importing...");
 
                     if (file) {
-                        importTasks.push(this.handleImport(file));
+                        importedBook = await this.handleImport(file);
+                        if (importedBook) {
+                            importedBooks.push(importedBook);
+                        }
                     }
 
                     this.showMessageBoard("Importing...");
@@ -390,7 +393,6 @@ const App = {
                 console.log("Error while importing files", e);
             }
 
-            const importedBooks = await Promise.all(importTasks);
             importedBook = importedBooks.length === 1 ? importedBooks[0] : undefined;
 
             console.log("Import all files complete");
@@ -398,7 +400,7 @@ const App = {
             await this.renderLibrary();
 
             if (importedBooks.length > 0) {
-                await StorageService.writeOratorJson((await StorageService.getOratorJson()), {syncBooks: true});
+                await StorageService.writeOratorJson((await StorageService.getOratorJson()), {syncBooks: importedBooks});
             }
 
             if (files.length === 1 && importedBook) {
@@ -656,7 +658,7 @@ const App = {
     async showMessageBoard(title, message, progress = -1) {
         const $messageBoard = $('#message-board-wrapper').show();
         $messageBoard.find('.message-board-header').text(title);
-        $messageBoard.find('.message-board-container p').text(message);
+        $messageBoard.find('.message-board-container p').html(message);
 
         const $progress = $messageBoard.find('.message-progress');
 
