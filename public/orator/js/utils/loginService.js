@@ -200,19 +200,26 @@ const LoginService = {
 
             let books = await StorageService.getBooks();
             if (!books) {
+                console.log("No books to sync");
                 App.hideMessageBoard()
                 return;
             }
 
             books = books.sort((a, b) => {
-                return a.importId < b.importId ? -1 : 1
+                return a.importId < b.importId ? 1 : -1
             });
 
-            lastImportId = books[0].importId;
+            const lastImportId = books[0].importId;
+            const importWindow = lastImportId - (5 * 60 * 1000); // 5 minutes ago
 
-            books = books.filter(book => book.importId === lastImportId);
-
+            books = books.filter(book => book.importId > importWindow);
             console.log("Books to sync", books);
+
+            if (!books) {
+                console.log("No books to sync");
+                App.hideMessageBoard();
+                return;
+            }
 
             const bookStrings = JSON.stringify(books);
 
