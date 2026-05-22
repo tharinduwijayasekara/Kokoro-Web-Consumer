@@ -16,5 +16,6 @@
     <orderEntry type="library" name="epubjs" level="application" />
     <orderEntry type="library" name="@simonwep/pickr" level="application" />
     <orderEntry type="library" name="jshashes" level="application" />
+    <orderEntry type="module" module-name="orator-api" />
   </component>
 </module>

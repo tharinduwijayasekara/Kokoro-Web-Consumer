@@ -192,7 +192,9 @@ const LIBRARY_CURRENT_READ_TITLES = [
 ];
 
 const DEFAULT_REPLACEMENTS = {
-    'breathed': "breethed"
+    'breathed': "breethed",
+    "**##": "'",
+    "##**": "'"
 };
 
 const TEXT_INPUT_AUTHOR = 'You';
