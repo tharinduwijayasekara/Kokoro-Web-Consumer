@@ -163,7 +163,7 @@ const ImportEpub = {
             }
         });
 
-        return paragraphs;
+        return App.handleShortParagraphs(paragraphs);
     },
 
     async getBookCover(book) {

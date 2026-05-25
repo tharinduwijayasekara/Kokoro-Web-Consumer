@@ -680,6 +680,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     transition: all 0.5s ease-out;
+    white-space: pre-line;
 }
 
 .reader-container p span.active {

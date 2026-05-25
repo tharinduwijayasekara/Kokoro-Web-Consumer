@@ -742,6 +742,43 @@ const App = {
         return response;
     },
 
+    handleShortParagraphs(paragraphs) {
+        let updatedParagraphs = [];
+        let groupedParagraph = [];
+
+        for (let i = 0; i < paragraphs.length; i++) {
+            const paragraph = paragraphs[i];
+            const words = paragraph.trim().split(/\s+/);
+            const isShort = words.length < 10;
+
+            if (isShort) {
+                groupedParagraph.push(paragraph);
+
+                if (groupedParagraph.length >= 5) {
+                    updatedParagraphs.push(groupedParagraph.join("\n\n"));
+                    groupedParagraph = [];
+                }
+
+                continue;
+            }
+
+            let currentParagraph = paragraph;
+
+            if (groupedParagraph.length > 0) {
+                currentParagraph = [groupedParagraph.join("\n\n"), currentParagraph].join("\n\n");
+                groupedParagraph = [];
+            }
+
+            updatedParagraphs.push(currentParagraph);
+        }
+
+        if (groupedParagraph.length > 0) {
+            updatedParagraphs.push(groupedParagraph.join("\n\n"));
+        }
+
+        return updatedParagraphs;
+    },
+
     isTitleContraction(word) {
         if (word.length < 2 || word.length > 5) return false;
 

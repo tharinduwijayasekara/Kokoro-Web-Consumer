@@ -194,7 +194,8 @@ const LIBRARY_CURRENT_READ_TITLES = [
 const DEFAULT_REPLACEMENTS = {
     'breathed': "breethed",
     "**##": "'",
-    "##**": "'"
+    "##**": "'",
+    "\n\n": "...",
 };
 
 const TEXT_INPUT_AUTHOR = 'You';
