@@ -589,8 +589,6 @@ const ReaderService = {
             text = `. ${text}`;
         }
 
-        speed = (text.length > 50) ? speed : speed * 0.95;
-
         let cacheKey = [
             ttsUrl, voice, speed,
             text,
