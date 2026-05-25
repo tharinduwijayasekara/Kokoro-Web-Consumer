@@ -195,7 +195,7 @@ const DEFAULT_REPLACEMENTS = {
     'breathed': "breethed",
     "**##": "'",
     "##**": "'",
-    "\n\n": "...",
+    "\n\n": " [pause:0.1s] ",
 };
 
 const TEXT_INPUT_AUTHOR = 'You';
