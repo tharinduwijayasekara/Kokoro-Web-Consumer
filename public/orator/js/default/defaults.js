@@ -122,6 +122,7 @@ const ORATOR_MESSAGES = [
 const ORATOR_FONT_FILES = [
     'ACaslonPro',
     'AGaramondPro+Italic',
+    'Apollo+Italic',
     'Athelas+Italic',
     'BradleyHand',
     'Inter+Italic',
@@ -133,6 +134,7 @@ const ORATOR_FONTS = [
     'ACaslonPro',
     'AGaramondPro',
     'Athelas',
+    'Apollo',
     "BradleyHand",
     "Crimson Pro",
     "EB Garamond",

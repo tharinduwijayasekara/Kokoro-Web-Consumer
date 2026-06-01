@@ -49,9 +49,19 @@
     <!-- Custom styles -->
     <link id="styles-for-init" rel="stylesheet" href="css/styles.css">
     <script>
+
+        window.ORATOR = {
+            isProd: true,
+            isProdSuffix: '',
+        };
+
+        if (!window.ORATOR.isProd) {
+            window.ORATOR.isProdSuffix += ('?v=' + Date.now());
+        }
+
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "css/styles.css?v=" + Date.now();
+        link.href = "css/styles.css" + window.ORATOR.isProdSuffix
         document.head.appendChild(link);
     </script>
 
@@ -446,13 +456,6 @@
 
 </div>
 
-<script>
-    const script = document.createElement('script');
-    script.src = 'js/app.js?v=' + Date.now();
-    //script.src = 'js/app.js';
-    document.head.appendChild(script);
-</script>
-
 <script type="text/html" id="template-book-item-list">
     <div class="book-item" data-id="{{id}}">
         <div class="book-background" style="background-image: url({{cover}})"></div>
@@ -508,6 +511,13 @@
     </div>
 </script>
 
+<script>
+
+    const script = document.createElement('script');
+    script.src = 'js/app.js' + window.ORATOR.isProdSuffix;
+    document.head.appendChild(script);
+
+</script>
 
 </body>
 </html>

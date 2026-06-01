@@ -58,7 +58,6 @@ const ImportText = {
         }
 
         if (paragraphs.length > 0) {
-            paragraphs = App.handleShortParagraphs(paragraphs);
             chapters.push(paragraphs);
         }
 

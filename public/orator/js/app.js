@@ -1,7 +1,5 @@
 const App = {
 
-    isProd: true,
-
     $app: $('#app'),
 
     dependencies: [
@@ -88,7 +86,7 @@ const App = {
 
     loadDependencies() {
         let suffix = '';
-        if (this.isProd) {
+        if (!window.ORATOR.isProd) {
             suffix = '?v=' + Date.now();
         }
 
@@ -728,7 +726,7 @@ const App = {
 
             if (
                 !this.hasEvenSpeechMarks(prev)
-                || prevArr.length < 100
+                || prevArr.length < 20
                 || partArr.length < 20
                 || this.isTitleContraction(prevArr[prevArr.length - 1])
             ) {
@@ -884,9 +882,10 @@ const App = {
 
     ensureCurrentVersion() {
         const url = new URL(window.location.href);
+        const version = CURRENT_VERSION;
 
-        if (parseInt(url.searchParams.get('v') ?? 0) !== CURRENT_VERSION) {
-            url.searchParams.set('v', CURRENT_VERSION);
+        if (parseInt(url.searchParams.get('v') ?? 0) !== version) {
+            url.searchParams.set('v', version);
             window.location.href = url.toString();
         }
     },
