@@ -409,6 +409,8 @@ const ReaderService = {
             }
         }
 
+        this.updateBufferSize();
+
         if (chapterId === -10 && paragraphId === -12) {
             console.log("Start playback from previously stopped position", this.progressTracker);
             [chapterId, paragraphId] = this.progressTracker;
@@ -431,6 +433,25 @@ const ReaderService = {
 
         console.log("Calling play next");
         this.playNext();
+    },
+
+    async updateBufferSize() {
+        const orator = await StorageService.getOratorJson();
+        const lastUpdatedAt = orator?.config?.updatedAt ?? 0;
+
+        const elapsed = (Date.now() - lastUpdatedAt) / 1000 / 60; // in minutes
+
+        let targetBufferSize = 10000;
+
+        if (elapsed < 10) {
+            targetBufferSize = 100;
+        } else if (elapsed < 30) {
+            targetBufferSize = 500;
+        } else if (elapsed < 24 * 60) {
+            targetBufferSize = 1000;
+        }
+
+        this.bufferSize = targetBufferSize;
     },
 
     updateUserIntTime() {
