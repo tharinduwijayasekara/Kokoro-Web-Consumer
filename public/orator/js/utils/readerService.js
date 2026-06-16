@@ -441,7 +441,7 @@ const ReaderService = {
 
         const elapsed = (Date.now() - lastUpdatedAt) / 1000 / 60; // in minutes
 
-        let targetBufferSize = 10000;
+        let targetBufferSize = 2000;
 
         if (elapsed < 10) {
             targetBufferSize = 100;
