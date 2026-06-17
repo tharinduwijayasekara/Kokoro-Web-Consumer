@@ -814,6 +814,31 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     grid-template-columns: 1fr;
     grid-column-gap: 5px;
     align-items: center;
+    position: relative;
+}
+
+.buffer-health .loader {
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    left: 0px;
+    right: 0px;
+    height: 2px;
+    --c: no-repeat linear-gradient(#000000 0 0);
+    background: var(--c), var(--c), #ffffff00;
+    background-size: 60% 100%;
+    animation: l16 3s infinite;
+    border-radius: 2px;
+    transition: opacity 1s;
+}
+@keyframes l16 {
+    0%   {background-position:-150% 0,-150% 0}
+    66%  {background-position: 250% 0,-150% 0}
+    100% {background-position: 250% 0, 250% 0}
+}
+
+.buffer-health .loader.active {
+    opacity: 100;
 }
 
 .buffer-health .chapter-timings {

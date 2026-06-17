@@ -495,7 +495,7 @@ const ReaderService = {
             let tempC = cIdx;
             let tempP = pIdx;
 
-            this.$bufferHealth.find('.spinner-border').addClass("active");
+            this.$bufferHealth.find('.loader').addClass("active");
 
             for (let i = 0; i < Math.min(needed, batchSize); i++) {
                 if (this.playIdentifier !== playIdentifier) return;
@@ -527,7 +527,7 @@ const ReaderService = {
             console.log("Buffer fill completed");
         } finally {
             this.isBuffering = false;
-            this.$bufferHealth.find('.spinner-border').removeClass('active');
+            this.$bufferHealth.find('.loader').removeClass('active');
             this.computeBufferedTime().then((bt) =>
                 this.$bufferHealth.find('span').text(this.prepareBufferHealthText(bt))
             );
