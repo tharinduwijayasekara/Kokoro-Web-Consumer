@@ -906,26 +906,29 @@ const App = {
     },
 
     async loadNews() {
-        // --- Temporarily disabled, need to move to fetching through api
-        return;
+        if (this.isOffline) return;
 
         const downloadedIds = [];
         const importFromDate = async (date) => {
             const url = `news/news-${date}.txt`;
-            const news = await fetch(url, {
-                method: 'GET'
-            });
+            try {
+                const news = await fetch(`https://api.orator-audio.com/${url}`, {
+                    method: 'GET'
+                });
 
-            if (!news) return;
+                if (!news.ok) return;
 
-            const text = await news.text();
-            if (!text) return;
+                const text = await news.text();
+                if (!text) return;
 
-            const importedBook = await ImportText.importFromText(text, true);
-            importedBook.id = url;
-            importedBook.title = `News Update SL: ${date}`;
-            await StorageService.db.books.put(importedBook);
-            downloadedIds.push(url);
+                const importedBook = await ImportText.importFromText(text, true);
+                importedBook.id = url;
+                importedBook.title = `News Update SL: ${date}`;
+                await StorageService.db.books.put(importedBook);
+                downloadedIds.push(url);
+            } catch (e) {
+                console.error(`Failed to import news from ${date}:`, e);
+            }
         };
 
         const dates = Array.from({length: 5}, (_, i) =>
