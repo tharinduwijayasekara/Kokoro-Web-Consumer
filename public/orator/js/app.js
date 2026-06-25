@@ -64,7 +64,9 @@ const App = {
         if (this.isOffline) {
             this.$app
                 .find('.library-top-subtext')
-                .text('Offline mode');
+                .addClass('offline')
+                .html('Orator APIs seem offline.<br/>Please check with Tharindu.<br/>Meanwhile you can continue to listen from where you left off with the cached audio.');
+
             return;
         }
 
