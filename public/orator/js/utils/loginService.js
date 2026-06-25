@@ -10,9 +10,16 @@ const LoginService = {
         const orator = await StorageService.getOratorJson();
         const token = orator?.login_token;
 
-        //
-        // Health check first
-        //
+        if (!token) {
+            console.log("No login token found");
+
+            return {
+                isAuthenticated: false,
+                isOffline: false,
+                user: null,
+            };
+        }
+
         try {
             const healthResponse = await fetch(
                 'https://api.orator-audio.com/api/healthcheck',
@@ -28,24 +35,13 @@ const LoginService = {
             console.log("Remote service unavailable, entering offline mode", e);
 
             return {
-                isAuthenticated: !!token,
+                isAuthenticated: false,
                 isOffline: true,
                 user: null,
             };
         }
 
-        //
-        // Service is reachable, now perform normal auth validation
-        //
-        if (!token) {
-            console.log("No login token found");
-
-            return {
-                isAuthenticated: false,
-                isOffline: false,
-                user: null,
-            };
-        }
+        console.log("Remote service available, checking token validity");
 
         try {
             const response = await fetch(

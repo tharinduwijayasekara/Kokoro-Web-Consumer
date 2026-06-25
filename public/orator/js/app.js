@@ -61,15 +61,15 @@ const App = {
     async handleAuthenticationCheck(authResult) {
         this.isOffline = authResult.isOffline;
 
-        if (!authResult.isAuthenticated) {
-            this.showView('register-login');
-            return;
-        }
-
         if (this.isOffline) {
             this.$app
                 .find('.library-top-subtext')
                 .text('Offline mode');
+            return;
+        }
+
+        if (!authResult.isAuthenticated) {
+            this.showView('register-login');
             return;
         }
 
