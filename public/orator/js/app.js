@@ -36,29 +36,29 @@ const App = {
             this.setEventHandlers();
             document.getElementById('styles-for-init').remove();
 
-            LoginService.checkAuth()
-                .then((isAuthenticated) => this.handleAuthenticationCheck(isAuthenticated));
+            const isReady = this.handleAuthenticationCheck(await LoginService.checkAuth());
 
             this.registerAudioPipelineHook();
             this.registerHiss();
-
-            await this.race(this.loadNews(), 5 * 1000);
-
-            await this.sleep(500);
-
-            await Promise.all([
-                this.renderCurrentlyReading(),
-                this.renderLibrary()
-            ]);
-
             this.setLibraryBackgroundCarousel();
+
+            if (isReady) {
+                await this.race(this.loadNews(), 5 * 1000);
+
+                await this.sleep(500);
+
+                await Promise.all([
+                    this.renderCurrentlyReading(),
+                    this.renderLibrary()
+                ]);
+            }
 
         } catch (e) {
             console.log("Initialization failed.", e);
         }
     },
 
-    async handleAuthenticationCheck(authResult) {
+    handleAuthenticationCheck(authResult) {
         this.isOffline = authResult.isOffline;
 
         if (this.isOffline) {
@@ -67,17 +67,19 @@ const App = {
                 .addClass('offline')
                 .html('Orator APIs seem offline.<br/>Please check with Tharindu.<br/>Meanwhile you can continue to listen from where you left off with the cached audio.');
 
-            return;
+            return true;
         }
 
         if (!authResult.isAuthenticated) {
             this.showView('register-login');
-            return;
+            return false;
         }
 
         this.$app
             .find('.library-top-subtext')
             .text(`Welcome, ${authResult.user.email}!`);
+
+        return true;
     },
 
     async race(promise, milliseconds) {
