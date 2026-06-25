@@ -902,6 +902,9 @@ const App = {
     },
 
     async loadNews() {
+        // --- Temporarily disabled, need to move to fetching through api
+        return;
+
         const downloadedIds = [];
         const importFromDate = async (date) => {
             const url = `news/news-${date}.txt`;
