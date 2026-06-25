@@ -157,7 +157,8 @@ span.navbar-brand {
 .library-top-image p {
     margin: 0;
     font-size: 0.8em;
-    color: #cccccc;
+    color: #bfc3ca;
+    text-shadow: 0 0 2px #00000040;
 }
 
 .library-top-text {
@@ -178,7 +179,7 @@ span.navbar-brand {
     margin: 0;
     font-size: 0.8em;
     color: #bfc3ca;
-    text-shadow: 0 0 2px black;
+    text-shadow: 0 0 2px #00000040;
     padding-top: 15px;
 }
 

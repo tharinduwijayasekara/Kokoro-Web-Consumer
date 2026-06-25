@@ -10,33 +10,76 @@ const LoginService = {
         const orator = await StorageService.getOratorJson();
         const token = orator?.login_token;
 
+        //
+        // Health check first
+        //
+        try {
+            const healthResponse = await fetch(
+                'https://api.orator-audio.com/api/healthcheck',
+                {
+                    method: 'GET',
+                }
+            );
+
+            if (!healthResponse.ok) {
+                throw new Error(`Health check failed with ${healthResponse.status}`);
+            }
+        } catch (e) {
+            console.log("Remote service unavailable, entering offline mode", e);
+
+            return {
+                isAuthenticated: !!token,
+                isOffline: true,
+                user: null,
+            };
+        }
+
+        //
+        // Service is reachable, now perform normal auth validation
+        //
         if (!token) {
             console.log("No login token found");
-            return false;
+
+            return {
+                isAuthenticated: false,
+                isOffline: false,
+                user: null,
+            };
         }
 
         try {
-            const response = await fetch('https://api.orator-audio.com/api/user', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            const response = await fetch(
+                'https://api.orator-audio.com/api/user',
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            });
+            );
 
             if (!response.ok) {
                 console.log("Token invalid");
-                return false;
+
+                return {
+                    isAuthenticated: false,
+                    isOffline: false,
+                    user: null,
+                };
             }
 
             const user = await response.json();
+
             console.log("Authenticated user", user);
 
             this.user = user;
 
             if (Object.keys(orator.reading).length === 1) {
+
                 console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
 
                 const remoteOratorJson = await this.fetchUserOratorJson();
+
                 if (
                     remoteOratorJson
                     && remoteOratorJson.reading
@@ -44,12 +87,7 @@ const LoginService = {
                 ) {
                     console.log("Remote orator reading list is not the same, merging them");
 
-                    const merged = {
-                        ...orator,
-                        ...remoteOratorJson,
-                        login_token: token,
-                        user: user,
-                    };
+                    const merged = {...orator, ...remoteOratorJson, login_token: token, user: user,};
 
                     console.log("Merging remote orator json");
 
@@ -59,11 +97,20 @@ const LoginService = {
                 }
             }
 
-            return true;
+            return {
+                isAuthenticated: true,
+                isOffline: false,
+                user,
+            };
 
         } catch (e) {
             console.log("Auth check failed", e);
-            return false;
+
+            return {
+                isAuthenticated: false,
+                isOffline: false,
+                user: null,
+            };
         }
     },
 

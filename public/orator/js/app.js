@@ -58,13 +58,24 @@ const App = {
         }
     },
 
-    async handleAuthenticationCheck(isAuthenticated) {
-        if (!isAuthenticated) {
+    async handleAuthenticationCheck(authResult) {
+        this.isOffline = authResult.isOffline;
+
+        if (!authResult.isAuthenticated) {
             this.showView('register-login');
             return;
         }
 
-        this.$app.find('.library-top-subtext').text(`Welcome, ${LoginService.user.email}!`);
+        if (this.isOffline) {
+            this.$app
+                .find('.library-top-subtext')
+                .text('Offline mode');
+            return;
+        }
+
+        this.$app
+            .find('.library-top-subtext')
+            .text(`Welcome, ${authResult.user.email}!`);
     },
 
     async race(promise, milliseconds) {
