@@ -908,14 +908,23 @@ const App = {
     async loadNews() {
         if (this.isOffline) return;
 
-        const downloadedIds = [];
+        const allBooks = await StorageService.db.books.toArray();
+        const existingNewsIds = new Set(
+            allBooks
+                .filter(book => String(book.id).startsWith('news/'))
+                .map(book => book.id)
+        );
+
         const importFromDate = async (date) => {
             const url = `news/news-${date}.txt`;
+
+            // Skip if already downloaded
+            if (existingNewsIds.has(url)) return;
+
             try {
                 const news = await fetch(`https://api.orator-audio.com/${url}`, {
                     method: 'GET'
                 });
-
                 if (!news.ok) return;
 
                 const text = await news.text();
@@ -925,28 +934,22 @@ const App = {
                 importedBook.id = url;
                 importedBook.title = `News Update SL: ${date}`;
                 await StorageService.db.books.put(importedBook);
-                downloadedIds.push(url);
             } catch (e) {
                 console.error(`Failed to import news from ${date}:`, e);
             }
         };
 
-        const dates = Array.from({length: 5}, (_, i) =>
-            new Date(Date.now() - (i * 24 * 60 * 60 * 1000)).toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'})
-        );
+        // Always include today's date first, then previous dates
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+        const dates = [today];
+
+        for (let i = 1; i < 5; i++) {
+            const date = new Date(Date.now() - (i * 24 * 60 * 60 * 1000))
+                .toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+            dates.push(date);
+        }
 
         await Promise.all(dates.map(importFromDate));
-
-        // Delete all the news items that were loaded before leaving only the ones that were just downloaded
-        const allBooks = await StorageService.db.books.toArray();
-        const newsToDelete = allBooks.filter(book => {
-            const id = String(book.id);
-            return id.startsWith('news/') && !downloadedIds.includes(id);
-        });
-
-        for (const book of newsToDelete) {
-            await StorageService.db.books.delete(book.id);
-        }
     },
 
     registerOratorFonts() {
