@@ -940,12 +940,12 @@ const App = {
         };
 
         // Always include today's date first, then previous dates
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+        const today = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
         const dates = [today];
 
         for (let i = 1; i < 5; i++) {
             const date = new Date(Date.now() - (i * 24 * 60 * 60 * 1000))
-                .toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+                .toLocaleDateString('en-CA', {timeZone: 'Asia/Colombo'});
             dates.push(date);
         }
 
@@ -984,6 +984,12 @@ const App = {
 
         styleEl.textContent = css;
         document.head.appendChild(styleEl);
+    },
+
+    normalizeWordNumber(str) {
+        return str
+            .replace(/([A-Za-z]+)-(\d+)/g, '$1 $2')
+            .replace(/([A-Za-z]+)(\d+)/g, '$1 $2');
     }
 
 }

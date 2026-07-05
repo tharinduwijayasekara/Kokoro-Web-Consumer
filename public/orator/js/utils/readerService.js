@@ -607,6 +607,8 @@ const ReaderService = {
                 text = text.replaceAll(rep[0], rep[1]);
             });
 
+            text = App.normalizeWordNumber(text);
+
             text = `. ${text}`;
         }
 
