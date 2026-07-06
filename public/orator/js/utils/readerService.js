@@ -294,6 +294,14 @@ const ReaderService = {
 
             if (chapterTitle.length < 3) chapterTitle = "Chapter: " + chapterTitle;
 
+            let formattedChapterTitle = this.getTitleFromChapter(paragraphs);
+
+            if (
+                formattedChapterTitle.toLowerCase().includes(chapterTitle.toLowerCase())
+            ) {
+                chapterTitle = formattedChapterTitle;
+            }
+
             $('<div></div>')
                 .html(chapterTitle)
                 .addClass('playback-chapter-item')
@@ -338,11 +346,7 @@ const ReaderService = {
             $(spanHtml).appendTo($currentParagraph);
         });
 
-        this.$bookChapter.html(
-            (chapter[0] ?? "")
-                .replaceAll("**##", `<span class="italic">`)
-                .replaceAll("##**", `</span>`)
-        );
+        this.$bookChapter.html(this.getTitleFromChapter(chapter));
 
         this.$chaptersList.find('.playback-chapter-item.active').removeClass('active');
         this.$chaptersList.find(`#toc-chapter-${chapterIdToRender}`).addClass('active');
@@ -353,6 +357,20 @@ const ReaderService = {
         if (targetElement) {
             this.scrollToElementInContainer(targetElement, this.$chaptersList[0]);
         }
+    },
+
+    getTitleFromChapter(chapter) {
+        let chapterTitle = (chapter[0] ?? "")
+            .replaceAll("**##", `<span class="italic">`)
+            .replaceAll("##**", `</span>`);
+
+        const chapterRegex = /^Chapter\s+\d+/i;
+        if (chapterRegex.test(chapterTitle) && chapter[1]) {
+            const firstTenWords = chapter[1].split(/\s+/).slice(0, 10).join(" ");
+            chapterTitle += ` - ${firstTenWords}`;
+        }
+
+        return chapterTitle;
     },
 
     async goToPreviousChapter() {

@@ -398,6 +398,11 @@ const SettingsService = {
                 background-color: ${config.backgroundColor} !important;
             }
             
+            .playback-chapters-list {
+                color: ${config.fontColor} !important;
+                background-color: ${config.backgroundColor} !important;
+            }
+            
             .reader-container .reader-paragraph {
                 scroll-margin-top: ${scrollMarginTop}pt !important;
             }
