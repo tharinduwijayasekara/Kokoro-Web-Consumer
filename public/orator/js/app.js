@@ -79,6 +79,8 @@ const App = {
             .find('.library-top-subtext')
             .text(`Welcome, ${authResult.user.email}!`);
 
+        LoginService.checkForRemoteSessionUpdate();
+
         return true;
     },
 

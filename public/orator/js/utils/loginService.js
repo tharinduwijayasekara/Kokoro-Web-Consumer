@@ -110,6 +110,37 @@ const LoginService = {
         }
     },
 
+    async checkForRemoteSessionUpdate() {
+        try {
+            const orator = await StorageService.getOratorJson();
+            const token = orator?.login_token;
+            if (!token) return;
+
+            const remoteOratorJson = await this.fetchUserOratorJson({silent: true});
+            if (!remoteOratorJson || !remoteOratorJson.lastUpdatedAt) return;
+
+            const remoteUpdatedAt = new Date(remoteOratorJson.lastUpdatedAt).getTime();
+            const localUpdatedAt = orator.lastUpdatedAt ? new Date(orator.lastUpdatedAt).getTime() : 0;
+
+            if (remoteUpdatedAt <= localUpdatedAt) return;
+
+            console.log("Remote orator json is newer, syncing session");
+
+            App.showMessageBoard("Orator", "Syncing your session...", 70);
+
+            const merged = {...orator, ...remoteOratorJson, login_token: token, user: this.user};
+
+            await StorageService.writeOratorJson(merged, {skipSync: true});
+
+            await this.importRemoteBooks();
+
+        } catch (e) {
+            console.log("Background session sync check failed", e);
+        } finally {
+            App.hideMessageBoard();
+        }
+    },
+
     async importRemoteBooks() {
         console.log("Importing remote books");
 
@@ -436,7 +467,7 @@ const LoginService = {
 
     },
 
-    async fetchUserOratorJson() {
+    async fetchUserOratorJson({silent = false} = {}) {
         const token = (await StorageService.getOratorJson())?.login_token;
 
         if (!token) {
@@ -444,7 +475,7 @@ const LoginService = {
             return null;
         }
 
-        App.showMessageBoard("Orator", "Syncing your settings...", 70);
+        if (!silent) App.showMessageBoard("Orator", "Syncing your settings...", 70);
 
         try {
             const res = await fetch('https://api.orator-audio.com/api/orator', {
@@ -474,7 +505,7 @@ const LoginService = {
             return [null, null];
 
         } finally {
-            App.hideMessageBoard();
+            if (!silent) App.hideMessageBoard();
         }
     },
 

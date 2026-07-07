@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/OratorWeb.iml" filepath="$PROJECT_DIR$/.idea/OratorWeb.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../../orator-api/.idea/orator-api.iml" filepath="$PROJECT_DIR$/../../../orator-api/.idea/orator-api.iml" />
     </modules>
   </component>
 </project>
