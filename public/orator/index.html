@@ -43,8 +43,11 @@
     <link id="styles-for-init" rel="stylesheet" href="css/styles.css">
     <script>
 
+        const queryParams = new URLSearchParams(window.location.search);
+        const isProdParam = queryParams.get('isProd');
+
         window.ORATOR = {
-            isProd: false,
+            isProd: isProdParam === 'false' ? false : true,
             isProdSuffix: '',
         };
 
@@ -164,6 +167,11 @@
                     <textarea id="userTextInput" placeholder="Or enter text yourself :)"></textarea>
                     <button class="btn btn-sm" onclick="App.importUserInput()">
                         <i class="bi bi-arrow-right"></i> Import
+                    </button>
+                </div>
+                <div class="library-logout-wrapper">
+                    <button class="btn btn-sm" onclick="LoginService.logout()">
+                        <i class="bi bi-box-arrow-right"></i> Logout
                     </button>
                 </div>
                 <div class="library-storage-quota" style="display: none"></div>

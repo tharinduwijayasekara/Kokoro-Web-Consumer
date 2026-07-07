@@ -34,7 +34,7 @@ python -m http.server 8000
 # Then: http://localhost:8000/orator/
 ```
 
-Dev mode: set `window.ORATOR.isProd = false` in index.html to bust cache.
+Dev mode: append `?isProd=false` to the URL to bust cache and reload assets on every page load.
 
 ## Key Patterns
 

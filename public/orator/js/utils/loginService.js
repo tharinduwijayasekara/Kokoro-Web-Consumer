@@ -317,6 +317,17 @@ const LoginService = {
         location.reload(); // cleanest reset (matches your versioning style)
     },
 
+    async logout() {
+        const orator = await StorageService.getOratorJson();
+
+        delete orator.login_token;
+        delete orator.user;
+
+        await StorageService.writeOratorJson(orator, {skipSync: true});
+
+        location.reload();
+    },
+
     async updateUserOratorJson(oratorJson, {syncBooks = false} = {}) {
 
         const now = Date.now();
