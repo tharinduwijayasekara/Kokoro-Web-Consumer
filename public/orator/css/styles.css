@@ -528,6 +528,10 @@ label.btn-import-books {
     display: none;
 }
 
+#view-library .visible-on-currently-reading {
+    display: none;
+}
+
 #view-library .library-currently-reading .book-item .book-item-contianer .book-details .text-muted.visible-on-currently-reading {
     display: block;
 }
