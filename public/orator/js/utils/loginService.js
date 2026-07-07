@@ -117,14 +117,27 @@ const LoginService = {
             if (!token) return;
 
             const remoteOratorJson = await this.fetchUserOratorJson({silent: true});
-            if (!remoteOratorJson || !remoteOratorJson.lastUpdatedAt) return;
+            if (!remoteOratorJson || !remoteOratorJson.reading) return;
 
-            const remoteUpdatedAt = new Date(remoteOratorJson.lastUpdatedAt).getTime();
-            const localUpdatedAt = orator.lastUpdatedAt ? new Date(orator.lastUpdatedAt).getTime() : 0;
+            const localReading = orator.reading ?? {};
+            const remoteReading = remoteOratorJson.reading;
 
-            if (remoteUpdatedAt <= localUpdatedAt) return;
+            const hasFurtherRemoteProgress = Object.keys(localReading).some(bookId => {
+                const localProgress = localReading[bookId];
+                const remoteProgress = remoteReading[bookId];
+                if (!localProgress || !remoteProgress) return false;
 
-            console.log("Remote orator json is newer, syncing session");
+                const [localChapterIdx, localParagraphIdx] = localProgress.split('::').map(v => parseInt(v));
+                const [remoteChapterIdx, remoteParagraphIdx] = remoteProgress.split('::').map(v => parseInt(v));
+                if (isNaN(localChapterIdx) || isNaN(remoteChapterIdx)) return false;
+
+                if (remoteChapterIdx > localChapterIdx) return true;
+                return remoteChapterIdx === localChapterIdx && remoteParagraphIdx > localParagraphIdx;
+            });
+
+            if (!hasFurtherRemoteProgress) return;
+
+            console.log("Remote orator json has further reading progress, syncing session");
 
             App.showMessageBoard("Orator", "Syncing your session...", 70);
 
