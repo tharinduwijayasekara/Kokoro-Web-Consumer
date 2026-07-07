@@ -122,9 +122,16 @@ const LoginService = {
             const localReading = orator.reading ?? {};
             const remoteReading = remoteOratorJson.reading;
 
-            const hasFurtherRemoteProgress = Object.keys(localReading).some(bookId => {
+            const allBookIds = new Set([
+                ...Object.keys(localReading),
+                ...Object.keys(remoteReading),
+            ]);
+
+            const hasFurtherRemoteProgress = [...allBookIds].some(bookId => {
                 const localProgress = localReading[bookId];
                 const remoteProgress = remoteReading[bookId];
+
+                if (!localProgress && remoteProgress) return true;
                 if (!localProgress || !remoteProgress) return false;
 
                 const [localChapterIdx, localParagraphIdx] = localProgress.split('::').map(v => parseInt(v));
