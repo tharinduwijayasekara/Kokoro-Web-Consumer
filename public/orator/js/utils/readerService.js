@@ -979,6 +979,26 @@ const ReaderService = {
 
         this.$chapterProgress.width(`${chapterProgress}%`);
         this.$bookProgress.width(`${bookProgress}%`);
+
+        this.notifyNativePlayback({
+            bookTitle: this.book.title,
+            chapterTitle: this.getTitleFromChapter(chapter).replace(/<[^>]+>/g, ''),
+            cover: this.book.cover ?? null,
+            progressPercent: chapterProgress,
+            elapsedSeconds: Math.round(this.durationPerCharacter * chars.read),
+            durationSeconds: Math.round(this.durationPerCharacter * chars.total),
+        });
+    },
+
+    notifyNativePlayback(payload) {
+        if (!window.AndroidBridge || typeof window.AndroidBridge.onPlaybackUpdate !== 'function') {
+            return;
+        }
+        try {
+            window.AndroidBridge.onPlaybackUpdate(JSON.stringify(payload));
+        } catch (e) {
+            console.warn('notifyNativePlayback failed', e);
+        }
     },
 
     secondsToMinutes(seconds) {
