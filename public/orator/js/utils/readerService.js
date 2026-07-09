@@ -981,8 +981,8 @@ const ReaderService = {
         this.$bookProgress.width(`${bookProgress}%`);
 
         this.notifyNativePlayback({
-            bookTitle: this.book.title,
-            chapterTitle: this.getTitleFromChapter(chapter).replace(/<[^>]+>/g, ''),
+            bookTitle: this.book.title.substring(0, 100),
+            chapterTitle: this.getTitleFromChapter(chapter).replace(/<[^>]+>/g, '').substring(0, 100),
             cover: this.book.cover ?? null,
             progressPercent: chapterProgress,
             elapsedSeconds: Math.round(this.durationPerCharacter * chars.read),
