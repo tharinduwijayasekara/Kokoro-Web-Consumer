@@ -6,6 +6,7 @@ const DEFAULT_ORATOR_JSON = {
             speed: 1.1,
             pitch: 1.0,
             replacements: [],
+            customFonts: [],
             fontFamily: "Crimson Pro",
             fontSize: 12,
             lineHeight: 16,

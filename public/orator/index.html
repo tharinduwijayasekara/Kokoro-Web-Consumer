@@ -291,6 +291,19 @@
                                         <label for="font-input">Font</label>
                                     </div>
 
+                                    <div class="custom-fonts-container mb-3">
+                                        <div class="custom-fonts-header">
+                                            <label class="form-label mb-0">Custom Fonts</label>
+                                            <label class="btn btn-sm custom-font-add-btn">
+                                                <i class="bi bi-plus"></i>
+                                                <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" hidden>
+                                            </label>
+                                        </div>
+                                        <div class="custom-fonts-list">
+                                            <!-- rendered from config.customFonts -->
+                                        </div>
+                                    </div>
+
                                     <div class="form-slider-stack">
                                         <label for="font-size-input" class="form-label">Font Size</label>
                                         <input type="range" class="form-range" min="5" max="20" id="font-size-input"

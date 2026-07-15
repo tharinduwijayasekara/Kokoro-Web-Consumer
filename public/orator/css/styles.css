@@ -1111,6 +1111,68 @@ label.form-label {
     color: white;
 }
 
+.custom-fonts-container {
+    border: 1px solid #495057;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
+
+.custom-fonts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.custom-fonts-header .form-label {
+    color: white;
+}
+
+.custom-font-add-btn {
+    text-align: center;
+}
+
+.custom-font-add-btn i {
+    color: white;
+    font-size: 20px;
+}
+
+.custom-fonts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.custom-font-item {
+    display: grid;
+    grid-template-columns: 1fr 30px;
+    grid-column-gap: 10px;
+    align-items: center;
+    color: white;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.custom-font-name {
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.custom-font-remove {
+    color: white;
+    padding: 0;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-font-remove:hover {
+    color: #ff6b6b;
+}
+
 .error-banner.active {
     position: fixed;
     left: 0;

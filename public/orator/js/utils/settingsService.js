@@ -22,6 +22,7 @@ const SettingsService = {
         config.fontColor = config.fontColor ?? "#000000";
         config.highlightColor = config.highlightColor ?? "#00ff00";
         config.backgroundColor = config.backgroundColor ?? "#eeeeee";
+        config.customFonts = config.customFonts ?? [];
 
         this.config = config;
         this.saving = false;
@@ -34,6 +35,7 @@ const SettingsService = {
 
         }
 
+        await CustomFontService.init(config);
         this.loadSettings(config);
     },
 
@@ -448,6 +450,14 @@ const SettingsService = {
         const darken = (val) => Math.max(0, val - amount).toString(16).padStart(2, '0');
 
         return `#${darken(r)}${darken(g)}${darken(b)}${a}`;
+    },
+
+    async addCustomFont(file) {
+        return CustomFontService.addFont(file);
+    },
+
+    async removeCustomFont(name) {
+        return CustomFontService.removeFont(name);
     }
 
 }

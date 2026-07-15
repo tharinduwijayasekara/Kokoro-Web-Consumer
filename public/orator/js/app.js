@@ -7,6 +7,7 @@ const App = {
         'js/utils/storageService.js',
         'js/utils/readerService.js',
         'js/utils/settingsService.js',
+        'js/utils/customFontService.js',
         'js/utils/importEpub.js',
         'js/utils/importEpubJsZip.js',
         'js/utils/importText.js',
@@ -571,6 +572,19 @@ const App = {
             SettingsService.removeSpeechReplacement(e.currentTarget);
         });
 
+        this.$app.find('#custom-font-input').on('change', async (e) => {
+            this.requestWakeLock();
+            const file = e.target.files[0];
+            if (file) await SettingsService.addCustomFont(file);
+            e.target.value = '';
+        });
+
+        this.$app.on('click', '.custom-font-remove', async (e) => {
+            e.stopPropagation();
+            this.requestWakeLock();
+            SettingsService.removeCustomFont($(e.currentTarget).data('name'));
+        });
+
         this.$app.on('click', '.orator-backdrop', async (e) => {
             e.stopPropagation();
             this.requestWakeLock();
@@ -966,6 +980,7 @@ const App = {
             const italicSrc = hasItalic
                 ? `url('${basePath}/${fontName}-Italic.woff2') format('woff2')`
                 : regularSrc;
+            const italicStyle = hasItalic ? 'italic' : 'oblique 10deg';
 
             return `
             @font-face {
@@ -978,7 +993,7 @@ const App = {
                 font-family: '${fontName}';
                 src: ${italicSrc};
                 font-weight: normal;
-                font-style: italic;
+                font-style: ${italicStyle};
             }`
                 .trim();
         })
