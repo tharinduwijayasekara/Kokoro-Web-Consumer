@@ -37,7 +37,25 @@ const App = {
             this.setEventHandlers();
             document.getElementById('styles-for-init').remove();
 
-            const isReady = this.handleAuthenticationCheck(await LoginService.checkAuth());
+            const orator = await StorageService.getOratorJson();
+            let isReady = false;
+
+            if (orator.login_token) {
+                isReady = true;
+                this.isOffline = false;
+
+                if (orator.user?.email) {
+                    this.$app
+                        .find('.library-top-subtext')
+                        .text(`Welcome, ${orator.user.email}!`);
+                }
+
+                LoginService.checkAuth().then(authResult => {
+                    this.handleAuthenticationCheck(authResult);
+                });
+            } else {
+                this.showView('register-login');
+            }
 
             this.registerAudioPipelineHook();
             this.registerHiss();
@@ -68,12 +86,12 @@ const App = {
                 .addClass('offline')
                 .html('Orator APIs seem offline.<br/>Please check with Tharindu.<br/>Meanwhile you can continue to listen from where you left off with the cached audio.');
 
-            return true;
+            return;
         }
 
         if (!authResult.isAuthenticated) {
-            this.showView('register-login');
-            return false;
+            LoginService.logout();
+            return;
         }
 
         this.$app
@@ -81,8 +99,6 @@ const App = {
             .text(`Welcome, ${authResult.user.email}!`);
 
         LoginService.checkForRemoteSessionUpdate();
-
-        return true;
     },
 
     async race(promise, milliseconds) {
