@@ -174,7 +174,7 @@ const LoginService = {
         App.showMessageBoard("Orator", "Importing your library...", 1);
 
         const remoteBooks = [];
-        const batchSize = 5;
+        const batchSize = 10;
 
         let start = 0;
         let totalBooks = null;

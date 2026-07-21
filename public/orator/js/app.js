@@ -971,7 +971,7 @@ const App = {
     },
 
     async changeLibraryBackground() {
-        if (!this.$app.find('#view-library.active').length) return;
+        if (!this.$app.find('#view-library.active, #view-register-login.active').length) return;
 
         console.log("Updating library background");
         const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
@@ -979,7 +979,9 @@ const App = {
         const image = this.libraryImages[index];
         const url = typeof image === 'string' ? image : image.url;
 
-        $('#view-library').attr("style", `background-image: url(${url})`);
+        const bgStyle = `background-image: url(${url}); background-size: cover; background-position: center; background-attachment: fixed;`;
+        $('#view-library').attr("style", bgStyle);
+        $('#view-register-login').attr("style", bgStyle);
 
         const attribution = this.$app.find('.library-top-image p');
         if (image.photographer_name) {
