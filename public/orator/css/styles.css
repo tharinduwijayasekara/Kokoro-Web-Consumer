@@ -1092,6 +1092,11 @@ label.form-label {
     font-size: 0.8rem;
 }
 
+.speech-cust-hint {
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
 .speech-cust-add-btn {
     text-align: center;
 }
