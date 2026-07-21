@@ -608,6 +608,13 @@ const App = {
             $(e.currentTarget).parent().removeClass('active');
         });
 
+        this.$app.on('click', '#btn-playback-settings-close', async (e) => {
+            e.stopPropagation();
+            this.requestWakeLock();
+
+            ReaderService.hidePlaybackSettings();
+        });
+
         this.$app.on('change', 'input[data-show-on-change="true"]', async (e) => {
             const $input = $(e.currentTarget);
             $input.parent().find('span').text($input.val());

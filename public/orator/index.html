@@ -267,7 +267,8 @@
         <div id="playback-settings" class="">
             <div class="playback-settings-wrapper">
                 <div class="playback-settings-header">
-                    Playback Settings
+                    <span>Playback Settings</span>
+                    <button class="btn btn-sm btn-close" id="btn-playback-settings-close"></button>
                 </div>
                 <div class="playback-settings">
 
@@ -293,7 +294,10 @@
 
                                     <div class="custom-fonts-container mb-3">
                                         <div class="custom-fonts-header">
-                                            <label class="form-label mb-0">Custom Fonts</label>
+                                            <div>
+                                                <label class="form-label mb-0">Custom Fonts</label>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Add your own TTF, OTF, WOFF, or WOFF2 fonts by tapping the <i class="bi bi-plus"></i> button</small>
+                                            </div>
                                             <label class="btn btn-sm custom-font-add-btn">
                                                 <i class="bi bi-plus"></i>
                                                 <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" hidden>
@@ -400,14 +404,22 @@
                                         <label for="speech-speed-input" class="form-label">Speed</label>
                                         <input type="range" class="form-range" min="0.5" max="1.5" step="0.01" id="speech-speed-input"
                                             data-show-on-change="true">
-                                        <div><span></span> X</div>
+                                        <div class="font-size-controls">
+                                            <span></span> X
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="speech-speed-input">-</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="speech-speed-input">+</button>
+                                        </div>
                                     </div>
 
                                     <div class="form-slider-stack">
                                         <label for="speech-pitch-input" class="form-label">Pitch</label>
                                         <input type="range" class="form-range" min="0.5" max="1.5" step="0.01" id="speech-pitch-input"
                                                data-show-on-change="true">
-                                        <div><span></span> X</div>
+                                        <div class="font-size-controls">
+                                            <span></span> X
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="speech-pitch-input">-</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="speech-pitch-input">+</button>
+                                        </div>
                                     </div>
 
                                 </div>

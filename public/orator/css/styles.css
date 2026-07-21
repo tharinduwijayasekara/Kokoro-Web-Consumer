@@ -1062,6 +1062,13 @@ div#message-board-wrapper {
     margin-bottom: 20px;
     text-align: center;
     font-size: 1rem;
+    position: relative;
+    width: 100%;
+}
+
+.playback-settings-header .btn-close {
+    position: absolute;
+    right: 20px;
 }
 
 .playback-settings {
