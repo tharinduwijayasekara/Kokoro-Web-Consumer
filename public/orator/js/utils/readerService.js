@@ -626,6 +626,7 @@ const ReaderService = {
             });
 
             text = App.normalizeWordNumber(text);
+            text = App.normalizeLargeNumbers(text);
 
             text = `. ${text}`;
         }

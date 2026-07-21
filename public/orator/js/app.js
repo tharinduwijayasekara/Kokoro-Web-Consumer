@@ -1057,6 +1057,19 @@ const App = {
         return str
             .replace(/([A-Za-z]+)-(\d+)/g, '$1 $2')
             .replace(/([A-Za-z]+)(\d+)/g, '$1 $2');
+    },
+
+    normalizeLargeNumbers(str) {
+        return str.replace(/\d{7,}/g, (match) => {
+            const groups = [];
+            let remaining = match;
+            while (remaining.length > 3) {
+                groups.unshift(remaining.slice(-3));
+                remaining = remaining.slice(0, -3);
+            }
+            groups.unshift(remaining);
+            return groups.join(', ');
+        });
     }
 
 }
