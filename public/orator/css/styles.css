@@ -420,8 +420,8 @@ button.btn-import-clipboard {
             to bottom,
             rgba(20, 20, 20, 0) 0px,
             rgba(20, 20, 20, 0.01) 100px,
-            rgba(30, 20, 30, 40) 30vh,
-            rgba(40, 20, 40, 100) 40vh
+            rgba(30, 30, 30, 40) 30vh,
+            rgba(20, 20, 20, 100) 40vh
     );
 }
 
