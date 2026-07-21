@@ -17,6 +17,7 @@ const SettingsService = {
         this.$fontSize = $('#font-size-input');
         this.$fontLine = $('#font-line-input');
         this.$fontSpacing = $('#font-spacing-input');
+        this.$textShadow = $('#font-text-shadow-input');
 
         config.pitch = config.pitch ?? 1.0;
         config.fontColor = config.fontColor ?? "#000000";
@@ -179,6 +180,10 @@ const SettingsService = {
             $input.trigger('change'); // Trigger change for app.js if needed
             this.monitorConfig();
         });
+
+        this.$textShadow.on('change', () => {
+            this.monitorConfig();
+        });
     },
 
     loadSettings(config) {
@@ -239,6 +244,8 @@ const SettingsService = {
 
         this.$fontSpacing.val(config.letterSpacing);
         this.$fontSpacing.parent().find('span').text(config.letterSpacing);
+
+        this.$textShadow.prop('checked', config.textShadow ?? true);
 
         // Colors
         this.pickers.font.setColor(config.fontColor);
@@ -303,6 +310,7 @@ const SettingsService = {
             || newConfig.fontSize !== this.config.fontSize
             || newConfig.lineHeight !== this.config.lineHeight
             || newConfig.letterSpacing !== this.config.letterSpacing
+            || newConfig.textShadow !== this.config.textShadow
         );
 
         console.log("Monitoring config", this.config, newConfig);
@@ -364,6 +372,7 @@ const SettingsService = {
         config.fontSize = parseInt(this.$fontSize.val());
         config.lineHeight = parseInt(this.$fontLine.val());
         config.letterSpacing = parseInt(this.$fontSpacing.val());
+        config.textShadow = this.$textShadow.prop('checked');
 
         // Colors
         config.fontColor = this.pickers.font.getColor().toHEXA().toString();
@@ -387,6 +396,7 @@ const SettingsService = {
         const hlColorWoTrans = config.highlightColor.substring(0, 7);
         const hlColorDarkened = this.darkenHex(config.highlightColor, 20);
         const scrollMarginTop = config.lineHeight * (config.lineHeight < 25 ? 3 : 1);
+        const textShadowStyle = config.textShadow ? 'text-shadow: 0 0.012rem, 0.02rem 0 0, 0.02rem 0.02rem;' : 'text-shadow: none;';
 
         $('#app-styles').html(`
             .reader-container p {
@@ -395,6 +405,7 @@ const SettingsService = {
                 font-size: ${config.fontSize}pt !important;
                 line-height: ${config.lineHeight}pt !important;
                 letter-spacing: ${config.letterSpacing}px !important;
+                ${textShadowStyle}
             }
             .reader-container-wrapper {
                 background-color: ${config.backgroundColor} !important;

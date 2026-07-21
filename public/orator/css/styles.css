@@ -695,7 +695,6 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     color: #121212;
     margin: 0;
     border-radius: 7px;
-    text-shadow: 0 0.012rem, 0.02rem 0 0, 0.02rem 0.02rem;
     font-family: "Radley", sans-serif;
     font-weight: 400;
     font-size: 13pt;
@@ -705,11 +704,6 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
 
 .reader-container p.hidden {
     opacity: 0 !important;
-}
-
-
-.dark-mode .reader-container p {
-    text-shadow: none;
 }
 
 .reader-container p span {

@@ -11,6 +11,7 @@ const DEFAULT_ORATOR_JSON = {
             fontSize: 12,
             lineHeight: 16,
             letterSpacing: 0,
+            textShadow: true,
             fontColor: "#CACACA",
             highlightColor: "#226622",
             backgroundColor: "#121212",
@@ -203,7 +204,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 24;
+const CURRENT_VERSION = 25;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
