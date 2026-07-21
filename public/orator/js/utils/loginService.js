@@ -5,6 +5,7 @@ const LoginService = {
     oratorSyncInProgress: false,
     lastOratorSyncAt: 0,
     SYNC_INTERVAL: 5 * 60 * 1000, // 5 minutes
+    BOOK_UPLOAD_CHUNK_SIZE: 2 * 1000 * 1000, // Characters per upload request 1 mil approx 1 mb
 
     async checkAuth() {
         const orator = await StorageService.getOratorJson();
@@ -439,7 +440,7 @@ const LoginService = {
                 const bookStrings = JSON.stringify(syncBooksBatch);
 
                 const uuid = Date.now();
-                const parts = bookStrings.match(/.{1,200000}/g);
+                const parts = bookStrings.match(new RegExp(`.{1,${this.BOOK_UPLOAD_CHUNK_SIZE}}`, 'g'));
 
                 let hasFailure = false;
                 let progress = 0;
