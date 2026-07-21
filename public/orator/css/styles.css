@@ -1437,7 +1437,7 @@ label.form-label {
 }
 
 .orator-view-register-login .w-100[style*="max-width"] {
-    background: rgba(15, 15, 35, 0.8);
+    background: rgb(15 15 15 / 80%);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
