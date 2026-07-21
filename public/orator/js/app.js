@@ -888,6 +888,33 @@ const App = {
         ReaderService.init(importedBook.id);
     },
 
+    async importFromClipboard() {
+        let text = '';
+        try {
+            text = (await navigator.clipboard.readText()).trim();
+        } catch (e) {
+            console.warn('Clipboard read failed', e);
+        }
+
+        if (!text) {
+            App.showMessageBoard("Nothing to import", "Copy some text first, then tap the clipboard button.", -1);
+            setTimeout(() => App.hideMessageBoard(), 3000);
+            return;
+        }
+
+        this.requestWakeLock();
+        StorageService.enablePersistence();
+
+        App.showMessageBoard("Orator", "Importing from clipboard...", -1);
+        const importedBook = await ImportText.importFromText(text);
+        await StorageService.db.books.put(importedBook);
+
+        await App.renderLibrary();
+
+        console.log("About to load book for reading", importedBook.id);
+        ReaderService.init(importedBook.id);
+    },
+
     async setLibraryBackgroundCarousel() {
         const response = await fetch(`images/carousel/images.json?v=${Date.now()}`);
         const images = await response.json();

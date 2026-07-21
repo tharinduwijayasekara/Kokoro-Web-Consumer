@@ -349,7 +349,8 @@ span.navbar-brand {
     margin-top: 20px;
 }
 
-label.btn-import-books {
+label.btn-import-books,
+button.btn-import-books {
     width: 52px;
     height: 52px;
     display: flex;
@@ -360,6 +361,10 @@ label.btn-import-books {
     border: 2px solid #ffffff32;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+}
+
+button.btn-import-clipboard {
+    bottom: 88px;
 }
 
 #view-library {

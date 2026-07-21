@@ -28,13 +28,23 @@ Self-contained within `/orator` folder:
 
 ## Running Locally
 
-Static site—serve with any HTTP server (can't use file:// due to IndexedDB CORS):
+The site is served via Docker at `https://orator-audio.com/?v=<defaults.current_version>&isProd=false` for development.
+
+For local static testing if needed, serve with any HTTP server (can't use file:// due to IndexedDB CORS):
 ```bash
 python -m http.server 8000
 # Then: http://localhost:8000/orator/
 ```
 
 Dev mode: append `?isProd=false` to the URL to bust cache and reload assets on every page load.
+
+## Native Webview Integration
+
+This site is wrapped in a native Android WebView (`OratorWebView` at `D:\Apps\OratorWebView`, package `com.oratoraudio.oratorwebview`). The native app loads `https://app.orator-audio.com` and bridges playback state via `window.AndroidBridge.onPlaybackUpdate()` for native media notifications. No changes to the webview wrapper are needed for web-only features (like clipboard reads); `navigator.clipboard.readText()` is handled transparently by the WebView's Chromium engine (assuming HTTPS context and foreground focus, which the current setup provides).
+
+## Verification Rules
+
+By default, verify changes manually — don't proactively spin up a server or exercise features. When a live-check is explicitly requested, use the Docker-served site (`https://orator-audio.com/?v=<defaults.current_version>&isProd=false`) instead of starting a local Python server.
 
 ## Key Patterns
 
