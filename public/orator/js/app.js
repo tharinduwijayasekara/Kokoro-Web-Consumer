@@ -920,7 +920,7 @@ const App = {
         const localImages = await localResponse.json();
 
         const shuffledLocal = this.shuffle([...localImages]);
-        const selectedLocal = shuffledLocal.slice(0, 20);
+        const selectedLocal = shuffledLocal.slice(0, 40);
         this.libraryImages = selectedLocal.map(i => ({
             url: `images/carousel/${i}`,
             photographer_name: null,
