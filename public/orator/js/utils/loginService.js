@@ -292,10 +292,8 @@ const LoginService = {
             await this.handleAuthSuccess(data);
 
         } catch (e) {
-            alert(e.message);
+            App.showMessageBoard("Orator", e.message, 100, 5000);
         }
-
-        App.hideMessageBoard();
     },
 
     async register(name, email, password) {
@@ -319,10 +317,8 @@ const LoginService = {
             await this.handleAuthSuccess(data);
 
         } catch (e) {
-            alert(e.message);
+            App.showMessageBoard("Orator", e.message, 100, 5000);
         }
-
-        App.hideMessageBoard();
     },
 
     async handleAuthSuccess(data) {
@@ -339,6 +335,8 @@ const LoginService = {
     },
 
     async logout() {
+        App.showMessageBoard("Orator", "Logging out...", 100);
+
         const orator = await StorageService.getOratorJson();
 
         delete orator.login_token;

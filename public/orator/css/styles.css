@@ -1416,7 +1416,6 @@ label.form-label {
 
 .orator-view-register-login > div {
     position: relative;
-    z-index: 1;
     background: linear-gradient(
             to bottom,
             rgba(20, 20, 20, 0) 0px,
