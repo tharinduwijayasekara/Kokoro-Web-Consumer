@@ -1417,6 +1417,13 @@ label.form-label {
 .orator-view-register-login > div {
     position: relative;
     z-index: 1;
+    background: linear-gradient(
+            to bottom,
+            rgba(20, 20, 20, 0) 0px,
+            rgba(20, 20, 20, 0.01) 100px,
+            rgba(30, 30, 30, 40) 50vh,
+            rgba(20, 20, 20, 100) 750vh
+    );
 }
 
 .orator-view-register-login .text-center {
