@@ -162,6 +162,11 @@ span.navbar-brand {
     text-shadow: 0 0 2px #00000040;
 }
 
+.library-top-image p a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .library-top-text {
     width: 100%;
     display: flex;

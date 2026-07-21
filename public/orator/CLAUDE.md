@@ -38,6 +38,16 @@ python -m http.server 8000
 
 Dev mode: append `?isProd=false` to the URL to bust cache and reload assets on every page load.
 
+## The API
+
+The Orator project has a Laravel backend (`D:\Apps\orator-api`, package `com.oratoraudio.oratorapi`, runs in Docker) for auth (Sanctum), orator-json sync, book uploads, and TTS. When this readme refers to "the api," that project is what's meant. Key services accessible from this frontend:
+- `https://api.orator-audio.com/api/login`, `/register`, `/user` (auth)
+- `https://api.orator-audio.com/api/orator` (GET/POST user settings)
+- `https://api.orator-audio.com/api/books` (GET/POST user books)
+- `https://api.orator-audio.com/api/library-backgrounds` (GET latest 20 Unsplash-sourced carousel backgrounds, protected by Sanctum)
+
+See the api repo's `CLAUDE.md` and `routes/api.php` for the full list of endpoints.
+
 ## Native Webview Integration
 
 This site is wrapped in a native Android WebView (`OratorWebView` at `D:\Apps\OratorWebView`, package `com.oratoraudio.oratorwebview`). The native app loads `https://app.orator-audio.com` and bridges playback state via `window.AndroidBridge.onPlaybackUpdate()` for native media notifications. No changes to the webview wrapper are needed for web-only features (like clipboard reads); `navigator.clipboard.readText()` is handled transparently by the WebView's Chromium engine (assuming HTTPS context and foreground focus, which the current setup provides).

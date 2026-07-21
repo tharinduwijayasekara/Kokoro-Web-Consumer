@@ -916,10 +916,44 @@ const App = {
     },
 
     async setLibraryBackgroundCarousel() {
-        const response = await fetch(`images/carousel/images.json?v=${Date.now()}`);
-        const images = await response.json();
+        const localResponse = await fetch(`images/carousel/images.json?v=${Date.now()}`);
+        const localImages = await localResponse.json();
 
-        this.libraryImages = images.map(i => `images/carousel/${i}`);
+        const shuffledLocal = this.shuffle([...localImages]);
+        const selectedLocal = shuffledLocal.slice(0, 20);
+        this.libraryImages = selectedLocal.map(i => ({
+            url: `images/carousel/${i}`,
+            photographer_name: null,
+            photographer_url: null,
+            unsplash_url: null,
+        }));
+
+        try {
+            const orator = await StorageService.getOratorJson();
+            const token = orator?.login_token;
+
+            if (token) {
+                const res = await fetch('https://api.orator-audio.com/api/library-backgrounds', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const unsplashImages = (data.backgrounds || []).map(bg => ({
+                        url: bg.url,
+                        photographer_name: bg.photographer_name,
+                        photographer_url: bg.photographer_url,
+                        unsplash_url: bg.unsplash_url,
+                    }));
+                    this.libraryImages = this.libraryImages.concat(unsplashImages);
+                    console.log("Merged local and Unsplash backgrounds");
+                }
+            }
+        } catch (e) {
+            console.log("Failed to fetch Unsplash backgrounds, using local images only:", e);
+        }
+
         this.libraryImages = this.shuffle(this.libraryImages);
 
         this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
@@ -942,9 +976,18 @@ const App = {
         console.log("Updating library background");
         const index = this.currentLibraryImageIdx + 1 < this.libraryImages.length ? this.currentLibraryImageIdx + 1 : 0;
         this.currentLibraryImageIdx = index;
-        const url = this.libraryImages[index];
+        const image = this.libraryImages[index];
+        const url = typeof image === 'string' ? image : image.url;
 
         $('#view-library').attr("style", `background-image: url(${url})`);
+
+        const attribution = this.$app.find('.library-top-image p');
+        if (image.photographer_name) {
+            const html = `Photo by <a href="${image.photographer_url}" target="_blank">${image.photographer_name}</a> on <a href="${image.unsplash_url}" target="_blank">Unsplash</a>`;
+            attribution.html(html);
+        } else {
+            attribution.html('');
+        }
     },
 
     registerAudioPipelineHook() {
