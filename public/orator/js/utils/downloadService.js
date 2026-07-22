@@ -29,6 +29,7 @@ const DownloadService = {
 
             let encoder = null;
             const mp3Chunks = [];
+            const startTime = Date.now();
 
             App.showMessageBoard("Downloading chapter", `Encoding audio... (0/${eligible.length})`, 0, null, () => this.cancel());
 
@@ -66,10 +67,28 @@ const DownloadService = {
                     if (mp3Buf.length > 0) mp3Chunks.push(mp3Buf);
                 }
 
+                const elapsedMs = Date.now() - startTime;
+                const elapsedFormatted = ReaderService.secondsToHms(elapsedMs / 1000);
+
+                const avgTimePerParagraph = elapsedMs / (i + 1);
+                const remainingParagraphs = eligible.length - (i + 1);
+                const estimatedRemainingMs = remainingParagraphs * avgTimePerParagraph;
+                const estimatedRemainingFormatted = ReaderService.secondsToHms(estimatedRemainingMs / 1000);
+
+                const textPreview = eligible[i].text.substring(0, 200);
+                const percent = Math.round(((i + 1) / eligible.length) * 100);
+
+                const messageHtml = `Preparing audio for line ${i + 1} of ${eligible.length}</br>` +
+                    `<div style="font-size: 0.7em; word-break: break-word;">` +
+                    `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${textPreview}</div></br>` +
+                    `Elapsed: ${elapsedFormatted}` +
+                    `</br>Est. remaining: ${estimatedRemainingFormatted}</div>` +
+                    `${percent}%`;
+
                 App.showMessageBoard(
                     "Downloading chapter",
-                    `Encoding audio... (${i + 1}/${eligible.length})`,
-                    Math.round(((i + 1) / eligible.length) * 100),
+                    messageHtml,
+                    percent,
                     null,
                     () => this.cancel()
                 );
