@@ -938,6 +938,7 @@ const App = {
             unsplash_url: null,
         }));
 
+        /*
         try {
             const orator = await StorageService.getOratorJson();
             const token = orator?.login_token;
@@ -965,6 +966,7 @@ const App = {
         }
 
         this.libraryImages = this.shuffle(this.libraryImages);
+         */
 
         this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
         this.changeLibraryBackground();
