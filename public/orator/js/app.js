@@ -6,6 +6,7 @@ const App = {
         'js/default/defaults.js',
         'js/utils/storageService.js',
         'js/utils/readerService.js',
+        'js/utils/downloadService.js',
         'js/utils/settingsService.js',
         'js/utils/customFontService.js',
         'js/utils/importEpub.js',
@@ -714,7 +715,7 @@ const App = {
         });
     },
 
-    async showMessageBoard(title, message, progress = -1, timeout = null) {
+    async showMessageBoard(title, message, progress = -1, timeout = null, onCancel = null) {
         const $messageBoard = $('#message-board-wrapper').show();
         $messageBoard.find('.message-board-header').text(title);
         $messageBoard.find('.message-board-container p').html(message);
@@ -731,6 +732,14 @@ const App = {
                 .width(`${progress}%`);
         }
 
+        const $cancel = $messageBoard.find('.message-board-cancel-btn');
+        $cancel.off('click');
+        if (onCancel) {
+            $cancel.show().on('click', () => onCancel());
+        } else {
+            $cancel.hide();
+        }
+
         if (timeout) {
             setTimeout(() => this.hideMessageBoard(), timeout);
         }
@@ -743,6 +752,7 @@ const App = {
         $progress.show()
             .find('div')
             .width(`0%`);
+        $messageBoard.find('.message-board-cancel-btn').hide().off('click');
     },
 
     getRandomOratorMessage(selectFrom = ORATOR_MESSAGES) {

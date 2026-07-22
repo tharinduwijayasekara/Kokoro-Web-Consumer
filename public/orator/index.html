@@ -31,13 +31,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshashes/1.0.8/hashes.min.js" integrity="sha512-1HyPmPHvi5wFUctYkBhwOYgXmMdbPrDaXKBrbGRI3o1CQkTKazG/RKqR8QwVIjTDOQ3uAOPOFkEbzi99Td6yiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshashes/1.0.8/hashes.min.js"
+            integrity="sha512-1HyPmPHvi5wFUctYkBhwOYgXmMdbPrDaXKBrbGRI3o1CQkTKazG/RKqR8QwVIjTDOQ3uAOPOFkEbzi99Td6yiQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Handlee&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Radley:ital@0;1&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Handlee&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Radley:ital@0;1&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
 
     <!-- Custom styles -->
     <link id="styles-for-init" rel="stylesheet" href="css/styles.css">
@@ -118,7 +122,8 @@
                                 <input id="login-email" type="email" class="form-control" placeholder="Email" required>
                             </div>
                             <div class="mb-3">
-                                <input id="login-password" type="password" class="form-control" placeholder="Password" required>
+                                <input id="login-password" type="password" class="form-control" placeholder="Password"
+                                       required>
                             </div>
                             <button class="btn btn-primary w-100">Login</button>
                         </form>
@@ -131,10 +136,12 @@
                                 <input id="register-name" type="text" class="form-control" placeholder="Name" required>
                             </div>
                             <div class="mb-3">
-                                <input id="register-email" type="email" class="form-control" placeholder="Email" required>
+                                <input id="register-email" type="email" class="form-control" placeholder="Email"
+                                       required>
                             </div>
                             <div class="mb-3">
-                                <input id="register-password" type="password" class="form-control" placeholder="Password" required>
+                                <input id="register-password" type="password" class="form-control"
+                                       placeholder="Password" required>
                             </div>
                             <button class="btn btn-success w-100">Register</button>
                         </form>
@@ -180,7 +187,9 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-dark rounded-circle position-fixed end-0 m-4 mb-2 shadow-lg btn-import-books btn-import-clipboard" onclick="App.importFromClipboard()">
+        <button type="button"
+                class="btn btn-dark rounded-circle position-fixed end-0 m-4 mb-2 shadow-lg btn-import-books btn-import-clipboard"
+                onclick="App.importFromClipboard()">
             <i class="bi bi-clipboard-plus-fill"></i>
         </button>
 
@@ -258,6 +267,12 @@
                     <i class="bi bi-crosshair"></i>
                 </button>
             </div>
+            <div class="floating-action-button">
+                <button type="button" class="btn btn-dark rounded-circle shadow-lg btn-download-chapter-as-mp3"
+                        onclick="ReaderService.downloadChapterAsMp3()">
+                    <i class="bi bi-box-arrow-down"></i>
+                </button>
+            </div>
         </div>
 
         <div id="playback-chapters" class="">
@@ -302,11 +317,14 @@
                                         <div class="custom-fonts-header">
                                             <div>
                                                 <label class="form-label mb-0">Custom Fonts</label>
-                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Add your own TTF, OTF, WOFF, or WOFF2 fonts by tapping the <i class="bi bi-plus"></i> button</small>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Add your
+                                                    own TTF, OTF, WOFF, or WOFF2 fonts by tapping the <i
+                                                            class="bi bi-plus"></i> button</small>
                                             </div>
                                             <label class="btn btn-sm custom-font-add-btn">
                                                 <i class="bi bi-plus"></i>
-                                                <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" hidden>
+                                                <input type="file" id="custom-font-input"
+                                                       accept=".ttf,.otf,.woff,.woff2" hidden>
                                             </label>
                                         </div>
                                         <div class="custom-fonts-list">
@@ -320,8 +338,12 @@
                                                data-show-on-change="true">
                                         <div class="font-size-controls">
                                             <span></span> PT.
-                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-size-input">-</button>
-                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-size-input">+</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease"
+                                                    data-target="font-size-input">-
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase"
+                                                    data-target="font-size-input">+
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="form-slider-stack">
@@ -330,8 +352,12 @@
                                                data-show-on-change="true">
                                         <div class="font-size-controls">
                                             <span></span> PT.
-                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-line-input">-</button>
-                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-line-input">+</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease"
+                                                    data-target="font-line-input">-
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase"
+                                                    data-target="font-line-input">+
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="form-slider-stack">
@@ -340,15 +366,20 @@
                                                id="font-spacing-input" data-show-on-change="true">
                                         <div class="font-size-controls">
                                             <span></span>
-                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="font-spacing-input">-</button>
-                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="font-spacing-input">+</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease"
+                                                    data-target="font-spacing-input">-
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase"
+                                                    data-target="font-spacing-input">+
+                                            </button>
                                         </div>
                                     </div>
 
                                     <div class="form-slider-stack">
                                         <label class="form-label" for="font-text-shadow-input">Make Font Bold</label>
                                         <div class="form-check" style="width: 100%">
-                                            <input class="form-check-input" type="checkbox" id="font-text-shadow-input" checked>
+                                            <input class="form-check-input" type="checkbox" id="font-text-shadow-input"
+                                                   checked>
                                         </div>
                                     </div>
 
@@ -415,23 +446,33 @@
 
                                     <div class="form-slider-stack">
                                         <label for="speech-speed-input" class="form-label">Speed</label>
-                                        <input type="range" class="form-range" min="0.5" max="1.5" step="0.01" id="speech-speed-input"
-                                            data-show-on-change="true">
+                                        <input type="range" class="form-range" min="0.5" max="1.5" step="0.01"
+                                               id="speech-speed-input"
+                                               data-show-on-change="true">
                                         <div class="font-size-controls">
                                             <span></span> X
-                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="speech-speed-input">-</button>
-                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="speech-speed-input">+</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease"
+                                                    data-target="speech-speed-input">-
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase"
+                                                    data-target="speech-speed-input">+
+                                            </button>
                                         </div>
                                     </div>
 
                                     <div class="form-slider-stack">
                                         <label for="speech-pitch-input" class="form-label">Pitch</label>
-                                        <input type="range" class="form-range" min="0.5" max="1.5" step="0.01" id="speech-pitch-input"
+                                        <input type="range" class="form-range" min="0.5" max="1.5" step="0.01"
+                                               id="speech-pitch-input"
                                                data-show-on-change="true">
                                         <div class="font-size-controls">
                                             <span></span> X
-                                            <button class="btn btn-sm btn-outline-secondary font-decrease" data-target="speech-pitch-input">-</button>
-                                            <button class="btn btn-sm btn-outline-secondary font-increase" data-target="speech-pitch-input">+</button>
+                                            <button class="btn btn-sm btn-outline-secondary font-decrease"
+                                                    data-target="speech-pitch-input">-
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary font-increase"
+                                                    data-target="speech-pitch-input">+
+                                            </button>
                                         </div>
                                     </div>
 
@@ -453,7 +494,8 @@
 
                                     <div class="speech-cust-container">
                                         <div class="speech-cust-hint text-muted">
-                                            Use this to fix any mispronounced words — enter the word as written and how you'd like it pronounced instead.
+                                            Use this to fix any mispronounced words — enter the word as written and how
+                                            you'd like it pronounced instead.
                                         </div>
                                         <div class="speech-cust-items">
                                             <!-- items rendered here with speech-cust-item class -->
@@ -487,6 +529,9 @@
                     <div class="progress message-progress">
                         <div class="progress-bar w-0" role="progressbar" aria-valuenow="75" aria-valuemin="0"
                              aria-valuemax="100"></div>
+                    </div>
+                    <div class="cancel-button-container d-grid">
+                        <button type="button" class="btn btn-sm btn-secondary mt-4 message-board-cancel-btn" style="display:none">Cancel</button>
                     </div>
                 </div>
             </div>

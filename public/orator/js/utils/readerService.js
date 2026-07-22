@@ -393,6 +393,17 @@ const ReaderService = {
         this.scrollToParagraph(currentChapter + 1, 0);
     },
 
+    async downloadChapterAsMp3() {
+        this.stop();
+
+        if (!this.book || this.currentChapterOnScreen === undefined) return;
+
+        const chapter = this.book.chapters[this.currentChapterOnScreen];
+        if (!chapter || !chapter.length) return;
+
+        await DownloadService.downloadChapter(this.book, this.currentChapterOnScreen);
+    },
+
     async animateRenderChapterOnScreen(direction, cIdx) {
         const [forward, backward] = direction === 'forward' ?
             ['animate-to-left', 'animate-to-right'] :
