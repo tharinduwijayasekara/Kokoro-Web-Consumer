@@ -666,11 +666,15 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     align-items: center;
     justify-content: center;
     font-size: 24px;
-    background-color: #ffffff64;
+    background-color: #dddddd99;
     border: 2px solid #888888;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     color: #212529;
+}
+
+.btn-download-chapter-as-mp3 i {
+    font-size: 21px;
 }
 
 .navbar-book-cover-container {
