@@ -100,9 +100,9 @@ const DownloadService = {
             const combinedBlob = new Blob(mp3Chunks, { type: 'audio/mpeg' });
             const fileName = this.buildFileName(book, chapterTitle);
 
-            this.triggerDownload(combinedBlob, fileName);
+            await this.triggerDownload(combinedBlob, fileName);
 
-            App.showMessageBoard("Download ready", `${fileName} is downloading.`, 100, 2500);
+            App.hideMessageBoard();
 
         } catch (e) {
             console.error("Download error:", e);
@@ -178,15 +178,26 @@ const DownloadService = {
         return `${bookTitle} - ${cleanChapter}.mp3`;
     },
 
-    triggerDownload(blob, fileName) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+    async triggerDownload(blob, fileName) {
+        const isWebView = window.AndroidBridge && typeof window.AndroidBridge.downloadFile === 'function';
+
+        if (isWebView) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Data = reader.result.split(',')[1];
+                window.AndroidBridge.downloadFile(base64Data, fileName, blob.type);
+            };
+            reader.readAsDataURL(blob);
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
     },
 
     cancel() {
