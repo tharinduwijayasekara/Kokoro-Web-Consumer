@@ -405,28 +405,12 @@ button.btn-import-clipboard {
 }
 
 .library-list-wrapper {
-    /*
     background: linear-gradient(
             to bottom,
-            rgba(20, 20, 20, 0) 0px,  
-            rgba(20, 20, 20, 0.05) 15px,
-            rgba(20, 20, 20, 0.22) 45px,
-            rgba(20, 20, 20, 0.5) 75px, 
-            rgba(20, 20, 20, 0.7) 105px,
-            rgba(20, 20, 20, 0.82) 135px,
-            rgba(20, 20, 20, 0.9) 165px,
-            rgba(20, 20, 20, 0.95) 195px,
-            rgba(20, 20, 20, 0.98) 235px,
-            rgba(20, 20, 20, 0.995) 270px,
+            rgba(10, 10, 10, 0) 0px,
+            rgba(20, 20, 20, 0.01) 10px,
+            rgba(20, 20, 20, 0.1) 50px,
             rgba(20, 20, 20, 1) 300px
-    );
-    */
-    background: linear-gradient(
-            to bottom,
-            rgba(20, 20, 20, 0) 0px,
-            rgba(20, 20, 20, 0.01) 100px,
-            rgba(30, 30, 30, 40) 30vh,
-            rgba(20, 20, 20, 100) 40vh
     );
 }
 
@@ -841,7 +825,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     font-weight: bold;
     font-size: 1.5em;
     text-align: center;
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
     background: black;
     height: 100px;
     min-height: 120px;
@@ -873,6 +857,7 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     flex-grow: 1;
     padding: 0 5px;
     padding-bottom: 100px;
+    padding-top: 10px;
 }
 
 .buffer-health {
@@ -1433,10 +1418,10 @@ label.form-label {
     right: 0;
     bottom: 0;
     background: linear-gradient(
-        135deg,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(20, 20, 20, 0.5) 50%,
-        rgba(0, 0, 0, 0.6) 100%
+            135deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(20, 20, 20, 0.5) 50%,
+            rgba(0, 0, 0, 0.6) 100%
     );
     z-index: 0;
     backdrop-filter: blur(5px) contrast(1.1);
