@@ -18,12 +18,14 @@ const SettingsService = {
         this.$fontLine = $('#font-line-input');
         this.$fontSpacing = $('#font-spacing-input');
         this.$textShadow = $('#font-text-shadow-input');
+        this.$showNewsInLibrary = $('#show-news-in-library-input');
 
         config.pitch = config.pitch ?? 1.0;
         config.fontColor = config.fontColor ?? "#000000";
         config.highlightColor = config.highlightColor ?? "#00ff00";
         config.backgroundColor = config.backgroundColor ?? "#eeeeee";
         config.customFonts = config.customFonts ?? [];
+        config.showNewsInLibrary = config.showNewsInLibrary ?? false;
 
         this.config = config;
         this.saving = false;
@@ -184,6 +186,10 @@ const SettingsService = {
         this.$textShadow.on('change', () => {
             this.monitorConfig();
         });
+
+        this.$showNewsInLibrary.on('change', () => {
+            this.monitorConfig();
+        });
     },
 
     loadSettings(config) {
@@ -246,6 +252,7 @@ const SettingsService = {
         this.$fontSpacing.parent().find('span').text(config.letterSpacing);
 
         this.$textShadow.prop('checked', config.textShadow ?? true);
+        this.$showNewsInLibrary.prop('checked', config.showNewsInLibrary ?? false);
 
         // Colors
         this.pickers.font.setColor(config.fontColor);
@@ -373,6 +380,7 @@ const SettingsService = {
         config.lineHeight = parseInt(this.$fontLine.val());
         config.letterSpacing = parseInt(this.$fontSpacing.val());
         config.textShadow = this.$textShadow.prop('checked');
+        config.showNewsInLibrary = this.$showNewsInLibrary.prop('checked');
 
         // Colors
         config.fontColor = this.pickers.font.getColor().toHEXA().toString();

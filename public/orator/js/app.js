@@ -1031,6 +1031,12 @@ const App = {
     async loadNews() {
         if (this.isOffline) return;
 
+        const orator = await StorageService.getOratorJson();
+        if (!orator.config?.showNewsInLibrary) {
+            await StorageService.deleteNewsEntries();
+            return;
+        }
+
         const allBooks = await StorageService.db.books.toArray();
         const existingNewsIds = new Set(
             allBooks

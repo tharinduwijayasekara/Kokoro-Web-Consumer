@@ -84,6 +84,18 @@ const StorageService = {
         }
     },
 
+    async deleteNewsEntries() {
+        try {
+            const deleteCount = await this.db.books
+                .filter(book => String(book.id).startsWith('news/'))
+                .delete();
+
+            console.log(`Deleted ${deleteCount} news entries.`);
+        } catch (e) {
+            console.log("Failed to delete news entries", e);
+        }
+    },
+
     async enablePersistence() {
         if (!navigator.storage || !navigator.storage.persist) {
             this.storagePersisted = false;

@@ -16,6 +16,7 @@ const DEFAULT_ORATOR_JSON = {
             highlightColor: "#226622",
             backgroundColor: "#121212",
             libraryView: 'list',
+            showNewsInLibrary: false,
 
         },
         reading: {
