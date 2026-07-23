@@ -51,9 +51,20 @@ const App = {
                         .text(`Welcome, ${orator.user.email}!`);
                 }
 
-                LoginService.checkAuth().then(authResult => {
+                const localBookCount = await StorageService.db.books.count();
+
+                if (localBookCount === 0) {
+                    console.log("Login token found but no local books - possible storage clear, waiting on checkAuth");
+
+                    this.showMessageBoard("Orator", "Checking your account, please wait...", 20);
+
+                    const authResult = await LoginService.checkAuth();
                     this.handleAuthenticationCheck(authResult);
-                });
+                } else {
+                    LoginService.checkAuth().then(authResult => {
+                        this.handleAuthenticationCheck(authResult);
+                    });
+                }
             } else {
                 this.showView('register-login');
             }
