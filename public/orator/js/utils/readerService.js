@@ -451,7 +451,10 @@ const ReaderService = {
 
         this.resetUserIntTime();
 
-        App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0);
+        App.showMessageBoard("Spinning up Orator...", App.getRandomOratorMessage(), 0, null, () => {
+            App.hideMessageBoard();
+            this.stop();
+        });
 
         console.log("Calling fill buffer", chapterId, paragraphId, bufferSize);
         await this.fillBuffer(chapterId, paragraphId, 3, true);
@@ -614,7 +617,7 @@ const ReaderService = {
         let model = "kokoro";
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
-            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
                 this.stop();
                 return false;
@@ -624,6 +627,8 @@ const ReaderService = {
             voice = this.tempOratorConfig.voice !== "" ? this.tempOratorConfig.voice : voice;
             speed = this.tempOratorConfig.speed !== "" ? this.tempOratorConfig.speed : speed;
             pitch = this.tempOratorConfig.pitch !== "" ? this.tempOratorConfig.pitch : pitch;
+
+            model = ttsUrl === DEFAULT_POCKET_TTS_URL ? "pocket-tts" : "kokoro";
 
             const replacements = this.tempOratorConfig.replacements ?? [];
             replacements.forEach(rep => {
@@ -655,27 +660,35 @@ const ReaderService = {
         let blob = (await StorageService.db.audios.get(cacheKey))?.blob;
 
         if (!blob) {
-            const params = {
-                "model": model,
-                "input": text,
-                "voice": voice,
-                "response_format": "mp3",
-                "download_format": "mp3",
-                "speed": speed,
-                "stream": false,
-                "return_download_link": false,
-                "lang_code": "a",
-                "volume_multiplier": 1,
-                "normalization_options": {
-                    "normalize": true,
-                    "unit_normalization": false,
-                    "url_normalization": true,
-                    "email_normalization": true,
-                    "optional_pluralization_normalization": true,
-                    "phone_normalization": true,
-                    "replace_remaining_symbols": true
+            const params = ttsUrl === DEFAULT_POCKET_TTS_URL
+                ? {
+                    "model": model,
+                    "input": text,
+                    "voice": voice,
+                    "response_format": "mp3",
+                    "stream": false
                 }
-            }
+                : {
+                    "model": model,
+                    "input": text,
+                    "voice": voice,
+                    "response_format": "mp3",
+                    "download_format": "mp3",
+                    "speed": speed,
+                    "stream": false,
+                    "return_download_link": false,
+                    "lang_code": "a",
+                    "volume_multiplier": 1,
+                    "normalization_options": {
+                        "normalize": true,
+                        "unit_normalization": false,
+                        "url_normalization": true,
+                        "email_normalization": true,
+                        "optional_pluralization_normalization": true,
+                        "phone_normalization": true,
+                        "replace_remaining_symbols": true
+                    }
+                }
 
             const response = await fetch(ttsUrl, {
                 method: 'POST',
@@ -745,7 +758,12 @@ const ReaderService = {
             App.showMessageBoard(
                 "Spinning up Orator...",
                 App.getRandomOratorMessage(),
-                percent
+                percent,
+                null,
+                () => {
+                    App.hideMessageBoard();
+                    this.stop();
+                }
             );
 
         } else {

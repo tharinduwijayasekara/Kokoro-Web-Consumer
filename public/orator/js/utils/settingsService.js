@@ -89,12 +89,21 @@ const SettingsService = {
             this.monitorConfig();
         });
 
+        this.$settings.find('.check-box-group-voice.pockettts').on('change', 'input[type="radio"]', () => {
+            this.monitorConfig();
+        });
+
         this.$speechService.on('change', () => {
             const selectedService = this.$speechService.val();
             if (selectedService === DEFAULT_EDGE_TTS_URL) {
                 const $edgeVoices = this.$settings.find('.check-box-group-voice.edgetts input[type="radio"]');
                 if ($edgeVoices.length > 0 && !this.$settings.find('.check-box-group-voice.edgetts input[type="radio"]:checked').length) {
                     $edgeVoices.first().prop('checked', true);
+                }
+            } else if (selectedService === DEFAULT_POCKET_TTS_URL) {
+                const $pocketVoices = this.$settings.find('.check-box-group-voice.pockettts input[type="radio"]');
+                if ($pocketVoices.length > 0 && !this.$settings.find('.check-box-group-voice.pockettts input[type="radio"]:checked').length) {
+                    $pocketVoices.first().prop('checked', true);
                 }
             }
             this.monitorConfig();
@@ -107,6 +116,21 @@ const SettingsService = {
                 <div class="form-check">
                     <input class="form-check-input" type="radio" value="${voice}" id="ev_${voice}" name="radio_edgetts_voice">
                     <label class="form-check-label" for="ev_${voice}">
+                        ${voice}
+                    </label>
+                </div>
+                `
+            )
+
+        });
+
+        POCKET_TTS_VOICES.forEach((voice) => {
+
+            this.$settings.find('.check-box-group-voice.pockettts').append(
+                `
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" value="${voice}" id="pv_${voice}" name="radio_pockettts_voice">
+                    <label class="form-check-label" for="pv_${voice}">
                         ${voice}
                     </label>
                 </div>
@@ -198,6 +222,8 @@ const SettingsService = {
         let selectedSpeechService = "kokoro";
         if (config.ttsUrl === DEFAULT_EDGE_TTS_URL) {
             selectedSpeechService = "edgetts";
+        } else if (config.ttsUrl === DEFAULT_POCKET_TTS_URL) {
+            selectedSpeechService = "pockettts";
         }
 
         this.$settings.find('.check-box-group-voice').removeClass('active');
@@ -221,6 +247,12 @@ const SettingsService = {
         if (selectedSpeechService === 'edgetts') {
             if (EDGETTS_VOICES.indexOf(config.voice) >= 0) {
                 this.$settings.find(`.check-box-group-voice.${selectedSpeechService} #ev_${config.voice}`).prop('checked', true);
+            }
+        }
+
+        if (selectedSpeechService === 'pockettts') {
+            if (POCKET_TTS_VOICES.indexOf(config.voice) >= 0) {
+                this.$settings.find(`.check-box-group-voice.pockettts #pv_${config.voice}`).prop('checked', true);
             }
         }
 
@@ -352,6 +384,8 @@ const SettingsService = {
             }).get().join("+");
         } else if (selectedService === DEFAULT_EDGE_TTS_URL) {
             speechVoice = $('.check-box-group-voice.edgetts input:checked').map((i, el) => $(el).val()).get().join("+");
+        } else if (selectedService === DEFAULT_POCKET_TTS_URL) {
+            speechVoice = $('.check-box-group-voice.pockettts input:checked').map((i, el) => $(el).val()).get().join("+");
         } else {
             speechVoice = this.$speechVoice.val();
         }

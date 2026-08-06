@@ -69,6 +69,17 @@ const EDGETTS_VOICES = [
     'en-US-BrianNeural'
 ];
 
+const DEFAULT_POCKET_TTS_URL = 'https://pockettts.orator-audio.com/v1/audio/speech';
+
+const POCKET_TTS_VOICES = [
+    '000_AndySerkis.wav',
+    '000_Bella.wav',
+    '000_BenCumberbatch.wav',
+    '000_MartinFreeman.wav',
+    '000_MeganFox.wav',
+    '000_Sarah.wav'
+];
+
 const ORATOR_MESSAGES = [
     "Clearing throat like starting a romance.",
     "Sipping tea before the plot thickens.",
