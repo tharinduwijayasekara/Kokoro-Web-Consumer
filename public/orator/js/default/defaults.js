@@ -75,6 +75,7 @@ const POCKET_TTS_VOICES = [
     '000_AndySerkis.wav',
     '000_Bella.wav',
     '000_BenCumberbatch.wav',
+    '000_EmmaWatson.wav',
     '000_MartinFreeman.wav',
     '000_MeganFox.wav',
     '000_Sarah.wav'
