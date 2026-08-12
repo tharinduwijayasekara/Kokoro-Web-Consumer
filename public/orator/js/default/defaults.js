@@ -78,6 +78,7 @@ const POCKET_TTS_VOICES = [
     '000_EmmaWatson.wav',
     '000_MartinFreeman.wav',
     '000_MeganFox.wav',
+    '000_RichardHammond.wav',
     '000_Sarah.wav'
 ];
 
