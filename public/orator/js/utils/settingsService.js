@@ -377,11 +377,16 @@ const SettingsService = {
         const selectedService = this.$speechService.val();
 
         if (selectedService === DEFAULT_KOKORO_URL) {
-            speechVoice = $('.check-box-group-voice.kokoro input:checked').map((i, el) => {
-                const voice = $(el).val();
-                const amount = $(`#kv_amount_${voice}`).val();
-                return `${voice}(${amount})`;
-            }).get().join("+");
+            const checkedVoices = $('.check-box-group-voice.kokoro input:checked');
+            if (checkedVoices.length === 1) {
+                speechVoice = checkedVoices.val();
+            } else {
+                speechVoice = checkedVoices.map((i, el) => {
+                    const voice = $(el).val();
+                    const amount = $(`#kv_amount_${voice}`).val();
+                    return `${voice}(${amount})`;
+                }).get().join("+");
+            }
         } else if (selectedService === DEFAULT_EDGE_TTS_URL) {
             speechVoice = $('.check-box-group-voice.edgetts input:checked').map((i, el) => $(el).val()).get().join("+");
         } else if (selectedService === DEFAULT_POCKET_TTS_URL) {
