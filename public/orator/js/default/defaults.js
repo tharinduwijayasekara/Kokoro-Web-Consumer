@@ -73,9 +73,13 @@ const DEFAULT_POCKET_TTS_URL = 'https://pockettts.orator-audio.com/v1/audio/spee
 
 const POCKET_TTS_VOICES = [
     '000_AndySerkis.wav',
+    '000_AngieBlanc.wav',
     '000_Bella.wav',
     '000_BenCumberbatch.wav',
     '000_EmmaWatson.wav',
+    '000_GeraltOfRivia01.wav',
+    '000_HenryCavill.wav',
+    '000_JeremyClarkson.wav',
     '000_MartinFreeman.wav',
     '000_MeganFox.wav',
     '000_RichardHammond.wav',
@@ -218,7 +222,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 37;
+const CURRENT_VERSION = 38;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
