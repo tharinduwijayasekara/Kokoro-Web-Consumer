@@ -1,13 +1,13 @@
 const VisualizerService = {
 
-    BAR_COUNT: 100,
+    BAR_COUNT: 20,
     SEGMENT_COUNT: 10,
     PADDING: 0,
     SEGMENT_GAP: 0,
     BAR_GAP: 0,
 
-    MIN_FREQ: 85,
-    MAX_FREQ: 8000,
+    MIN_FREQ: 50,
+    MAX_FREQ: 10000,
 
     canvas: undefined,
     ctx: undefined,
