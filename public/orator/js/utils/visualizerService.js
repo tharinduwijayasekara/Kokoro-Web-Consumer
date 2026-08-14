@@ -1,10 +1,11 @@
 const VisualizerService = {
 
-    BAR_COUNT: 20,
-    SEGMENT_COUNT: 10,
+    BAR_COUNT: 50,
+    SEGMENT_COUNT: 20,
     PADDING: 0,
     SEGMENT_GAP: 0,
     BAR_GAP: 0,
+    FRAME_RATE: 60,
 
     MIN_FREQ: 50,
     MAX_FREQ: 10000,
@@ -16,10 +17,12 @@ const VisualizerService = {
     analyser: undefined,
     freqData: undefined,
     bandBinRanges: undefined,
+    prevLit: [],
 
     dpr: 1,
     rafId: undefined,
     running: false,
+    lastFrameTime: 0,
 
     init() {
         this.container = document.getElementById('navbar-audio-visualizer');
@@ -83,7 +86,7 @@ const VisualizerService = {
             const ctx = Howler.ctx;
             this.analyser = ctx.createAnalyser();
             this.analyser.fftSize = 512;
-            this.analyser.smoothingTimeConstant = 0.75;
+            this.analyser.smoothingTimeConstant = 0.50;
 
             try {
                 Howler.masterGain.disconnect(0);
@@ -147,16 +150,23 @@ const VisualizerService = {
             return;
         }
 
-        // Check if canvas needs resizing (parent layout may have changed)
-        const rect = this.container.getBoundingClientRect();
-        const expectedW = Math.max(1, Math.round(rect.width * this.dpr));
-        const expectedH = Math.max(1, Math.round(rect.height * this.dpr));
-        if (this.canvas.width !== expectedW || this.canvas.height !== expectedH) {
-            this.resize();
+        const now = performance.now();
+        const frameInterval = 1000 / this.FRAME_RATE;
+
+        if (now - this.lastFrameTime >= frameInterval) {
+            // Check if canvas needs resizing (parent layout may have changed)
+            const rect = this.container.getBoundingClientRect();
+            const expectedW = Math.max(1, Math.round(rect.width * this.dpr));
+            const expectedH = Math.max(1, Math.round(rect.height * this.dpr));
+            if (this.canvas.width !== expectedW || this.canvas.height !== expectedH) {
+                this.resize();
+            }
+
+            this.analyser.getByteFrequencyData(this.freqData);
+            this.draw();
+            this.lastFrameTime = now;
         }
 
-        this.analyser.getByteFrequencyData(this.freqData);
-        this.draw();
         this.rafId = requestAnimationFrame(() => this.loop());
     },
 
@@ -194,7 +204,13 @@ const VisualizerService = {
                 }
                 const avg = sum / Math.max(1, endBin - startBin);
 
-                const lit = Math.round((avg / 255) * this.SEGMENT_COUNT);
+                const targetLit = (avg / 255) * this.SEGMENT_COUNT;
+                const smoothFactor = 0.4;
+                const smoothedLit = this.prevLit[i] !== undefined
+                    ? this.prevLit[i] + (targetLit - this.prevLit[i]) * smoothFactor
+                    : targetLit;
+                const lit = Math.round(smoothedLit);
+                this.prevLit[i] = smoothedLit;
                 const x = pad + i * (barW + barGap);
 
                 for (let s = 0; s < this.SEGMENT_COUNT; s++) {
