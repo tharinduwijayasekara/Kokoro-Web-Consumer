@@ -1,8 +1,10 @@
 const VisualizerService = {
 
-    BAR_COUNT: 10,
-    SEGMENT_COUNT: 5,
-    PADDING: 5,
+    BAR_COUNT: 20,
+    SEGMENT_COUNT: 10,
+    PADDING: 0,
+    SEGMENT_GAP: 0,
+    BAR_GAP: 0,
 
     MIN_FREQ: 85,
     MAX_FREQ: 8000,
@@ -171,9 +173,9 @@ const VisualizerService = {
             const innerH = h - pad * 2;
             if (innerW <= 0 || innerH <= 0) return;
 
-            const gap = 2 * this.dpr;
-            const barW = (innerW - gap * (this.BAR_COUNT - 1)) / this.BAR_COUNT;
-            const segGap = 1.5 * this.dpr;
+            const barGap = this.BAR_GAP * this.dpr;
+            const barW = (innerW - barGap * (this.BAR_COUNT - 1)) / this.BAR_COUNT;
+            const segGap = this.SEGMENT_GAP * this.dpr;
             const segH = (innerH - segGap * (this.SEGMENT_COUNT - 1)) / this.SEGMENT_COUNT;
 
             if (!this.bandBinRanges || !this.freqData) {
@@ -193,7 +195,7 @@ const VisualizerService = {
                 const avg = sum / Math.max(1, endBin - startBin);
 
                 const lit = Math.round((avg / 255) * this.SEGMENT_COUNT);
-                const x = pad + i * (barW + gap);
+                const x = pad + i * (barW + barGap);
                 const hue = 200 - (i / (this.BAR_COUNT - 1)) * 160;
 
                 for (let s = 0; s < this.SEGMENT_COUNT; s++) {
