@@ -196,7 +196,6 @@ const VisualizerService = {
 
                 const lit = Math.round((avg / 255) * this.SEGMENT_COUNT);
                 const x = pad + i * (barW + barGap);
-                const hue = 200 - (i / (this.BAR_COUNT - 1)) * 160;
 
                 for (let s = 0; s < this.SEGMENT_COUNT; s++) {
                     const y = pad + innerH - (s + 1) * segH - s * segGap;
@@ -208,10 +207,9 @@ const VisualizerService = {
                     const isLit = s < lit;
 
                     if (isLit) {
-                        const lightness = 45 + s * 6;
-                        ctx.fillStyle = `hsl(${hue}, 90%, ${lightness}%)`;
+                        ctx.fillStyle = 'rgba(255,255,255,1)';
                     } else {
-                        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                        ctx.fillStyle = 'rgba(255,255,255,0.1)';
                     }
                     ctx.fillRect(x, y, barW, h);
                 }
