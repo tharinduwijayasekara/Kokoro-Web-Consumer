@@ -200,6 +200,11 @@ const VisualizerService = {
 
                 for (let s = 0; s < this.SEGMENT_COUNT; s++) {
                     const y = pad + innerH - (s + 1) * segH - s * segGap;
+                    let h = segH;
+                    // Last segment extends to fill remaining space due to rounding
+                    if (s === this.SEGMENT_COUNT - 1) {
+                        h = pad + innerH - y;
+                    }
                     const isLit = s < lit;
 
                     if (isLit) {
@@ -208,7 +213,7 @@ const VisualizerService = {
                     } else {
                         ctx.fillStyle = 'rgba(255,255,255,0.08)';
                     }
-                    ctx.fillRect(x, y, barW, segH);
+                    ctx.fillRect(x, y, barW, h);
                 }
             }
         } catch (e) {
