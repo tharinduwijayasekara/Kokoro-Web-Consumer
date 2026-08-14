@@ -1,6 +1,6 @@
 const VisualizerService = {
 
-    BAR_COUNT: 20,
+    BAR_COUNT: 100,
     SEGMENT_COUNT: 10,
     PADDING: 0,
     SEGMENT_GAP: 0,
@@ -208,10 +208,8 @@ const VisualizerService = {
 
                     if (isLit) {
                         ctx.fillStyle = 'rgba(255,255,255,1)';
-                    } else {
-                        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                        ctx.fillRect(x, y, barW, h);
                     }
-                    ctx.fillRect(x, y, barW, h);
                 }
             }
         } catch (e) {
