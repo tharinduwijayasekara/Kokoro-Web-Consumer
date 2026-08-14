@@ -448,6 +448,7 @@ const ReaderService = {
         this.playIdentifier = Date.now();
         this.isPlaying = true;
         this.$playPauseButton.addClass('playing');
+        if (typeof VisualizerService !== 'undefined') VisualizerService.start();
 
         this.resetUserIntTime();
 
@@ -1128,6 +1129,7 @@ const ReaderService = {
 
         this.isPlaying = false;
         this.isBuffering = false;
+        if (typeof VisualizerService !== 'undefined') VisualizerService.stop();
 
         if (this.abortController) {
             this.abortController.abort("User requested stop");

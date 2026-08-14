@@ -5,6 +5,7 @@ const App = {
     dependencies: [
         'js/default/defaults.js',
         'js/utils/storageService.js',
+        'js/utils/visualizerService.js',
         'js/utils/readerService.js',
         'js/utils/downloadService.js',
         'js/utils/settingsService.js',
@@ -36,6 +37,7 @@ const App = {
             console.log("Fetched orator configuration json", StorageService.orator);
 
             this.setEventHandlers();
+            VisualizerService.init();
             document.getElementById('styles-for-init').remove();
 
             const orator = await StorageService.getOratorJson();
