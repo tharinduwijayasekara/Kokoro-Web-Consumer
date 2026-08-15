@@ -1,25 +1,18 @@
 const VisualizerService = {
 
-    BAR_COUNT: 50,
-    SEGMENT_COUNT: 20,
-    PADDING: 0,
-    SEGMENT_GAP: 0,
-    BAR_GAP: 0,
-    FRAME_RATE: 60,
-
+    BAR_COUNT: 5,
     MIN_FREQ: 50,
     MAX_FREQ: 10000,
+    FRAME_RATE: 60,
 
-    canvas: undefined,
-    ctx: undefined,
     container: undefined,
+    bars: [],
 
     analyser: undefined,
     freqData: undefined,
     bandBinRanges: undefined,
     prevLit: [],
 
-    dpr: 1,
     rafId: undefined,
     running: false,
     lastFrameTime: 0,
@@ -31,25 +24,7 @@ const VisualizerService = {
             return;
         }
 
-        this.canvas = document.createElement('canvas');
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.display = 'block';
-        this.canvas.style.backgroundColor = 'transparent';
-        this.container.appendChild(this.canvas);
-
-        this.ctx = this.canvas.getContext('2d', { alpha: true, desynchronized: true });
-        if (!this.ctx) {
-            console.error('[VisualizerService] Failed to get canvas 2D context');
-            return;
-        }
-
-        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        console.log('[VisualizerService] Initialized. DPR:', this.dpr);
-
-        this.resize();
-        window.addEventListener('resize', () => this.resize(), { passive: true });
-        window.addEventListener('orientationchange', () => this.resize(), { passive: true });
+        this.createBars(this.BAR_COUNT);
 
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) this.stop();
@@ -57,13 +32,32 @@ const VisualizerService = {
         });
     },
 
-    resize() {
-        if (!this.canvas || !this.container) return;
-        const rect = this.container.getBoundingClientRect();
-        const w = Math.max(1, Math.round(rect.width * this.dpr));
-        const h = Math.max(1, Math.round(rect.height * this.dpr));
-        if (this.canvas.width !== w) this.canvas.width = w;
-        if (this.canvas.height !== h) this.canvas.height = h;
+    createBars(count) {
+        this.container.innerHTML = '';
+        this.bars = [];
+        for (let i = 0; i < count; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'visualizer-bar';
+            bar.style.height = '4%';
+            this.container.appendChild(bar);
+            this.bars.push(bar);
+        }
+    },
+
+    setBarCount(count) {
+        count = Math.max(2, Math.min(12, Math.floor(count)));
+        if (count === this.BAR_COUNT) return;
+
+        this.BAR_COUNT = count;
+        this.createBars(count);
+        this.container.style.gridTemplateColumns = `repeat(${count}, 10px)`;
+        this.prevLit = [];
+
+        if (this.analyser) {
+            this.bandBinRanges = this.computeBandBinRanges(Howler.ctx.sampleRate, this.analyser.frequencyBinCount);
+        }
+
+        this.clear();
     },
 
     ensureHooked() {
@@ -127,7 +121,6 @@ const VisualizerService = {
 
     start() {
         if (this.running) return;
-        if (!this.canvas) this.init();
         this.running = true;
         console.log('[VisualizerService] Starting animation loop');
         this.loop();
@@ -154,14 +147,6 @@ const VisualizerService = {
         const frameInterval = 1000 / this.FRAME_RATE;
 
         if (now - this.lastFrameTime >= frameInterval) {
-            // Check if canvas needs resizing (parent layout may have changed)
-            const rect = this.container.getBoundingClientRect();
-            const expectedW = Math.max(1, Math.round(rect.width * this.dpr));
-            const expectedH = Math.max(1, Math.round(rect.height * this.dpr));
-            if (this.canvas.width !== expectedW || this.canvas.height !== expectedH) {
-                this.resize();
-            }
-
             this.analyser.getByteFrequencyData(this.freqData);
             this.draw();
             this.lastFrameTime = now;
@@ -172,24 +157,8 @@ const VisualizerService = {
 
     draw() {
         try {
-            const ctx = this.ctx;
-            const w = this.canvas.width;
-            const h = this.canvas.height;
-            const pad = this.PADDING * this.dpr;
-
-            ctx.clearRect(0, 0, w, h);
-
-            const innerW = w - pad * 2;
-            const innerH = h - pad * 2;
-            if (innerW <= 0 || innerH <= 0) return;
-
-            const barGap = this.BAR_GAP * this.dpr;
-            const barW = (innerW - barGap * (this.BAR_COUNT - 1)) / this.BAR_COUNT;
-            const segGap = this.SEGMENT_GAP * this.dpr;
-            const segH = (innerH - segGap * (this.SEGMENT_COUNT - 1)) / this.SEGMENT_COUNT;
-
-            if (!this.bandBinRanges || !this.freqData) {
-                console.warn('[VisualizerService] bandBinRanges or freqData not initialized');
+            if (!this.bandBinRanges || !this.freqData || !this.bars.length) {
+                console.warn('[VisualizerService] bandBinRanges, freqData, or bars not initialized');
                 return;
             }
 
@@ -204,29 +173,15 @@ const VisualizerService = {
                 }
                 const avg = sum / Math.max(1, endBin - startBin);
 
-                const targetLit = (avg / 255) * this.SEGMENT_COUNT;
+                const targetLit = (avg / 255) * 100;
                 const smoothFactor = 0.4;
                 const smoothedLit = this.prevLit[i] !== undefined
                     ? this.prevLit[i] + (targetLit - this.prevLit[i]) * smoothFactor
                     : targetLit;
-                const lit = Math.round(smoothedLit);
+                const lit = Math.max(4, Math.round(smoothedLit));
                 this.prevLit[i] = smoothedLit;
-                const x = pad + i * (barW + barGap);
 
-                for (let s = 0; s < this.SEGMENT_COUNT; s++) {
-                    const y = pad + innerH - (s + 1) * segH - s * segGap;
-                    let h = segH;
-                    // Last segment extends to fill remaining space due to rounding
-                    if (s === this.SEGMENT_COUNT - 1) {
-                        h = pad + innerH - y;
-                    }
-                    const isLit = s < lit;
-
-                    if (isLit) {
-                        ctx.fillStyle = 'rgba(255,255,255,1)';
-                        ctx.fillRect(x, y, barW, h);
-                    }
-                }
+                this.bars[i].style.height = lit + '%';
             }
         } catch (e) {
             console.error('[VisualizerService] Error in draw():', e.message, e.stack);
@@ -234,6 +189,8 @@ const VisualizerService = {
     },
 
     clear() {
-        if (this.ctx) this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.bars.forEach(bar => {
+            bar.style.height = '4%';
+        });
     },
 };

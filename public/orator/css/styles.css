@@ -85,7 +85,7 @@ span.navbar-brand {
 .orator-view-reader .navbar .navbar-wrapper {
     position: relative;
     display: grid;
-    grid-template-columns: 50px auto 40px 40px;
+    grid-template-columns: 50px auto 40px 40px 40px;
     margin: 0;
     background: linear-gradient(
             200deg, #000000 20%, #00000040);
@@ -94,7 +94,6 @@ span.navbar-brand {
     -webkit-backdrop-filter: blur(5px);
     padding: 0px;
     padding-right: 10px;
-    /* height: 80px; */
     align-items: center;
 }
 
@@ -105,25 +104,22 @@ span.navbar-brand {
 }
 
 #navbar-audio-visualizer {
-    position: absolute;
-    left: 0;
-    bottom: 0;
     width: 100%;
-    height: 50%;
+    height: 20px;
     pointer-events: none;
-    opacity: 0.15;
-    filter: blur(5px) invert(1);
     padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 5px);
+    align-items: end;
+    justify-content: center;
 }
 
-.dark-mode #navbar-audio-visualizer {
-    filter: blur(5px);
-}
-
-#navbar-audio-visualizer canvas {
-    display: block;
+.visualizer-bar {
     width: 100%;
-    height: 100%;
+    min-height: 4%;
+    background-color: white;
+    transition: height 80ms linear;
+    border-right: 1px solid black;
 }
 
 .orator-view-reader .navbar #navbar-book-name {

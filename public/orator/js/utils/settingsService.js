@@ -19,6 +19,7 @@ const SettingsService = {
         this.$fontSpacing = $('#font-spacing-input');
         this.$textShadow = $('#font-text-shadow-input');
         this.$showNewsInLibrary = $('#show-news-in-library-input');
+        this.$visualizerBarCount = $('#visualizer-bar-count-input');
 
         config.pitch = config.pitch ?? 1.0;
         config.fontColor = config.fontColor ?? "#000000";
@@ -26,6 +27,7 @@ const SettingsService = {
         config.backgroundColor = config.backgroundColor ?? "#eeeeee";
         config.customFonts = config.customFonts ?? [];
         config.showNewsInLibrary = config.showNewsInLibrary ?? false;
+        config.visualizerBarCount = config.visualizerBarCount ?? 5;
 
         this.config = config;
         this.saving = false;
@@ -286,6 +288,12 @@ const SettingsService = {
         this.$textShadow.prop('checked', config.textShadow ?? true);
         this.$showNewsInLibrary.prop('checked', config.showNewsInLibrary ?? false);
 
+        this.$visualizerBarCount.val(config.visualizerBarCount);
+        this.$visualizerBarCount.parent().find('span').text(config.visualizerBarCount);
+        if (typeof VisualizerService !== 'undefined') {
+            VisualizerService.setBarCount(config.visualizerBarCount);
+        }
+
         // Colors
         this.pickers.font.setColor(config.fontColor);
         this.pickers.highlight.setColor(config.highlightColor);
@@ -352,6 +360,8 @@ const SettingsService = {
             || newConfig.textShadow !== this.config.textShadow
         );
 
+        const isVisualizerChanged = newConfig.visualizerBarCount !== this.config.visualizerBarCount;
+
         console.log("Monitoring config", this.config, newConfig);
 
         this.saving = true;
@@ -365,6 +375,10 @@ const SettingsService = {
         if (isFontChanged) {
             await App.sleep(1000);
             ReaderService.scrollToParagraph(undefined, undefined);
+        }
+
+        if (isVisualizerChanged && typeof VisualizerService !== 'undefined') {
+            VisualizerService.setBarCount(newConfig.visualizerBarCount);
         }
 
         if (isSpeechServiceChanged) this.loadSettings(newConfig);
@@ -420,6 +434,9 @@ const SettingsService = {
         config.letterSpacing = parseInt(this.$fontSpacing.val());
         config.textShadow = this.$textShadow.prop('checked');
         config.showNewsInLibrary = this.$showNewsInLibrary.prop('checked');
+
+        // Visualizer
+        config.visualizerBarCount = parseInt(this.$visualizerBarCount.val());
 
         // Colors
         config.fontColor = this.pickers.font.getColor().toHEXA().toString();
