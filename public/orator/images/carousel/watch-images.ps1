@@ -1,28 +1,35 @@
+param()
+
+$ErrorActionPreference = "Continue"
 $folder = Get-Location
 $filter = '*.jpg'
+$jsonPath = "$folder\images.json"
 
-# Function to rebuild the JSON
+function Get-FileList {
+    @(Get-ChildItem -Path $folder -Filter $filter -ErrorAction SilentlyContinue |
+      Select-Object -ExpandProperty Name |
+      Sort-Object)
+}
+
 function Update-Json {
-    Get-ChildItem -Path $folder -Filter $filter | 
-    Select-Object -ExpandProperty Name | 
-    ConvertTo-Json | 
-    Out-File -FilePath "$folder\images.json" -Encoding utf8
-    Write-Host "images.json updated at $(Get-Date)"
+    $files = Get-FileList
+    $files | ConvertTo-Json | Out-File -FilePath $jsonPath -Encoding utf8 -Force
+    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Updated - $($files.Count) files"
 }
 
 # Initial run
 Update-Json
 
-# Setup watcher
-$watcher = New-Object IO.FileSystemWatcher $folder, $filter
-$watcher.IncludeSubdirectories = $false
-$watcher.EnableRaisingEvents = $true
+Write-Host "Watching for JPG changes..."
 
-# Register events
-$action = { Update-Json }
-Register-ObjectEvent $watcher "Created" -Action $action
-Register-ObjectEvent $watcher "Deleted" -Action $action
-Register-ObjectEvent $watcher "Renamed" -Action $action
+$lastCount = (Get-FileList).Count
 
-Write-Host "Watching for changes in $folder..."
-while($true) { Start-Sleep 5 }
+while($true) {
+    Start-Sleep -Seconds 2
+    $currentCount = (Get-FileList).Count
+
+    if ($currentCount -ne $lastCount) {
+        Update-Json
+        $lastCount = $currentCount
+    }
+}
