@@ -1,8 +1,8 @@
 const VisualizerService = {
 
     BAR_COUNT: 5,
-    MIN_FREQ: 50,
-    MAX_FREQ: 10000,
+    MIN_FREQ: 80,
+    MAX_FREQ: 8000,
     FRAME_RATE: 60,
 
     container: undefined,
@@ -45,12 +45,11 @@ const VisualizerService = {
     },
 
     setBarCount(count) {
-        count = Math.max(2, Math.min(12, Math.floor(count)));
+        count = Math.max(2, Math.min(20, Math.floor(count)));
         if (count === this.BAR_COUNT) return;
 
         this.BAR_COUNT = count;
         this.createBars(count);
-        this.container.style.gridTemplateColumns = `repeat(${count}, 10px)`;
         this.prevLit = [];
 
         if (this.analyser) {
