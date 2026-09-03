@@ -95,6 +95,10 @@ const SettingsService = {
             this.monitorConfig();
         });
 
+        this.$settings.find('.check-box-group-voice.fishaudio').on('change', 'input[type="radio"]', () => {
+            this.monitorConfig();
+        });
+
         this.$speechService.on('change', () => {
             const selectedService = this.$speechService.val();
             if (selectedService === DEFAULT_EDGE_TTS_URL) {
@@ -134,6 +138,21 @@ const SettingsService = {
                     <input class="form-check-input" type="radio" value="${voice}" id="pv_${voice}" name="radio_pockettts_voice">
                     <label class="form-check-label" for="pv_${voice}">
                         ${voice}
+                    </label>
+                </div>
+                `
+            )
+
+        });
+
+        Object.entries(FISH_AUDIO_VOICES).forEach(([displayName, referenceId]) => {
+
+            this.$settings.find('.check-box-group-voice.fishaudio').append(
+                `
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" value="${referenceId}" id="fav_${referenceId}" name="radio_fishaudio_voice">
+                    <label class="form-check-label" for="fav_${referenceId}">
+                        ${displayName}
                     </label>
                 </div>
                 `
@@ -226,10 +245,15 @@ const SettingsService = {
             selectedSpeechService = "edgetts";
         } else if (config.ttsUrl === DEFAULT_POCKET_TTS_URL) {
             selectedSpeechService = "pockettts";
+        } else if (config.ttsUrl === DEFAULT_FISH_AUDIO_URL) {
+            selectedSpeechService = "fishaudio";
         }
 
         this.$settings.find('.check-box-group-voice').removeClass('active');
         this.$settings.find(`.check-box-group-voice.${selectedSpeechService}`).addClass('active');
+
+        this.$speechVoice.prop('disabled', selectedSpeechService !== 'fishaudio');
+        this.$speechVoice.attr('placeholder', selectedSpeechService === 'fishaudio' ? '933563129e564b19a115bedd57b7406a' : 'af_heart');
 
         this.$speechVoice.val(config.voice);
 
@@ -256,6 +280,14 @@ const SettingsService = {
             if (POCKET_TTS_VOICES.indexOf(config.voice) >= 0) {
                 this.$settings.find(`.check-box-group-voice.pockettts #pv_${config.voice}`).prop('checked', true);
             }
+        }
+
+        if (selectedSpeechService === 'fishaudio') {
+            const referenceId = config.voice;
+            const displayName = Object.entries(FISH_AUDIO_VOICES).find(([_, id]) => id === referenceId)?.[0];
+
+            this.$settings.find(`.check-box-group-voice.fishaudio #fav_${referenceId}`).prop('checked', true);
+            this.$speechVoice.val(displayName || referenceId);
         }
 
         this.$speechSpeed.val(config.speed);
@@ -405,6 +437,8 @@ const SettingsService = {
             speechVoice = $('.check-box-group-voice.edgetts input:checked').map((i, el) => $(el).val()).get().join("+");
         } else if (selectedService === DEFAULT_POCKET_TTS_URL) {
             speechVoice = $('.check-box-group-voice.pockettts input:checked').map((i, el) => $(el).val()).get().join("+");
+        } else if (selectedService === DEFAULT_FISH_AUDIO_URL) {
+            speechVoice = $('.check-box-group-voice.fishaudio input:checked').val() || '';
         } else {
             speechVoice = this.$speechVoice.val();
         }

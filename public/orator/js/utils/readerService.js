@@ -484,6 +484,10 @@ const ReaderService = {
             targetBufferSize = 1000;
         }
 
+        if (orator?.config?.ttsUrl === DEFAULT_FISH_AUDIO_URL) {
+            targetBufferSize = Math.min(targetBufferSize, 20);
+        }
+
         this.bufferSize = targetBufferSize;
     },
 
@@ -618,7 +622,7 @@ const ReaderService = {
         let model = "kokoro";
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
-            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
                 this.stop();
                 return false;
@@ -629,7 +633,7 @@ const ReaderService = {
             speed = this.tempOratorConfig.speed !== "" ? this.tempOratorConfig.speed : speed;
             pitch = this.tempOratorConfig.pitch !== "" ? this.tempOratorConfig.pitch : pitch;
 
-            model = ttsUrl === DEFAULT_POCKET_TTS_URL ? "pocket-tts" : "kokoro";
+            model = ttsUrl === DEFAULT_POCKET_TTS_URL ? "pocket-tts" : ttsUrl === DEFAULT_FISH_AUDIO_URL ? "s2.1-pro-free" : "kokoro";
 
             const replacements = this.tempOratorConfig.replacements ?? [];
             replacements.forEach(rep => {
@@ -661,15 +665,30 @@ const ReaderService = {
         let blob = (await StorageService.db.audios.get(cacheKey))?.blob;
 
         if (!blob) {
-            const params = ttsUrl === DEFAULT_POCKET_TTS_URL
-                ? {
+            const isFishAudio = ttsUrl === DEFAULT_FISH_AUDIO_URL;
+
+            let fetchUrl = ttsUrl;
+            let params;
+
+            if (isFishAudio) {
+                // Route Fish Audio through backend (CORS workaround, API key security)
+                fetchUrl = 'https://api.orator-audio.com/api/speech/generate';
+                params = {
+                    "speech_service": "fish-audio",
+                    "input": text,
+                    "voice": voice,
+                    "response_format": "mp3"
+                };
+            } else if (ttsUrl === DEFAULT_POCKET_TTS_URL) {
+                params = {
                     "model": model,
                     "input": text,
                     "voice": voice,
                     "response_format": "mp3",
                     "stream": false
-                }
-                : {
+                };
+            } else {
+                params = {
                     "model": model,
                     "input": text,
                     "voice": voice,
@@ -689,15 +708,27 @@ const ReaderService = {
                         "phone_normalization": true,
                         "replace_remaining_symbols": true
                     }
-                }
+                };
+            }
 
-            const response = await fetch(ttsUrl, {
+            const headers = {
+                'accept': 'application/json',
+                'Content-Type': 'application/json'
+            };
+
+            // Add auth token for Fish Audio (backend needs it to access user's API key)
+            if (isFishAudio) {
+                const orator = await StorageService.getOratorJson();
+                const token = orator?.login_token;
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+            }
+
+            const response = await fetch(fetchUrl, {
                 method: 'POST',
                 signal: this.abortController.signal,
-                headers: {
-                    'accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify(params)
             });
 

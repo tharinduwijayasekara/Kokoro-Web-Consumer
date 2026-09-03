@@ -132,6 +132,12 @@ const POCKET_TTS_VOICES = [
     '000_Sarah.wav'
 ];
 
+const DEFAULT_FISH_AUDIO_URL = 'https://api.fish.audio/v1/tts';
+
+const FISH_AUDIO_VOICES = {
+    'Sarah': '933563129e564b19a115bedd57b7406a'
+};
+
 const ORATOR_MESSAGES = [
     "Clearing throat like starting a romance.",
     "Sipping tea before the plot thickens.",
@@ -268,7 +274,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 41;
+const CURRENT_VERSION = 42;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
