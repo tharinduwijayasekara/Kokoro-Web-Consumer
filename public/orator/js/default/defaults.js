@@ -136,15 +136,9 @@ const DEFAULT_FISH_AUDIO_URL = 'https://api.fish.audio/v1/tts';
 
 const FISH_AUDIO_VOICES = {
     'Sarah': '933563129e564b19a115bedd57b7406a',
-    'Lilly': 'd10484bb7b654315bdefaaa21aa63b09', //best female narration
-    'Emma Watson': '2d1837332dc94252beeccbc6f620828e,',
-    'Angela': '43687be985ca40059a9a560692b3c937',
-    'Hannah': 'cde85802e4d645bfa3add12ce38a726d', //hamid
-    'Beth': '0b846ae657904027a12d2d867d1a143b',
-    'Abby': 'e8d09b78aedf45e989a416881da4cea1', //shakir
-    'Natalie': '836513f294d64aec8403226e69268b1b', //storytelling voice
-    'Serena': '52efcbe2d1b04cb49b028aa2cec8aa15', //seren seren
-    'Jessica': '584afa907518428fac9b04c92ec8a563' //jessica storyteller
+    'Emma Watson': '2d1837332dc94252beeccbc6f620828e',
+    'Hannah': 'cde85802e4d645bfa3add12ce38a726d', //hamid ^^^^^
+    'Natalie': '836513f294d64aec8403226e69268b1b', //storytelling voice ^^^^^
 };
 
 const ORATOR_MESSAGES = [
