@@ -283,11 +283,20 @@ const SettingsService = {
         }
 
         if (selectedSpeechService === 'fishaudio') {
-            const referenceId = config.voice;
-            const displayName = Object.entries(FISH_AUDIO_VOICES).find(([_, id]) => id === referenceId)?.[0];
+            let referenceId = config.voice;
+            let displayName = Object.entries(FISH_AUDIO_VOICES).find(([_, id]) => id === referenceId)?.[0];
+
+            if (!displayName) {
+                const [firstDisplayName, firstReferenceId] = Object.entries(FISH_AUDIO_VOICES)[0];
+                referenceId = firstReferenceId;
+                displayName = firstDisplayName;
+                config.voice = referenceId;
+                this.saveSettings(config);
+                ReaderService.updateTempOratorConfig(config);
+            }
 
             this.$settings.find(`.check-box-group-voice.fishaudio #fav_${referenceId}`).prop('checked', true);
-            this.$speechVoice.val(displayName || referenceId);
+            this.$speechVoice.val(displayName);
         }
 
         this.$speechSpeed.val(config.speed);
