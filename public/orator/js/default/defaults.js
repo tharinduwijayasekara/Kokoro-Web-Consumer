@@ -138,7 +138,7 @@ const FISH_AUDIO_VOICES = {
     'Sarah': '933563129e564b19a115bedd57b7406a',
     'Emma Watson': '2d1837332dc94252beeccbc6f620828e',
     'Hannah': 'cde85802e4d645bfa3add12ce38a726d', //hamid ^^^^^
-    'Natalie': '836513f294d64aec8403226e69268b1b', //storytelling voice ^^^^^
+    'Natalie': '836513f294d64aec8403226e69268b1b' //storytelling voice ^^^^^
 };
 
 const ORATOR_MESSAGES = [
@@ -277,7 +277,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 43;
+const CURRENT_VERSION = 44;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
