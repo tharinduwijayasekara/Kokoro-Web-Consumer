@@ -138,15 +138,7 @@ const FISH_AUDIO_VOICES = {
     'Sarah': '933563129e564b19a115bedd57b7406a',
     'Emma Watson': '2d1837332dc94252beeccbc6f620828e',
     'Hannah': 'cde85802e4d645bfa3add12ce38a726d', //hamid ^^^^^
-    'Natalie': '836513f294d64aec8403226e69268b1b', //storytelling voice ^^^^^
-    'Jezza': 'e98dd98153e24292817088f606fcb63c',
-    'Hamster': '26ef7910d9404a53be2e305677d51551',
-    'Capn Slo': '441f12216cc54d7fadef5844aaa0366f',
-    'Benedict': 'b6382ed446ea432686b024a15256f117',
-    'Zendaya': '158f6b9781b746ec8c334d9730d302f1',
-    'Abby': 'f07da9e6f9d94bbfb0b626592a636422',
-    'Jack Sparrow': '0d44f32bfe214df7a11a1d73414040fd',
-    'Sigourney': '86513b4695644e7ea4f720a5d5ea7abb'
+    'Natalie': '836513f294d64aec8403226e69268b1b' //storytelling voice ^^^^^
 };
 
 const ORATOR_MESSAGES = [
@@ -285,7 +277,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 47;
+const CURRENT_VERSION = 45;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
