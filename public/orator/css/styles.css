@@ -121,13 +121,13 @@ span.navbar-brand {
     background-color: white;
     transition: height 80ms linear;
     background: linear-gradient(
-        0deg,
-        rgba(128, 255, 128, 1) 0, 
-        rgba(128, 255, 128, 1) 10px, 
-        rgba(255, 255, 128, 1) 10px, 
-        rgba(255, 255, 128, 1) 15px, 
-        rgba(255, 128, 128, 1) 15px,
-        rgba(255, 128, 128, 1) 20px
+            0deg,
+            rgba(128, 255, 128, 1) 0,
+            rgba(128, 255, 128, 1) 10px,
+            rgba(255, 255, 128, 1) 10px,
+            rgba(255, 255, 128, 1) 15px,
+            rgba(255, 128, 128, 1) 15px,
+            rgba(255, 128, 128, 1) 20px
     );
 }
 
@@ -676,6 +676,14 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     right: 0;
     bottom: 140px;
     transition: bottom 0.5s ease-in-out;
+}
+
+#playback-controls .floating-action-button button {
+    background-color: #ffffff;
+}
+
+#playback-controls.dark-mode .floating-action-button button {
+    background-color: #222222;
 }
 
 .reader-fullscreen .floating-action-button {
