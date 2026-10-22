@@ -27,6 +27,10 @@ const ReaderService = {
     bufferSize: 5000,
     howlerPreloadLimit: 20,
 
+    // Ceiling on in-flight TTS requests. Infinity = no cap (existing behaviour);
+    // set per-provider in updateBufferSize().
+    maxConcurrentFetches: Infinity,
+
     currentBuffer: [],
 
     // --- Don't delete the sample current buffer element; it's for remembering what I'm returning on fetch and load
@@ -438,7 +442,9 @@ const ReaderService = {
             }
         }
 
-        this.updateBufferSize();
+        // Must settle before the first fillBuffer below, or it reads a stale
+        // maxConcurrentFetches / bufferSize from the previous provider.
+        await this.updateBufferSize();
 
         if (chapterId === -10 && paragraphId === -12) {
             console.log("Start playback from previously stopped position", this.progressTracker);
@@ -484,8 +490,17 @@ const ReaderService = {
             targetBufferSize = 1000;
         }
 
-        if (orator?.config?.ttsUrl === DEFAULT_FISH_AUDIO_URL) {
+        this.maxConcurrentFetches = Infinity;
+
+        // Rate-limited / shared endpoints: keep the prefetch queue short so we
+        // don't stack hours of requests against someone else's capacity.
+        if ([DEFAULT_FISH_AUDIO_URL, DEFAULT_KOKORO_PUBLIC_URL].indexOf(orator?.config?.ttsUrl) >= 0) {
             targetBufferSize = Math.min(targetBufferSize, 20);
+        }
+
+        // Shared free Space — one request at a time, never a burst.
+        if (orator?.config?.ttsUrl === DEFAULT_KOKORO_PUBLIC_URL) {
+            this.maxConcurrentFetches = 1;
         }
 
         this.bufferSize = targetBufferSize;
@@ -525,7 +540,7 @@ const ReaderService = {
             if (this.currentBuffer.length > 50 && size >= 10) maxBatchSize = 5;
         }
 
-        const batchSize = Math.min(needed, maxBatchSize);
+        const batchSize = Math.min(needed, maxBatchSize, this.maxConcurrentFetches);
 
         try {
             const fetchTasks = [];
@@ -622,7 +637,7 @@ const ReaderService = {
         let model = "kokoro";
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
-            if ([DEFAULT_KOKORO_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
                 this.stop();
                 return false;

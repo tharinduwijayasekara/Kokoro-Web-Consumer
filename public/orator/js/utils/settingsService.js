@@ -431,7 +431,7 @@ const SettingsService = {
         let speechVoice = "";
         const selectedService = this.$speechService.val();
 
-        if (selectedService === DEFAULT_KOKORO_URL) {
+        if (KOKORO_FAMILY_URLS.indexOf(selectedService) >= 0) {
             const checkedVoices = $('.check-box-group-voice.kokoro input:checked');
             if (checkedVoices.length === 1) {
                 speechVoice = checkedVoices.val();

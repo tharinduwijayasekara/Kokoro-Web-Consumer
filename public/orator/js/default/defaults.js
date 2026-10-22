@@ -31,6 +31,14 @@ const DEFAULT_ORATOR_JSON = {
 
 const DEFAULT_KOKORO_URL = 'https://kokoro.orator-audio.com/v1/audio/speech';
 
+// Public Kokoro-FastAPI demo Space (remsky/FastKoko). Same build as our own
+// instance, so it shares KOKORO_VOICES, the blend syntax and the payload shape.
+const DEFAULT_KOKORO_PUBLIC_URL = 'https://remsky-fastkoko.hf.space/v1/audio/speech';
+
+// Endpoints that speak Kokoro-FastAPI, for anything that needs "is this Kokoro?"
+// rather than "is this our Kokoro?".
+const KOKORO_FAMILY_URLS = [DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL];
+
 const DEFAULT_EDGE_TTS_URL = 'https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech'
 
 const KOKORO_VOICES = [
@@ -285,7 +293,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 49;
+const CURRENT_VERSION = 50;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
