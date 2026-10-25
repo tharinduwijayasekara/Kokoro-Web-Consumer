@@ -308,6 +308,7 @@ const App = {
         if (this.$app.find('#view-register-login.active').length) return;
 
         this.showView('library');
+        this.changeLibraryBackground();
         this.hideMessageBoard();
     },
 
@@ -997,7 +998,6 @@ const App = {
          */
 
         this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
-        this.changeLibraryBackground();
         this.changeLibraryBackground();
 
         setInterval(() => this.changeLibraryBackground(), 30000);
