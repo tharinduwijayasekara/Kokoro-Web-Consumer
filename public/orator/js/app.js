@@ -942,14 +942,29 @@ const App = {
         const localResponse = await fetch(`images/carousel/images.json?v=${Date.now()}`);
         const localImages = await localResponse.json();
 
-        const shuffledLocal = this.shuffle([...localImages]);
-        const selectedLocal = shuffledLocal.slice(0, 40);
-        this.libraryImages = selectedLocal.map(i => ({
+        const localImageEntries = localImages.map(i => ({
             url: `images/carousel/${i}`,
             photographer_name: null,
             photographer_url: null,
             unsplash_url: null,
         }));
+
+        let bookCoverImages = [];
+        try {
+            const books = await StorageService.getBooks();
+            bookCoverImages = books
+                .filter(book => book.cover && book.cover !== DEFAULT_BOOK_COVER)
+                .map(book => ({
+                    url: book.cover,
+                    photographer_name: null,
+                    photographer_url: null,
+                    unsplash_url: null,
+                }));
+        } catch (e) {
+            console.log("Failed to load book covers for library background carousel:", e);
+        }
+
+        this.libraryImages = this.shuffle(localImageEntries.concat(bookCoverImages)).slice(0, 40);
 
         /*
         try {
