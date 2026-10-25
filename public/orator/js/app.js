@@ -998,6 +998,7 @@ const App = {
 
         this.currentLibraryImageIdx = Math.floor(Math.random() * this.libraryImages.length);
         this.changeLibraryBackground();
+        this.changeLibraryBackground();
 
         setInterval(() => this.changeLibraryBackground(), 30000);
     },
