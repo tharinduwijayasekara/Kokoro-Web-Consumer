@@ -1024,13 +1024,13 @@ const App = {
         $('#view-library').attr("style", bgStyle);
         $('#view-register-login').attr("style", bgStyle);
 
-        const attribution = this.$app.find('.library-top-image p');
-        if (image.photographer_name) {
-            const html = `Photo by <a href="${image.photographer_url}" target="_blank">${image.photographer_name}</a> on <a href="${image.unsplash_url}" target="_blank">Unsplash</a>`;
-            attribution.html(html);
-        } else {
-            attribution.html('');
-        }
+        // const attribution = this.$app.find('.library-top-image p');
+        // if (image.photographer_name) {
+        //     const html = `Photo by <a href="${image.photographer_url}" target="_blank">${image.photographer_name}</a> on <a href="${image.unsplash_url}" target="_blank">Unsplash</a>`;
+        //     attribution.html(html);
+        // } else {
+        //     attribution.html('');
+        // }
     },
 
     registerAudioPipelineHook() {
