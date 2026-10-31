@@ -240,6 +240,7 @@ const ORATOR_FONTS = [
 ];
 
 const ORATOR_P_CONTD = "##::##::ATTACH_TO_PREV_SPAN::##::##";
+const ORATOR_IMAGE_MARKER_PREFIX = '[--ORATOR-READER-IMG-URL--]: ';
 
 const SPINAL_WARNING = [
     "Dear Reader",

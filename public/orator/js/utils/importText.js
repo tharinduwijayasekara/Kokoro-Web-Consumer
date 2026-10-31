@@ -54,7 +54,14 @@ const ImportText = {
             }
 
             consecutiveEmptyLines = 0;
-            paragraphs.push(...App.splitSentences(paragraph.trim()));
+            const trimmedLine = paragraph.trim();
+
+            if (trimmedLine.startsWith(ORATOR_IMAGE_MARKER_PREFIX)) {
+                paragraphs.push(trimmedLine);
+                continue;
+            }
+
+            paragraphs.push(...App.splitSentences(trimmedLine));
         }
 
         if (paragraphs.length > 0) {

@@ -799,6 +799,15 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     padding: 0;
 }
 
+.reader-image {
+    display: block;
+    width: 400px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 0.5em 0;
+}
+
 #playback-chapters {
     position: fixed;
     top: 0;

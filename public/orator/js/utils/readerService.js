@@ -335,19 +335,27 @@ const ReaderService = {
                 $currentParagraph.appendTo(this.$container);
             }
 
-            const paragraphHtml = paragraph
-                .replaceAll("**##", `<span class="italic">`)
-                .replaceAll("##**", `</span>`)
-                .trim();
+            const isImage = paragraph.startsWith(ORATOR_IMAGE_MARKER_PREFIX);
 
-            let spanHtml = `
-                <span id="reader-paragraph-${chapterId}-${paragraphId}" 
-                class="reader-paragraph" 
-                data-paragraph-identifier="${chapterIdToRender}-${paragraphId}">${paragraphHtml}</span>
-            `;
+            const $span = $(`
+                <span id="reader-paragraph-${chapterId}-${paragraphId}"
+                class="reader-paragraph${isImage ? ' reader-paragraph-image' : ''}"
+                data-paragraph-identifier="${chapterIdToRender}-${paragraphId}"></span>
+            `);
 
-            if (isContinuation) spanHtml = `<span> </span>${spanHtml}`;
-            $(spanHtml).appendTo($currentParagraph);
+            if (isImage) {
+                const imageUrl = paragraph.substring(ORATOR_IMAGE_MARKER_PREFIX.length).trim();
+                $('<img>').addClass('reader-image').attr({ src: imageUrl, alt: '', loading: 'lazy' }).appendTo($span);
+            } else {
+                const paragraphHtml = paragraph
+                    .replaceAll("**##", `<span class="italic">`)
+                    .replaceAll("##**", `</span>`)
+                    .trim();
+                $span.html(paragraphHtml);
+            }
+
+            if (isContinuation) $(`<span> </span>`).appendTo($currentParagraph);
+            $span.appendTo($currentParagraph);
         });
 
         this.$bookChapter.html(this.getTitleFromChapter(chapter));
@@ -554,6 +562,11 @@ const ReaderService = {
 
                 let text = this.getParagraphText(tempC, tempP);
                 if (!text) break;
+
+                if (text.startsWith(ORATOR_IMAGE_MARKER_PREFIX)) {
+                    [tempC, tempP] = this.getNextParagraphId(tempC, tempP);
+                    continue;
+                }
 
                 text = text
                     .replaceAll('##::##::ATTACH_TO_PREV_SPAN::##::##', "")
