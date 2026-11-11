@@ -253,7 +253,6 @@ const LoginService = {
                 }
 
                 const buffer = await readBody(res);
-                console.log(`Page start=${start}: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB (running total ${(bytesLoaded / 1024 / 1024).toFixed(2)} MB)`);
                 const data = JSON.parse(new TextDecoder().decode(buffer));
 
                 if (!data.books) {
