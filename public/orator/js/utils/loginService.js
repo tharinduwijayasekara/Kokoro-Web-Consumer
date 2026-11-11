@@ -174,16 +174,70 @@ const LoginService = {
         App.showMessageBoard("Orator", "Importing your library...", 1);
 
         const remoteBooks = [];
-        const batchSize = 10;
+        const batchSize = 50;
 
         let start = 0;
         let totalBooks = null;
         let isFailure = false;
+        let bytesLoaded = 0;
+        let lastPercent = 1;
+        let totalBytes = null;
+
+        // Redraws the byte count every second, including while a page is still downloading.
+        // With the API's total size, the bar follows bytes; otherwise it keeps the page-based percent.
+        const showBytes = () => {
+            const loadedMb = (bytesLoaded / 1024 / 1024).toFixed(1);
+
+            if (!totalBytes) {
+                App.showMessageBoard("Orator", `${loadedMb} MB loaded`, lastPercent);
+                return;
+            }
+
+            const percent = Math.max(1, Math.min(99, Math.round((bytesLoaded / totalBytes) * 100)));
+            const totalMb = (totalBytes / 1024 / 1024).toFixed(1);
+            App.showMessageBoard("Orator", `${loadedMb} / ${totalMb} MB loaded`, percent);
+        };
+        const ticker = setInterval(showBytes, 1000);
+
+        // Reads the body in chunks so bytesLoaded grows during the download.
+        const readBody = async (res) => {
+            if (!res.body) {
+                const buf = await res.arrayBuffer();
+                bytesLoaded += buf.byteLength;
+                return buf;
+            }
+
+            const reader = res.body.getReader();
+            const chunks = [];
+            let size = 0;
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+
+                chunks.push(value);
+                size += value.length;
+                bytesLoaded += value.length;
+            }
+
+            const out = new Uint8Array(size);
+            let offset = 0;
+            for (const chunk of chunks) {
+                out.set(chunk, offset);
+                offset += chunk.length;
+            }
+
+            return out;
+        };
 
         try {
             while (true) {
+                // The first request asks for one book: its total_books and total_bytes come back
+                // quickly, so the progress bar has a total before the bulk pages arrive.
+                const pageLength = start === 0 ? 1 : batchSize;
+
                 const res = await fetch(
-                    `https://api.orator-audio.com/api/books?start=${start}&length=${batchSize}`,
+                    `https://api.orator-audio.com/api/books?start=${start}&length=${pageLength}`,
                     {
                         method: 'GET',
                         headers: {
@@ -198,7 +252,9 @@ const LoginService = {
                     break;
                 }
 
-                const data = await res.json();
+                const buffer = await readBody(res);
+                console.log(`Page start=${start}: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB (running total ${(bytesLoaded / 1024 / 1024).toFixed(2)} MB)`);
+                const data = JSON.parse(new TextDecoder().decode(buffer));
 
                 if (!data.books) {
                     console.error("No books found in remote response");
@@ -208,6 +264,7 @@ const LoginService = {
 
                 if (totalBooks === null) {
                     totalBooks = data.total_books ?? 0;
+                    totalBytes = typeof data.total_bytes === 'number' ? data.total_bytes : null;
                 }
 
                 const booksReceived = data.books.length;
@@ -221,13 +278,14 @@ const LoginService = {
                     ? Math.round((start / totalBooks) * 100)
                     : null;
 
-                App.showMessageBoard("Orator", "Importing your library...", percent);
+                lastPercent = Math.max(1, percent ?? lastPercent);
+                showBytes();
 
                 if (totalBooks && start >= totalBooks) {
                     break;
                 }
 
-                if (booksReceived < batchSize) {
+                if (booksReceived < pageLength) {
                     break;
                 }
             }
@@ -244,6 +302,7 @@ const LoginService = {
             console.error("Unexpected error during import", err);
             App.showMessageBoard('Orator', 'Import failed.', 100, 2000);
         } finally {
+            clearInterval(ticker);
             App.hideMessageBoard();
         }
 
