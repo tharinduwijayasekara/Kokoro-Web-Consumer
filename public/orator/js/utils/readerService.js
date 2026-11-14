@@ -650,7 +650,7 @@ const ReaderService = {
         let model = "kokoro";
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
-            if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL, DEFAULT_ZONOS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
                 this.stop();
                 return false;
@@ -661,7 +661,10 @@ const ReaderService = {
             speed = this.tempOratorConfig.speed !== "" ? this.tempOratorConfig.speed : speed;
             pitch = this.tempOratorConfig.pitch !== "" ? this.tempOratorConfig.pitch : pitch;
 
-            model = ttsUrl === DEFAULT_POCKET_TTS_URL ? "pocket-tts" : ttsUrl === DEFAULT_FISH_AUDIO_URL ? "s2.1-pro-free" : "kokoro";
+            // Zonos has no speaker picker yet, so always use the default speaker.
+            if (ttsUrl === DEFAULT_ZONOS_URL) voice = ZONOS_VOICE;
+
+            model = ttsUrl === DEFAULT_POCKET_TTS_URL ? "pocket-tts" : ttsUrl === DEFAULT_FISH_AUDIO_URL ? "s2.1-pro-free" : ttsUrl === DEFAULT_ZONOS_URL ? ZONOS_MODEL : "kokoro";
 
             const replacements = this.tempOratorConfig.replacements ?? [];
             replacements.forEach(rep => {
@@ -694,6 +697,7 @@ const ReaderService = {
 
         if (!blob) {
             const isFishAudio = ttsUrl === DEFAULT_FISH_AUDIO_URL;
+            const isZonos = ttsUrl === DEFAULT_ZONOS_URL;
 
             let fetchUrl = ttsUrl;
             let params;
@@ -705,6 +709,17 @@ const ReaderService = {
                     "speech_service": "fish-audio",
                     "input": text,
                     "voice": voice,
+                    "response_format": "mp3"
+                };
+            } else if (isZonos) {
+                // Zonos is reached through the orator API (login required). The API asks the
+                // server for WAV and returns MP3, so the player format stays the same.
+                fetchUrl = 'https://api.orator-audio.com/api/speech/generate';
+                params = {
+                    "speech_service": "zonos",
+                    "model": ZONOS_MODEL,
+                    "input": text,
+                    "voice": ZONOS_VOICE,
                     "response_format": "mp3"
                 };
             } else if (ttsUrl === DEFAULT_POCKET_TTS_URL) {
@@ -744,10 +759,15 @@ const ReaderService = {
                 'Content-Type': 'application/json'
             };
 
-            // Add auth token for Fish Audio (backend needs it to access user's API key)
-            if (isFishAudio) {
+            // Fish Audio and Zonos go through the orator API, which requires login
+            if (isFishAudio || isZonos) {
                 const orator = await StorageService.getOratorJson();
                 const token = orator?.login_token;
+                if (!token && isZonos) {
+                    this.$banner.text("Log in to use the Zonos voice").addClass('active');
+                    this.stop();
+                    return false;
+                }
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }

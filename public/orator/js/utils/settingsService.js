@@ -247,6 +247,9 @@ const SettingsService = {
             selectedSpeechService = "pockettts";
         } else if (config.ttsUrl === DEFAULT_FISH_AUDIO_URL) {
             selectedSpeechService = "fishaudio";
+        } else if (config.ttsUrl === DEFAULT_ZONOS_URL) {
+            // No voice group for Zonos yet, so no group is shown
+            selectedSpeechService = "zonos";
         }
 
         this.$settings.find('.check-box-group-voice').removeClass('active');
@@ -448,6 +451,8 @@ const SettingsService = {
             speechVoice = $('.check-box-group-voice.pockettts input:checked').map((i, el) => $(el).val()).get().join("+");
         } else if (selectedService === DEFAULT_FISH_AUDIO_URL) {
             speechVoice = $('.check-box-group-voice.fishaudio input:checked').val() || '';
+        } else if (selectedService === DEFAULT_ZONOS_URL) {
+            speechVoice = ZONOS_VOICE;
         } else {
             speechVoice = this.$speechVoice.val();
         }

@@ -140,6 +140,12 @@ const POCKET_TTS_VOICES = [
     '000_Sarah.wav'
 ];
 
+// Zonos runs on the user's PC and is reached through the orator API, which requires login.
+// DEFAULT_ZONOS_URL is only the key stored for this engine; requests go to the API.
+const DEFAULT_ZONOS_URL = 'https://zonos.orator-audio.com/v1/audio/speech';
+const ZONOS_MODEL = 'zonos3';
+const ZONOS_VOICE = 'default_de4d191ca7574982';
+
 const DEFAULT_FISH_AUDIO_URL = 'https://api.fish.audio/v1/tts';
 
 const FISH_AUDIO_VOICES = {
@@ -294,7 +300,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 53;
+const CURRENT_VERSION = 54;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
