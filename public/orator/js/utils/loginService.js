@@ -71,6 +71,12 @@ const LoginService = {
 
             this.user = user;
 
+            // Superuser replacements apply to other users. The server omits the list for the superuser.
+            const superuserReplacements = user.speech_settings?.replacements_config_superuser;
+            const replacements = Array.isArray(superuserReplacements) ? superuserReplacements : [];
+            await StorageService.writeSuperuserReplacements(replacements);
+            ReaderService.superuserReplacements = replacements;
+
             if (Object.keys(orator.reading).length === 1) {
 
                 console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
@@ -400,6 +406,8 @@ const LoginService = {
         delete orator.login_token;
         delete orator.user;
 
+        // Logged-out users don't get the superuser replacements
+        await StorageService.writeSuperuserReplacements([]);
         await StorageService.writeOratorJson(orator, {skipSync: true});
 
         location.reload();

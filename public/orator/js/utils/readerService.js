@@ -649,6 +649,18 @@ const ReaderService = {
         let pitch = 1.0;
         let model = "kokoro";
 
+        if (this.superuserReplacements === undefined) {
+            this.superuserReplacements = await StorageService.getSuperuserReplacements();
+        }
+
+        // Applied after the user's own replacements and before the app defaults.
+        const applySuperuserReplacements = () => {
+            (this.superuserReplacements ?? []).forEach(rep => {
+                if (!rep[0] || !rep[1]) return;
+                text = text.replaceAll(rep[0], rep[1]);
+            });
+        };
+
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
             if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL, DEFAULT_ZONOS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
@@ -672,6 +684,8 @@ const ReaderService = {
                 text = text.replaceAll(rep[0], rep[1]);
             });
 
+            applySuperuserReplacements();
+
             Object.entries(DEFAULT_REPLACEMENTS).forEach(rep => {
                 if (!rep[0] || !rep[1]) return;
                 text = text.replaceAll(rep[0], rep[1]);
@@ -681,6 +695,9 @@ const ReaderService = {
             text = App.normalizeLargeNumbers(text);
 
             text = `. ${text}`;
+        } else {
+            // Users who never saved speech settings still get the superuser replacements.
+            applySuperuserReplacements();
         }
 
         let cacheKey = [

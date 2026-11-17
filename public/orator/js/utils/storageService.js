@@ -64,6 +64,25 @@ const StorageService = {
         }
     },
 
+    // Superuser replacements live in their own key, outside the orator config, so they are never synced.
+    async getSuperuserReplacements() {
+        try {
+            const row = await this.db.data.get('superuser_replacements');
+            return Array.isArray(row?.replacements) ? row.replacements : [];
+        } catch (e) {
+            console.log("Failed to read superuser replacements", e);
+            return [];
+        }
+    },
+
+    async writeSuperuserReplacements(replacements) {
+        try {
+            await this.db.data.put({key: 'superuser_replacements', replacements});
+        } catch (e) {
+            console.log("Failed to save superuser replacements", e);
+        }
+    },
+
     async getBooks() {
         return await this.db.books.toArray();
     },
