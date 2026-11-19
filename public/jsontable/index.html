@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Table Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:wght@400;600&family=Cabin+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --md-primary: #007ACC;
+      --md-primary-dark: #005A9E;
+      --md-primary-light: #1E90FF;
+      --md-surface: #EAEAEA;
+      --md-surface-bright: #FFFFFF;
+      --md-surface-dim: #E0E0E0;
+      --md-on-surface: #1C1B1F;
+      --md-on-surface-variant: #49454F;
+      --md-outline: #C4C7C5;
+      --md-outline-variant: #D8D8D8;
+      --md-shadow: rgba(0, 0, 0, 0.12);
+      --md-shadow-dark: rgba(0, 0, 0, 0.2);
+    }
+
+    :root[data-theme="dark"] {
+        --md-surface: #101010;
+        --md-surface-bright: #1e1e1e;
+        --md-surface-dim: #3a3a3a;
+        --md-on-surface: #e0e0e0;
+        --md-on-surface-variant: #b0b0b0;
+        --md-outline: #5a5a5a;
+        --md-outline-variant: #2a2a2a;
+        --md-shadow: rgba(0, 0, 0, 0.3);
+        --md-shadow-dark: rgba(0, 0, 0, 0.5);
+        scrollbar-color: #404040 #1a1a1a;
+    }
+
+    :root[data-theme="dark"] ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    :root[data-theme="dark"] ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    :root[data-theme="dark"] ::-webkit-scrollbar-thumb {
+      background: #404040;
+      border-radius: 6px;
+    }
+
+    :root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+      background: #505050;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Cascadia Code", ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.4;
+      background: var(--md-surface);
+      color: var(--md-on-surface);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      min-width: 200px;
+      background: var(--md-surface-bright);
+      box-shadow: 0 1px 3px var(--md-shadow);
+    }
+
+    #panel1 {
+      width: 500px;
+      min-width: 500px;
+      max-width: 1000px;
+    }
+
+    #panel2 {
+      background: var(--md-surface-bright);
+    }
+
+    #panel1, #panel3 {
+      background: var(--md-surface);
+    }
+
+    .panel-divider {
+      width: 6px;
+      background: var(--md-surface-dim);
+      border-left: 1px solid var(--md-outline-variant);
+      border-right: 1px solid var(--md-outline-variant);
+      cursor: col-resize;
+      flex-shrink: 0;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .panel-divider:hover {
+      background: var(--md-primary-light);
+      opacity: 0.3;
+    }
+
+    .panel-divider.dragging {
+      background: var(--md-primary);
+      opacity: 0.4;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--md-outline-variant);
+      flex-shrink: 0;
+      white-space: nowrap;
+      gap: 8px;
+      background: var(--md-surface-bright);
+      color: var(--md-on-surface);
+      height: 50px;
+    }
+
+    .panel-header-title {
+      flex: 1;
+      font-size: 14px;
+    }
+
+    .panel-header-buttons {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-content: center;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 8px;
+      background: var(--md-surface);
+    }
+
+    #tablePanel {
+      padding-bottom: 50px;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: 1px solid var(--md-outline);
+      background: var(--md-surface-bright);
+      color: var(--md-primary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px var(--md-shadow);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .material-icons {
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:hover {
+      background: var(--md-primary);
+      color: #fff;
+      box-shadow: 0 2px 4px var(--md-shadow-dark);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px var(--md-shadow);
+    }
+
+    .view-toggle-btn.active {
+      background: var(--md-primary);
+      color: #fff;
+      border-color: var(--md-primary);
+    }
+
+    /* Raw JSON Panel */
+    #jsonInput {
+      display: block;
+      width: 100%;
+      height: 110px;
+      border: 1px solid var(--md-outline-variant);
+      padding: 8px;
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--md-on-surface);
+      background: var(--md-surface-bright);
+      resize: none;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px var(--md-shadow);
+    }
+
+    #jsonInput::placeholder {
+      color: var(--md-on-surface-variant);
+    }
+
+    .json-tree {
+      font-family: inherit;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+      color: var(--md-on-surface);
+      line-height: 1.1;
+    }
+
+    .json-line {
+      position: relative;
+      padding-left: 16px;
+      padding-top: 0px;
+      padding-bottom: 0px;
+      margin: 0;
+    }
+
+    .json-toggle {
+      position: absolute;
+      left: 0;
+      cursor: pointer;
+      padding: 0 2px;
+      user-select: none;
+      font-weight: bold;
+      color: var(--md-primary);
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .json-toggle:hover {
+      background: var(--md-primary);
+      color: #fff;
+    }
+
+    .json-bracket {
+      font-weight: bold;
+      color: var(--md-primary);
+    }
+
+    .json-key {
+      color: var(--md-primary);
+      font-weight: bold;
+    }
+
+    .json-string {
+      color: #0B7C3E;
+    }
+
+    .json-number {
+      color: #BC3700;
+    }
+
+    .json-boolean {
+      color: #0050C6;
+    }
+
+    .json-null {
+      color: var(--md-on-surface-variant);
+      font-style: italic;
+    }
+
+    .json-error {
+      color: #B3261E;
+      padding: 12px;
+      border: 1px solid #B3261E;
+      background: #FCE8E6;
+      font-weight: bold;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--md-shadow);
+    }
+
+    .json-nested {
+      margin-left: 12px;
+      border-left: 2px solid var(--md-primary);
+      padding-left: 4px;
+      opacity: 1;
+      transition: opacity 0.2s;
+    }
+
+    .json-collapsed > .json-nested {
+      display: none;
+    }
+
+    /* Table Panel */
+    .jt-table {
+      border-collapse: collapse;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px var(--md-shadow);
+      background: var(--md-surface-bright);
+      min-width: min-content;
+      overflow: hidden;
+      font-family: "Cabin Condensed", ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+      font-size: 13px;
+      margin: auto;
+    }
+
+    .jt-table thead {
+      background: linear-gradient(135deg, rgba(0, 122, 204, 0.08) 0%, rgba(30, 144, 255, 0.04) 100%);
+      border-bottom: 2px solid var(--md-primary);
+    }
+
+    .jt-table thead tr.jt-header-minimized {
+      height: 2px;
+    }
+
+    .jt-table thead tr.jt-header-minimized th {
+      overflow: hidden;
+      height: 2px;
+    }
+
+    .jt-table th {
+      padding: 4px 8px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--md-primary);
+      border-right: 1px solid var(--md-outline-variant);
+      white-space: normal;
+      overflow-wrap: break-word;
+      max-width: 150px;
+      min-width: 50px;
+      font-family: "Cabin Condensed", ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+    }
+
+    .jt-table th:last-child {
+      border-right: none;
+    }
+
+    .jt-table tbody tr {
+      border-bottom: 1px solid var(--md-outline-variant);
+      transition: background 0.2s;
+    }
+
+    .jt-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .jt-table tbody tr:hover {
+      background: var(--md-surface-dim);
+    }
+
+    /* Accordion JSON View */
+    .jt-accordion {
+      background: var(--md-surface-bright);
+      border: 1px solid var(--md-outline-variant);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px var(--md-shadow);
+      overflow: hidden;
+      max-width: 1366px;
+      margin: auto;
+      font-family: "Cascadia Code", ui-monospace, "SF Mono", Consolas, "Courier New", monospace !important;
+    }
+
+    .jt-acc-section {
+      border-bottom: 1px solid var(--md-outline-variant);
+    }
+
+    .jt-acc-section:last-child {
+      border-bottom: none;
+    }
+
+    .jt-acc-header {
+      display: flex;
+      align-items: center;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(0, 122, 204, 0.04) 0%, rgba(30, 144, 255, 0.02) 100%);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      box-shadow: none;
+    }
+
+    .jt-acc-header:hover {
+      background: linear-gradient(135deg, rgba(0, 122, 204, 0.04) 0%, rgba(30, 144, 255, 0.02) 100%);
+      box-shadow: none;
+    }
+
+
+    .jt-acc-chevron {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      color: var(--md-primary);
+      font-weight: bold;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .jt-acc-header.collapsed .jt-acc-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .jt-acc-key {
+      font-weight: bold;
+      color: var(--md-primary);
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .jt-acc-badge {
+      display: inline-block;
+      background: var(--md-primary);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .jt-acc-body-wrap {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 0.3s ease;
+      overflow: hidden;
+    }
+
+    .jt-acc-header.collapsed ~ .jt-acc-body-wrap {
+      grid-template-rows: 0fr;
+    }
+
+    .jt-acc-body {
+      overflow: hidden;
+      padding: 0 0 0 20px;
+      background: var(--md-surface);
+      border-left: 1px solid var(--md-outline-variant);
+    }
+
+    .jt-acc-row {
+      display: flex;
+      gap: 12px;
+      padding: 3px 0;
+      align-items: flex-start;
+    }
+
+    .jt-acc-row-key {
+      font-weight: 600;
+      color: var(--md-on-surface-variant);
+      min-width: 120px;
+      word-break: break-word;
+    }
+
+    .jt-acc-row-value {
+      flex: 1;
+      word-break: break-word;
+      user-select: text;
+    }
+
+    .jt-acc-value.string {
+      color: #0B7C3E;
+    }
+
+    .jt-acc-value.number {
+      color: #BC3700;
+    }
+
+    .jt-acc-value.boolean {
+      color: #0050C6;
+    }
+
+    .jt-acc-value.null {
+      color: var(--md-on-surface-variant);
+      font-style: italic;
+    }
+
+    .jt-table td {
+      padding: 2px 8px;
+      border-right: 1px solid var(--md-outline-variant);
+      overflow: auto;
+      max-height: 200px;
+      font-family: "Cabin Condensed", ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+      vertical-align: top;
+    }
+
+    .jt-table td.jt-table-cell-nested {
+      padding: 0;
+      overflow: visible;
+    }
+
+    .jt-table td:last-child {
+      border-right: none;
+    }
+
+    .jt-nested-table {
+      font-size: 12px;
+      margin: 4px 0;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px var(--md-shadow);
+      font-family: "Cabin Condensed", ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+    }
+
+    /* Compact table for accordion leaf values */
+    .jt-acc-values-table {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--md-surface);
+      table-layout: fixed;
+    }
+
+    .jt-acc-values-table td {
+      padding: 3px 8px;
+      border-bottom: 1px solid var(--md-outline-variant);
+      text-align: left;
+      word-break: break-all;
+    }
+
+    .jt-acc-values-table td:nth-child(1) {
+      width: 200px;
+      font-weight: 700;
+      color: var(--md-on-surface-variant);
+    }
+
+    .jt-acc-values-table td:nth-child(2) {
+      width: auto;
+    }
+
+    .jt-acc-values-table td:nth-child(3) {
+      width: 200px;
+      font-weight: 700;
+      color: var(--md-on-surface-variant);
+    }
+
+    .jt-acc-values-table td:nth-child(4) {
+      width: auto;
+    }
+
+    .jt-acc-values-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Panel 1 sections */
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel-section-top {
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--md-outline-variant);
+      padding: 8px;
+      background: var(--md-surface);
+    }
+
+    .panel-section-bottom {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 8px;
+      background: var(--md-surface);
+    }
+
+    /* Export Modal */
+    .export-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .export-modal {
+      background: var(--md-surface-bright);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .export-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--md-on-surface);
+    }
+
+    .export-modal-message {
+      font-size: 13px;
+      color: var(--md-on-surface-variant);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .export-modal-buttons {
+      display: flex;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .export-modal-buttons button {
+      flex: 1;
+      padding: 10px 16px;
+    }
+
+    .export-loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background: var(--md-surface-bright);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 999;
+    }
+
+    .export-spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--md-outline-variant);
+      border-top: 3px solid var(--md-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .export-loading-text {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+    }
+
+    .export-overlay-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    /* Import Modal */
+    .import-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .import-modal {
+      background: var(--md-surface-bright);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 900px;
+      width: 90%;
+      height: 50vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .import-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--md-on-surface);
+    }
+
+    .import-modal-content {
+      display: flex;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .import-textarea-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .import-textarea-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--md-on-surface-variant);
+      text-transform: uppercase;
+    }
+
+    .import-textarea {
+      flex: 1;
+      border: 1px solid var(--md-outline-variant);
+      padding: 12px;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--md-on-surface);
+      background: var(--md-surface);
+      resize: none;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px var(--md-shadow);
+    }
+
+    .import-textarea::placeholder {
+      color: var(--md-on-surface-variant);
+    }
+
+    .import-modal-footer {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .import-modal-footer button {
+      padding: 8px 16px;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Raw JSON Panel -->
+  <div class="panel" id="panel1">
+    <div class="panel-header">
+      <div class="panel-header-title">Raw JSON</div>
+      <div class="panel-header-buttons">
+        <button id="importBtn" title="Import JSON or SQL"><span class="material-icons">upload</span> Import</button>
+        <button id="pasteBtn"><span class="material-icons">content_paste</span> Paste</button>
+        <button id="formatBtn"><span class="material-icons">auto_fix_high</span> Format</button>
+        <button id="resetBtn" title="Clear all stored data"><span class="material-icons">refresh</span> Reset</button>
+      </div>
+    </div>
+    <div class="panel-body panel-section">
+      <div class="panel-section-top">
+        <div style="font-size: 11px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 4px; text-transform: uppercase;">Input</div>
+        <textarea id="jsonInput" placeholder="Paste JSON here..."></textarea>
+      </div>
+      <div class="panel-section-bottom" id="rawJsonPanel">
+        <div style="font-size: 11px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 4px; text-transform: uppercase;">Formatted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Divider between panel 1 and 2 -->
+  <div class="panel-divider" data-divider="1"></div>
+
+  <!-- JSON Table Panel -->
+  <div class="panel" id="panel2" style="flex: 1 1 auto;">
+    <div class="panel-header">
+      <div class="panel-header-title">JSON Table</div>
+      <div class="panel-header-buttons">
+        <button id="themeToggleBtn" title="Toggle dark/light mode"><span class="material-icons">light_mode</span></button>
+        <button id="exportBtn" title="Export as image"><span class="material-icons">download</span></button>
+        <button id="tableViewBtn" class="view-toggle-btn"><span class="material-icons">table_chart</span> Table</button>
+        <button id="jsonViewBtn" class="view-toggle-btn active"><span class="material-icons">data_object</span> JSON</button>
+      </div>
+    </div>
+    <div class="panel-body" id="tablePanel">
+      <div style="color: #999;">No data</div>
+    </div>
+  </div>
+
+  <!-- Export Loading Overlay -->
+  <div id="exportLoadingOverlay" style="display: none;">
+    <div class="export-overlay-bg"></div>
+    <div class="export-loading">
+      <div class="export-spinner"></div>
+      <div class="export-loading-text">Generating image...</div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="export-overlay" style="display: none;">
+    <div class="export-modal">
+      <div class="export-modal-title">Export Complete</div>
+      <div class="export-modal-message">Your image is ready!</div>
+      <div class="export-modal-buttons">
+        <button id="exportDownloadBtn"><span class="material-icons">download</span> Download</button>
+        <button id="exportCopyBtn"><span class="material-icons">content_copy</span> Copy</button>
+        <button id="exportCloseBtn"><span class="material-icons">close</span> Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="importModal" class="import-overlay" style="display: none;">
+    <div class="import-modal">
+      <div class="import-modal-title">Import JSON or SQL</div>
+      <div class="import-modal-content">
+        <div class="import-textarea-wrapper">
+          <div class="import-textarea-label">Input (JSON or SQL INSERT)</div>
+          <textarea id="importInput" class="import-textarea" placeholder="Paste JSON or SQL INSERT query here..."></textarea>
+        </div>
+        <div class="import-textarea-wrapper">
+          <div class="import-textarea-label">Output (JSON)</div>
+          <textarea id="importOutput" class="import-textarea" placeholder="Output will appear here..." readonly></textarea>
+        </div>
+      </div>
+      <div class="import-modal-footer">
+        <button id="importCopyBtn"><span class="material-icons">content_copy</span> Copy to Clipboard</button>
+        <button id="importLoadBtn"><span class="material-icons">upload</span> Load into Viewer</button>
+        <button id="importCloseBtn"><span class="material-icons">close</span> Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let jsonData = null;
+    let selectedFields = new Set();
+    let rawJsonText = '';
+    let activeDivider = null;
+    let dragStartX = 0;
+    let startSize1 = 0;
+    let startSize2 = 0;
+    let formatTimeout = null;
+    let panel2ViewMode = 'json';
+    let exportedImageBlob = null;
+    let collapsedKeys = new Set();
+
+    const jsonInput = document.getElementById('jsonInput');
+    const rawJsonPanel = document.getElementById('rawJsonPanel');
+    const tablePanel = document.getElementById('tablePanel');
+    const formatBtn = document.getElementById('formatBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importModal = document.getElementById('importModal');
+    const importInput = document.getElementById('importInput');
+    const importOutput = document.getElementById('importOutput');
+    const importCopyBtn = document.getElementById('importCopyBtn');
+    const importLoadBtn = document.getElementById('importLoadBtn');
+    const importCloseBtn = document.getElementById('importCloseBtn');
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    const jsonViewBtn = document.getElementById('jsonViewBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const exportModal = document.getElementById('exportModal');
+    const exportLoadingOverlay = document.getElementById('exportLoadingOverlay');
+    const exportDownloadBtn = document.getElementById('exportDownloadBtn');
+    const exportCopyBtn = document.getElementById('exportCopyBtn');
+    const exportCloseBtn = document.getElementById('exportCloseBtn');
+    const dividers = document.querySelectorAll('.panel-divider');
+
+    // Load persisted JSON from localStorage
+    const loadPersistedJson = () => {
+      try {
+        const saved = localStorage.getItem('jsonTableInput');
+        if (saved) {
+          jsonInput.value = saved;
+          console.log('[localStorage] Loaded persisted JSON, length:', saved.length);
+          formatJson();
+        }
+      } catch (e) {
+        console.log('[localStorage] Could not load persisted JSON:', e.message);
+      }
+    };
+
+    // Save panel1 width to localStorage
+    const savePanelWidth = () => {
+      try {
+        const panel1 = document.getElementById('panel1');
+        const width = panel1.getBoundingClientRect().width;
+        localStorage.setItem('jsonTablePanel1Width', width);
+        console.log('[localStorage] Saved panel1 width:', width);
+      } catch (e) {
+        console.log('[localStorage] Could not save panel1 width:', e.message);
+      }
+    };
+
+    // Load panel1 width from localStorage
+    const loadPanelWidth = () => {
+      try {
+        const saved = localStorage.getItem('jsonTablePanel1Width');
+        if (saved) {
+          const panel1 = document.getElementById('panel1');
+          const width = parseInt(saved, 10);
+          panel1.style.width = width + 'px';
+          console.log('[localStorage] Loaded panel1 width:', width);
+        }
+      } catch (e) {
+        console.log('[localStorage] Could not load panel1 width:', e.message);
+      }
+    };
+
+    // Save JSON to localStorage
+    const saveJsonToStorage = (text) => {
+      try {
+        localStorage.setItem('jsonTableInput', text);
+        console.log('[localStorage] Saved JSON to storage, length:', text.length);
+      } catch (e) {
+        console.log('[localStorage] Could not save to storage:', e.message);
+      }
+    };
+
+    // Theme management
+    const initTheme = () => {
+      try {
+        const saved = localStorage.getItem('jsonTableTheme');
+        const theme = saved || 'light';
+        applyTheme(theme);
+      } catch (e) {
+        console.log('[theme] Could not load theme preference:', e.message);
+      }
+    };
+
+    const applyTheme = (theme) => {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggleBtn.innerHTML = '<span class="material-icons">light_mode</span>';
+        console.log('[theme] Applied dark mode');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeToggleBtn.innerHTML = '<span class="material-icons">dark_mode</span>';
+        console.log('[theme] Applied light mode');
+      }
+      try {
+        localStorage.setItem('jsonTableTheme', theme);
+      } catch (e) {
+        console.log('[theme] Could not save theme preference:', e.message);
+      }
+    };
+
+    const toggleTheme = () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(isDark ? 'light' : 'dark');
+    };
+
+    formatBtn.addEventListener('click', formatJson);
+    pasteBtn.addEventListener('click', pasteFromClipboard);
+    resetBtn.addEventListener('click', resetAllData);
+    importBtn.addEventListener('click', openImportModal);
+    importInput.addEventListener('input', handleImportInput);
+    importCopyBtn.addEventListener('click', copyImportOutput);
+    importLoadBtn.addEventListener('click', loadImportedJson);
+    importCloseBtn.addEventListener('click', closeImportModal);
+    exportBtn.addEventListener('click', exportTableToImage);
+    exportDownloadBtn.addEventListener('click', downloadExportedImage);
+    exportCopyBtn.addEventListener('click', copyExportedToClipboard);
+    exportCloseBtn.addEventListener('click', closeExportModal);
+    jsonInput.addEventListener('input', () => {
+      autoFormatJson();
+      saveJsonToStorage(jsonInput.value);
+    });
+    tableViewBtn.addEventListener('click', () => {
+      panel2ViewMode = 'table';
+      updateViewToggleBtns();
+      renderTable();
+    });
+    jsonViewBtn.addEventListener('click', () => {
+      panel2ViewMode = 'json';
+      updateViewToggleBtns();
+      renderTable();
+    });
+    themeToggleBtn.addEventListener('click', toggleTheme);
+
+    async function exportTableToImage() {
+      try {
+        exportBtn.disabled = true;
+        exportLoadingOverlay.style.display = 'flex';
+
+        const panel2 = document.getElementById('panel2');
+
+        // In table mode, export only the main jt-table; in JSON mode, export the entire panel
+        let exportElement = tablePanel;
+        if (panel2ViewMode === 'table') {
+          const mainTable = tablePanel.querySelector('.jt-table:not(.jt-nested-table)');
+          if (mainTable) {
+            exportElement = mainTable;
+          }
+        }
+
+        // Store original styles
+        const originalPanelFlex = panel2.style.flex;
+        const originalOverflow = tablePanel.style.overflow;
+        const originalHeight = tablePanel.style.height;
+        const originalMaxHeight = tablePanel.style.maxHeight;
+        const originalWidth = tablePanel.style.width;
+        const originalMaxWidth = tablePanel.style.maxWidth;
+
+        // Temporarily allow overflow to capture full content
+        panel2.style.flex = 'none';
+        panel2.style.width = 'fit-content';
+        tablePanel.style.overflow = 'visible';
+        tablePanel.style.height = 'auto';
+        tablePanel.style.maxHeight = 'none';
+        tablePanel.style.width = 'auto';
+        tablePanel.style.maxWidth = 'none';
+
+        // Wait for layout to update
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const canvas = await html2canvas(exportElement, {
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--md-surface-bright').trim() || '#ffffff',
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        });
+
+        // Restore original styles
+        panel2.style.flex = originalPanelFlex;
+        panel2.style.width = '';
+        tablePanel.style.overflow = originalOverflow;
+        tablePanel.style.height = originalHeight;
+        tablePanel.style.maxHeight = originalMaxHeight;
+        tablePanel.style.width = originalWidth;
+        tablePanel.style.maxWidth = originalMaxWidth;
+
+        exportedImageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+
+        exportLoadingOverlay.style.display = 'none';
+        exportModal.style.display = 'flex';
+        exportBtn.disabled = false;
+      } catch (error) {
+        console.error('[exportTable] Error:', error);
+        exportLoadingOverlay.style.display = 'none';
+        exportBtn.disabled = false;
+        alert('Failed to generate image. Check console for details.');
+      }
+    }
+
+    function downloadExportedImage() {
+      if (!exportedImageBlob) return;
+
+      const url = URL.createObjectURL(exportedImageBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `table-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyExportedToClipboard() {
+      if (!exportedImageBlob) return;
+
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': exportedImageBlob })
+        ]);
+        exportCopyBtn.textContent = '✓ Copied!';
+        setTimeout(() => {
+          exportCopyBtn.textContent = '📋 Copy to Clipboard';
+        }, 2000);
+      } catch (error) {
+        console.error('[copyToClipboard] Error:', error);
+        alert('Failed to copy to clipboard');
+      }
+    }
+
+    function closeExportModal() {
+      exportModal.style.display = 'none';
+      exportedImageBlob = null;
+    }
+
+    function openImportModal() {
+      importModal.style.display = 'flex';
+      importInput.focus();
+    }
+
+    function closeImportModal() {
+      importModal.style.display = 'none';
+      importInput.value = '';
+      importOutput.value = '';
+    }
+
+    function handleImportInput() {
+      const input = importInput.value.trim();
+      if (!input) {
+        importOutput.value = '';
+        return;
+      }
+
+      try {
+        // Try to detect format in order: JSON, TSV, CSV
+        if (looksLikeJson(input)) {
+          // Try to parse as JSON
+          const json = JSON.parse(input);
+          importOutput.value = JSON.stringify(json, null, 2);
+        } else if (looksLikeTSV(input)) {
+          // Try to parse as TSV
+          const json = parseTSV(input);
+          importOutput.value = JSON.stringify(json, null, 2);
+        } else {
+          // Try to parse as CSV
+          const json = parseCSV(input);
+          importOutput.value = JSON.stringify(json, null, 2);
+        }
+      } catch (error) {
+        importOutput.value = `Error: ${error.message}`;
+      }
+    }
+
+    function looksLikeTSV(input) {
+      // Check if input has lines with tabs
+      const lines = input.trim().split('\n');
+      if (lines.length < 1) return false;
+
+      // Check if first line has tabs
+      const firstLine = lines[0];
+      if (!firstLine.includes('\t')) return false;
+
+      // If second line exists, check if it also has tabs
+      if (lines.length > 1) {
+        const secondLine = lines[1];
+        return secondLine.includes('\t');
+      }
+
+      return true;
+    }
+
+    function looksLikeJson(input) {
+      const trimmed = input.trim();
+      return (trimmed.startsWith('{') || trimmed.startsWith('['));
+    }
+
+    function parseTSV(tsvText) {
+      const lines = tsvText.trim().split('\n');
+      if (lines.length < 1) {
+        throw new Error('TSV is empty');
+      }
+
+      // Check if second column of first line looks like JSON (ID-JSON format)
+      const firstLineParts = lines[0].split('\t');
+      const isIdJsonFormat = firstLineParts.length >= 2 &&
+                             (firstLineParts[1].trim().startsWith('{') ||
+                              firstLineParts[1].trim().startsWith('['));
+
+      const rows = [];
+
+      if (isIdJsonFormat) {
+        // ID-JSON format
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const parts = line.split('\t');
+          if (parts.length < 2) continue;
+
+          const obj = {};
+
+          // First column as ID
+          const firstValue = parts[0].trim();
+          if (!isNaN(firstValue) && firstValue !== '') {
+            obj.id = parseInt(firstValue, 10);
+          } else {
+            obj.id = firstValue;
+          }
+
+          // Second column - try to parse as JSON
+          const secondValue = parts[1].trim();
+          if (secondValue.startsWith('{') || secondValue.startsWith('[')) {
+            try {
+              const parsed = JSON.parse(secondValue);
+              // Merge parsed JSON into object
+              if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                Object.assign(obj, parsed);
+              } else {
+                obj.data = parsed;
+              }
+            } catch (e) {
+              obj.data = secondValue;
+            }
+          } else {
+            obj.data = secondValue;
+          }
+
+          rows.push(obj);
+        }
+      } else {
+        // Headers + data format
+        const headers = firstLineParts.map(h => h.trim());
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const parts = line.split('\t');
+          const obj = {};
+
+          headers.forEach((header, idx) => {
+            let value = parts[idx] ? parts[idx].trim() : null;
+
+            // Handle NULL strings and conversions
+            if (value === 'NULL' || value === '') {
+              value = null;
+            } else if (value !== null) {
+              // Try to parse as JSON if it looks like JSON
+              if ((value.startsWith('{') || value.startsWith('['))) {
+                try {
+                  value = JSON.parse(value);
+                } catch (e) {
+                  // Keep as string if JSON parsing fails
+                }
+              } else if (value.toLowerCase() === 'true') {
+                value = true;
+              } else if (value.toLowerCase() === 'false') {
+                value = false;
+              } else if (/^-?\d+(\.\d+)?$/.test(value)) {
+                value = parseFloat(value);
+              }
+            }
+
+            obj[header] = value;
+          });
+
+          rows.push(obj);
+        }
+      }
+
+      if (rows.length === 0) {
+        throw new Error('No data rows found in TSV');
+      }
+
+      return rows;
+    }
+
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      if (lines.length < 1) {
+        throw new Error('CSV is empty');
+      }
+
+      // Parse header row
+      const headers = parseCSVLine(lines[0]);
+      if (headers.length === 0) {
+        throw new Error('No headers found in CSV');
+      }
+
+      // Parse data rows
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue; // Skip empty lines
+
+        const values = parseCSVLine(line);
+        if (values.length > 0) {
+          const obj = {};
+          headers.forEach((header, idx) => {
+            let value = values[idx] || null;
+            // Try to convert to appropriate type
+            if (value !== null && value !== undefined && value !== '') {
+              if (value.toLowerCase() === 'null') {
+                value = null;
+              } else if (value.toLowerCase() === 'true') {
+                value = true;
+              } else if (value.toLowerCase() === 'false') {
+                value = false;
+              } else if (/^-?\d+(\.\d+)?$/.test(value)) {
+                value = parseFloat(value);
+              }
+            } else {
+              value = null;
+            }
+            obj[header] = value;
+          });
+          rows.push(obj);
+        }
+      }
+
+      if (rows.length === 0) {
+        throw new Error('No data rows found in CSV');
+      }
+
+      return rows;
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+          if (insideQuotes && line[i + 1] === '"') {
+            // Escaped quote
+            current += '"';
+            i++; // Skip next quote
+          } else {
+            // Toggle quote state
+            insideQuotes = !insideQuotes;
+          }
+        } else if (char === ',' && !insideQuotes) {
+          // End of field
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+
+      // Add last field
+      result.push(current.trim());
+
+      return result;
+    }
+
+async function copyImportOutput() {
+      const output = importOutput.value;
+      if (!output || output.startsWith('Error:')) {
+        alert('No valid output to copy');
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output);
+        importCopyBtn.textContent = '✓ Copied!';
+        setTimeout(() => {
+          importCopyBtn.innerHTML = '<span class="material-icons">content_copy</span> Copy to Clipboard';
+        }, 2000);
+      } catch (error) {
+        alert('Failed to copy to clipboard');
+      }
+    }
+
+    function loadImportedJson() {
+      const output = importOutput.value;
+      if (!output || output.startsWith('Error:')) {
+        alert('No valid JSON to load');
+        return;
+      }
+
+      try {
+        JSON.parse(output); // Verify it's valid JSON
+        jsonInput.value = output;
+        saveJsonToStorage(output);
+        formatJson();
+        closeImportModal();
+      } catch (error) {
+        alert('Invalid JSON: ' + error.message);
+      }
+    }
+
+    function resetAllData() {
+      if (confirm('Clear all stored data? (JSON input, theme, collapsed sections)')) {
+        try {
+          localStorage.removeItem('jsonTableInput');
+          localStorage.removeItem('jsonTableTheme');
+          localStorage.removeItem('jsonTableCollapsedKeys');
+          collapsedKeys.clear();
+          jsonInput.value = '';
+          tablePanel.innerHTML = '<div style="color: #999;">No data</div>';
+          rawJsonPanel.innerHTML = '';
+          console.log('[reset] All localStorage data cleared');
+          alert('All data reset successfully');
+        } catch (e) {
+          console.error('[reset] Error:', e.message);
+          alert('Failed to reset data');
+        }
+      }
+    }
+
+    // Initialize theme, load persisted JSON, load panel width, and load collapsed keys
+    initTheme();
+    loadPanelWidth();
+    loadCollapsedKeys();
+    loadPersistedJson();
+
+    // Panel divider dragging
+    dividers.forEach(divider => {
+      divider.addEventListener('mousedown', startDragDivider);
+    });
+
+    function startDragDivider(e) {
+      e.preventDefault();
+      activeDivider = this;
+      dragStartX = e.clientX;
+      const dividerIndex = parseInt(this.dataset.divider);
+      const panel1 = document.getElementById(`panel${dividerIndex}`);
+      const panel2 = document.getElementById(`panel${dividerIndex + 1}`);
+
+      startSize1 = panel1.getBoundingClientRect().width;
+      startSize2 = panel2.getBoundingClientRect().width;
+
+      this.classList.add('dragging');
+      document.addEventListener('mousemove', dragDivider);
+      document.addEventListener('mouseup', stopDragDivider);
+    }
+
+    function dragDivider(e) {
+      if (!activeDivider) return;
+      const dividerIndex = parseInt(activeDivider.dataset.divider);
+      const panel1 = document.getElementById(`panel${dividerIndex}`);
+      const panel2 = document.getElementById(`panel${dividerIndex + 1}`);
+
+      const deltaX = e.clientX - dragStartX;
+      const newSize1 = Math.max(200, startSize1 + deltaX);
+      const newSize2 = Math.max(200, startSize2 - deltaX);
+
+      panel1.style.flexBasis = newSize1 + 'px';
+      panel2.style.flexBasis = newSize2 + 'px';
+    }
+
+    function stopDragDivider() {
+      if (activeDivider) {
+        activeDivider.classList.remove('dragging');
+        activeDivider = null;
+        savePanelWidth();
+      }
+      document.removeEventListener('mousemove', dragDivider);
+      document.removeEventListener('mouseup', stopDragDivider);
+    }
+
+    function autoFormatJson() {
+      clearTimeout(formatTimeout);
+      formatTimeout = setTimeout(() => {
+        formatJson();
+      }, 500);
+    }
+
+    async function pasteFromClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        jsonInput.value = text;
+        saveJsonToStorage(text);
+        pasteBtn.textContent = 'Pasted!';
+        setTimeout(() => {
+          pasteBtn.textContent = 'Paste Clipboard';
+        }, 1500);
+        formatJson();
+      } catch (err) {
+        pasteBtn.textContent = 'Failed to paste';
+        setTimeout(() => {
+          pasteBtn.textContent = 'Paste Clipboard';
+        }, 1500);
+      }
+    }
+
+    function formatJson() {
+      console.log('[formatJson] Parsing JSON input');
+      try {
+        rawJsonText = jsonInput.value;
+        if (!rawJsonText.trim()) {
+          showError('JSON is empty');
+          return;
+        }
+        jsonData = JSON.parse(rawJsonText);
+        console.log('[formatJson] JSON parsed successfully');
+
+        // Collect field paths
+        const paths = collectFieldPaths(jsonData, '');
+        selectedFields = new Set(paths);
+        const pathsArray = Array.from(paths);
+        console.log('[formatJson] Collected', pathsArray.length, 'field paths:', pathsArray.slice(0, 5), '...');
+
+        // Render formatted tree
+        renderJsonTree();
+        renderTable();
+      } catch (e) {
+        console.error('[formatJson] Error:', e.message);
+        showError(e.message);
+      }
+    }
+
+    function showError(msg) {
+      rawJsonPanel.innerHTML = `<div class="json-error">Error: ${escapeHtml(msg)}</div>`;
+      tablePanel.innerHTML = '<div style="color: #999;">No data</div>';
+    }
+
+    function collectFieldPaths(obj, prefix, paths = new Set()) {
+      if (obj === null || obj === undefined) {
+        return paths;
+      }
+
+      if (Array.isArray(obj)) {
+        if (obj.length > 0) {
+          obj.forEach(item => {
+            collectFieldPaths(item, prefix, paths);
+          });
+        }
+      } else if (typeof obj === 'object') {
+        Object.keys(obj).forEach(key => {
+          const fullPath = prefix ? `${prefix}.${key}` : key;
+          const value = obj[key];
+
+          if (value === null || typeof value !== 'object') {
+            paths.add(fullPath);
+          } else if (Array.isArray(value)) {
+            if (value.length > 0 && typeof value[0] === 'object') {
+              // Add parent key for arrays of objects
+              paths.add(fullPath);
+              value.forEach(item => {
+                collectFieldPaths(item, fullPath, paths);
+              });
+            } else {
+              paths.add(fullPath);
+            }
+          } else {
+            // Add parent key for nested objects
+            paths.add(fullPath);
+            collectFieldPaths(value, fullPath, paths);
+          }
+        });
+      }
+
+      return paths;
+    }
+
+    function renderJsonTree() {
+      const treeContainer = document.createElement('div');
+      treeContainer.className = 'json-tree';
+      renderJsonNode(jsonData, '', 0, treeContainer);
+      rawJsonPanel.innerHTML = '';
+      rawJsonPanel.appendChild(treeContainer);
+    }
+
+    function renderJsonNode(value, key, depth, container) {
+      const line = document.createElement('div');
+      line.className = 'json-line';
+
+      if (value === null) {
+        line.innerHTML = `${key ? `<span class="json-key">"${escapeHtml(key)}":</span> ` : ''}<span class="json-null">null</span>`;
+        container.appendChild(line);
+      } else if (typeof value === 'boolean') {
+        line.innerHTML = `${key ? `<span class="json-key">"${escapeHtml(key)}":</span> ` : ''}<span class="json-boolean">${value}</span>`;
+        container.appendChild(line);
+      } else if (typeof value === 'number') {
+        line.innerHTML = `${key ? `<span class="json-key">"${escapeHtml(key)}":</span> ` : ''}<span class="json-number">${value}</span>`;
+        container.appendChild(line);
+      } else if (typeof value === 'string') {
+        line.innerHTML = `${key ? `<span class="json-key">"${escapeHtml(key)}":</span> ` : ''}<span class="json-string">"${escapeHtml(value)}"</span>`;
+        container.appendChild(line);
+      } else if (Array.isArray(value)) {
+        const header = document.createElement('div');
+        header.className = 'json-line';
+        const toggle = document.createElement('span');
+        toggle.className = 'json-toggle';
+        toggle.textContent = '-';
+        toggle.onclick = () => toggleCollapse(nested);
+
+        header.appendChild(toggle);
+        if (key) {
+          const keySpan = document.createElement('span');
+          keySpan.className = 'json-key';
+          keySpan.textContent = `"${key}":`;
+          header.appendChild(keySpan);
+        }
+        const bracket = document.createElement('span');
+        bracket.className = 'json-bracket';
+        bracket.textContent = `[${value.length}]`;
+        header.appendChild(bracket);
+
+        container.appendChild(header);
+
+        const nested = document.createElement('div');
+        nested.className = 'json-nested';
+        value.forEach((item, idx) => {
+          renderJsonNode(item, `${idx}`, depth + 1, nested);
+        });
+        container.appendChild(nested);
+      } else if (typeof value === 'object') {
+        const keys = Object.keys(value);
+        const header = document.createElement('div');
+        header.className = 'json-line';
+        const toggle = document.createElement('span');
+        toggle.className = 'json-toggle';
+        toggle.textContent = '-';
+        toggle.onclick = () => toggleCollapse(nested);
+
+        header.appendChild(toggle);
+        if (key) {
+          const keySpan = document.createElement('span');
+          keySpan.className = 'json-key';
+          keySpan.textContent = `"${key}":`;
+          header.appendChild(keySpan);
+        }
+        const bracket = document.createElement('span');
+        bracket.className = 'json-bracket';
+        bracket.textContent = `{${keys.length}}`;
+        header.appendChild(bracket);
+
+        container.appendChild(header);
+
+        const nested = document.createElement('div');
+        nested.className = 'json-nested';
+        keys.forEach(k => {
+          renderJsonNode(value[k], k, depth + 1, nested);
+        });
+        container.appendChild(nested);
+      }
+    }
+
+    function toggleCollapse(element) {
+      const parent = element.previousElementSibling;
+      parent.classList.toggle('json-collapsed');
+      const toggle = parent.querySelector('.json-toggle');
+      toggle.textContent = toggle.textContent === '-' ? '+' : '-';
+    }
+
+    function loadCollapsedKeys() {
+      try {
+        const saved = localStorage.getItem('jsonTableCollapsedKeys');
+        collapsedKeys = new Set(saved ? JSON.parse(saved) : []);
+        console.log('[collapsedKeys] Loaded:', collapsedKeys.size, 'keys');
+      } catch (e) {
+        console.log('[collapsedKeys] Could not load:', e.message);
+        collapsedKeys = new Set();
+      }
+    }
+
+    function saveCollapsedKeys() {
+      try {
+        localStorage.setItem('jsonTableCollapsedKeys', JSON.stringify(Array.from(collapsedKeys)));
+        console.log('[collapsedKeys] Saved:', collapsedKeys.size, 'keys');
+      } catch (e) {
+        console.log('[collapsedKeys] Could not save:', e.message);
+      }
+    }
+
+    function toggleAccordion(header) {
+      const fullPath = header.dataset.fullPath;
+      header.classList.toggle('collapsed');
+
+      if (fullPath) {
+        if (header.classList.contains('collapsed')) {
+          collapsedKeys.add(fullPath);
+        } else {
+          collapsedKeys.delete(fullPath);
+        }
+        saveCollapsedKeys();
+      }
+    }
+
+
+    function updateViewToggleBtns() {
+      tableViewBtn.classList.toggle('active', panel2ViewMode === 'table');
+      jsonViewBtn.classList.toggle('active', panel2ViewMode === 'json');
+    }
+
+    function renderTable() {
+      console.log('[renderTable] Rendering panel2, mode:', panel2ViewMode, 'jsonData exists:', !!jsonData);
+      if (!jsonData) {
+        tablePanel.innerHTML = '<div style="color: #999;">No data</div>';
+        return;
+      }
+
+      tablePanel.innerHTML = '';
+
+      if (panel2ViewMode === 'table') {
+        console.log('[renderTable] Building table view');
+        const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+        const table = buildTable(dataArray, selectedFields, '', 0, new Set());
+        tablePanel.appendChild(table);
+      } else {
+        console.log('[renderTable] Building JSON accordion view');
+        const jsonView = buildJsonView(jsonData, selectedFields, '', 0);
+        tablePanel.appendChild(jsonView);
+      }
+    }
+
+    function formatHeaderName(text) {
+      return text
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+    }
+
+    function flattenToDotNotation(obj, prefix = '') {
+      const result = {};
+
+      function flatten(current, path) {
+        if (current === null || current === undefined) {
+          result[path] = current;
+        } else if (typeof current === 'object') {
+          if (Array.isArray(current)) {
+            current.forEach((item, idx) => {
+              flatten(item, `${path}[${idx}]`);
+            });
+          } else {
+            Object.keys(current).forEach(key => {
+              flatten(current[key], path ? `${path}.${key}` : key);
+            });
+          }
+        } else {
+          result[path] = current;
+        }
+      }
+
+      flatten(obj, prefix);
+      return result;
+    }
+
+    function buildTable(dataArray, selectedFields, prefix, depth, previousHeaders) {
+      if (!Array.isArray(dataArray) || dataArray.length === 0) {
+        console.log('[buildTable] Empty data array, prefix:', prefix);
+        return document.createElement('div');
+      }
+
+      console.log('[buildTable] Building table - rows:', dataArray.length, 'prefix:', prefix, 'depth:', depth);
+      const table = document.createElement('table');
+      table.className = prefix ? 'jt-table jt-nested-table' : 'jt-table';
+
+      // Collect relevant columns at this level
+      const columns = [];
+      const columnSet = new Set();
+
+      dataArray.forEach(row => {
+        if (typeof row === 'object' && row !== null) {
+          Object.keys(row).forEach(key => {
+            const fullPath = prefix ? `${prefix}.${key}` : key;
+
+            // Skip if this field or any of its parents are collapsed
+            let isCollapsed = collapsedKeys.has(fullPath);
+            if (!isCollapsed && prefix) {
+              // Check if any parent path is collapsed
+              const pathParts = fullPath.split('.');
+              for (let i = 1; i < pathParts.length; i++) {
+                const parentPath = pathParts.slice(0, i).join('.');
+                if (collapsedKeys.has(parentPath)) {
+                  isCollapsed = true;
+                  break;
+                }
+              }
+            }
+
+            if (isCollapsed) {
+              return; // Skip this field
+            }
+
+            // Include key if:
+            // 1. It's directly in selectedFields, or
+            // 2. It's an object and any of its children are in selectedFields, or
+            // 3. selectedFields is empty (show all)
+            let shouldInclude = selectedFields.size === 0 || selectedFields.has(fullPath);
+
+            if (!shouldInclude && typeof row[key] === 'object' && row[key] !== null) {
+              // Check if any nested paths are selected
+              shouldInclude = Array.from(selectedFields).some(path =>
+                path.startsWith(fullPath + '.')
+              );
+            }
+
+            if (shouldInclude && !columnSet.has(fullPath)) {
+              columns.push({ key, fullPath });
+              columnSet.add(fullPath);
+            }
+          });
+        }
+      });
+
+      // Header row
+      if (columns.length > 0) {
+        console.log('[buildTable] Columns collected:', columns.map(c => c.key));
+        const allHeadersPreviouslyRendered = columns.every(col => previousHeaders.has(col.fullPath));
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+
+        if (allHeadersPreviouslyRendered) {
+          headerRow.classList.add('jt-header-minimized');
+        }
+
+        columns.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = formatHeaderName(col.key);
+          headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Add current columns to previousHeaders for next level
+        columns.forEach(col => {
+          previousHeaders.add(col.fullPath);
+        });
+
+        // Data rows
+        const tbody = document.createElement('tbody');
+
+        dataArray.forEach(row => {
+          const dataRow = document.createElement('tr');
+
+          columns.forEach(col => {
+            const td = document.createElement('td');
+
+            const value = row[col.key];
+
+            if (value === null || value === undefined) {
+              td.textContent = '';
+            } else if (typeof value === 'object') {
+              // Render as nested table
+              td.classList.add('jt-table-cell-nested');
+              if (Array.isArray(value)) {
+                const nestedTable = buildTable(value, selectedFields, col.fullPath, depth + 1, previousHeaders);
+                td.appendChild(nestedTable);
+              } else {
+                const nestedTable = buildTable([value], selectedFields, col.fullPath, depth + 1, previousHeaders);
+                td.appendChild(nestedTable);
+              }
+            } else {
+              const strValue = String(value);
+              td.textContent = strValue;
+              // Check if value is only a number
+              if (/^-?\d+(\.\d+)?$/.test(strValue)) {
+                td.style.textAlign = 'right';
+              }
+              // Check if value is a date (YYYY-MM-DD format)
+              if (/^\d{4}-\d{2}-\d{2}/.test(strValue)) {
+                td.style.minWidth = '7em';
+              }
+            }
+
+            dataRow.appendChild(td);
+          });
+
+          tbody.appendChild(dataRow);
+        });
+
+        table.appendChild(tbody);
+      }
+
+      return table;
+    }
+
+    function buildJsonView(value, selectedFields, prefix, depth) {
+      const container = document.createElement('div');
+      container.className = 'jt-accordion';
+      buildJsonViewNode(value, '', selectedFields, prefix, depth, container);
+      return container;
+    }
+
+    function buildJsonViewNode(value, key, selectedFields, prefix, depth, container) {
+      // Check if this is an array item before early return
+      const isArrayItemMarker = /^__arr_\d+__$/.test(key);
+      const isArrayItemKey = /^\d+$/.test(key) || isArrayItemMarker || /^\[\d+\]$/.test(key);
+
+      if (value === null || typeof value !== 'object') {
+        // Leaf value - allow array items through (will render as rows), skip others
+        if (!isArrayItemKey) {
+          console.log('[buildJsonViewNode] Skipping leaf value:', key, 'type:', typeof value);
+          return;
+        }
+      }
+
+      // Container/expandable section
+      const displayKey = isArrayItemMarker ? `[${key.match(/\d+/)[0]}]` : key;
+      // Don't include array item markers in field paths
+      const fieldKey = isArrayItemKey ? '' : key;
+      const fullPath = fieldKey ? (prefix ? `${prefix}.${fieldKey}` : fieldKey) : prefix;
+      const isRootLevel = !key && !prefix;
+      const isArrayItem = isArrayItemKey;
+      const shouldShow = isRootLevel || isArrayItem || shouldIncludeField(fullPath, selectedFields);
+
+      if (!shouldShow) {
+        return;
+      }
+
+      // Handle primitive array items (render as simple rows)
+      if (isArrayItem && (value === null || typeof value !== 'object')) {
+        const row = document.createElement('div');
+        row.className = 'jt-acc-row';
+
+        const keySpan = document.createElement('span');
+        keySpan.className = 'jt-acc-row-key';
+        keySpan.textContent = displayKey;
+        row.appendChild(keySpan);
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'jt-acc-row-value';
+        if (value === null) {
+          valueSpan.textContent = 'null';
+          valueSpan.classList.add('null');
+        } else if (typeof value === 'boolean') {
+          valueSpan.textContent = String(value);
+          valueSpan.classList.add('boolean');
+        } else if (typeof value === 'number') {
+          valueSpan.textContent = String(value);
+          valueSpan.classList.add('number');
+        } else if (typeof value === 'string') {
+          valueSpan.textContent = `"${escapeHtml(value)}"`;
+          valueSpan.classList.add('string');
+        }
+        row.appendChild(valueSpan);
+        container.appendChild(row);
+        console.log('[buildJsonViewNode] Rendered primitive array item:', displayKey, 'value:', value);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        const keys = value.length;
+
+        if (isRootLevel) {
+          // Root array: render its items directly
+          console.log('[buildJsonViewNode] Rendering root array with', keys, 'items');
+          value.forEach((item, idx) => {
+            buildJsonViewNode(item, `__arr_${idx}__`, selectedFields, fullPath, depth + 1, container);
+          });
+          return;
+        }
+
+        // Non-root array: render as an expandable section
+        console.log('[buildJsonViewNode] Rendering non-root array:', displayKey, 'items:', keys, 'fullPath:', fullPath, 'depth:', depth);
+        const section = document.createElement('div');
+        section.className = 'jt-acc-section';
+
+        const header = document.createElement('button');
+        header.className = 'jt-acc-header';
+        header.dataset.fullPath = fullPath;
+        if (collapsedKeys.has(fullPath)) {
+          header.classList.add('collapsed');
+        }
+        header.onclick = () => toggleAccordion(header);
+
+        const chevron = document.createElement('span');
+        chevron.className = 'jt-acc-chevron material-icons';
+        chevron.textContent = 'chevron_right';
+        header.appendChild(chevron);
+
+        const keyLabel = document.createElement('span');
+        keyLabel.className = 'jt-acc-key';
+        keyLabel.textContent = displayKey;
+        header.appendChild(keyLabel);
+
+        const badge = document.createElement('span');
+        badge.className = 'jt-acc-badge';
+        badge.textContent = `${keys} ${keys === 1 ? 'item' : 'items'}`;
+        header.appendChild(badge);
+
+        section.appendChild(header);
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.className = 'jt-acc-body-wrap';
+
+        const body = document.createElement('div');
+        body.className = 'jt-acc-body';
+
+        value.forEach((item, idx) => {
+          buildJsonViewNode(item, `[${idx}]`, selectedFields, fullPath, depth + 1, body);
+        });
+
+        bodyWrap.appendChild(body);
+        section.appendChild(bodyWrap);
+        container.appendChild(section);
+      } else {
+        // Object
+        const keys = Object.keys(value);
+        const visibleKeys = isArrayItem ? keys : keys.filter(k => {
+          const childPath = fullPath ? `${fullPath}.${k}` : k;
+          return shouldIncludeField(childPath, selectedFields);
+        });
+
+        if (visibleKeys.length === 0 && !isArrayItem && !isRootLevel) {
+          return;
+        }
+
+        if (isRootLevel) {
+          // Root object: render its properties directly
+          console.log('[buildJsonViewNode] Rendering root object, visible keys:', visibleKeys);
+          visibleKeys.forEach(k => {
+            buildJsonViewNode(value[k], k, selectedFields, fullPath, depth + 1, container);
+          });
+          return;
+        }
+
+        // Non-root object: render as an expandable section
+        console.log('[buildJsonViewNode] Rendering non-root object:', displayKey, 'fullPath:', fullPath, 'visible keys:', visibleKeys.length, 'depth:', depth);
+        const section = document.createElement('div');
+        section.className = 'jt-acc-section';
+
+        const header = document.createElement('button');
+        header.className = 'jt-acc-header';
+        header.dataset.fullPath = fullPath;
+        if (collapsedKeys.has(fullPath)) {
+          header.classList.add('collapsed');
+        }
+        header.onclick = () => toggleAccordion(header);
+
+        const chevron = document.createElement('span');
+        chevron.className = 'jt-acc-chevron material-icons';
+        chevron.textContent = 'chevron_right';
+        header.appendChild(chevron);
+
+        const keyLabel = document.createElement('span');
+        keyLabel.className = 'jt-acc-key';
+        keyLabel.textContent = displayKey;
+        header.appendChild(keyLabel);
+
+        const badge = document.createElement('span');
+        badge.className = 'jt-acc-badge';
+        badge.textContent = `${visibleKeys.length} ${visibleKeys.length === 1 ? 'property' : 'properties'}`;
+        header.appendChild(badge);
+
+        section.appendChild(header);
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.className = 'jt-acc-body-wrap';
+
+        const body = document.createElement('div');
+        body.className = 'jt-acc-body';
+
+        // Separate leaf values from nested objects
+        const leafValues = [];
+        const nestedKeys = [];
+
+        visibleKeys.forEach(k => {
+          const v = value[k];
+          if (v === null || typeof v !== 'object') {
+            leafValues.push([k, v]);
+          } else {
+            nestedKeys.push(k);
+          }
+        });
+
+        console.log('[buildJsonViewNode] Separated keys - leaf:', leafValues.map(([k]) => k), 'nested:', nestedKeys);
+
+        // Render leaf values as table
+        if (leafValues.length > 0) {
+          renderLeafValuesAsTable(leafValues, body);
+        }
+
+        // Render nested objects
+        nestedKeys.forEach(k => {
+          console.log('[buildJsonViewNode] Rendering nested key:', k, 'from fullPath:', fullPath);
+          buildJsonViewNode(value[k], k, selectedFields, fullPath, depth + 1, body);
+        });
+
+        bodyWrap.appendChild(body);
+        section.appendChild(bodyWrap);
+        container.appendChild(section);
+      }
+    }
+
+    function shouldIncludeField(fullPath, selectedFields) {
+      if (selectedFields.size === 0) return true;
+      if (selectedFields.has(fullPath)) return true;
+      return Array.from(selectedFields).some(path => path.startsWith(fullPath + '.'));
+    }
+
+    function renderLeafValuesAsTable(leafValues, container) {
+      if (leafValues.length === 0) return;
+
+      console.log('[renderLeafValuesAsTable] Rendering', leafValues.length, 'leaf values:', leafValues.map(([k]) => k));
+      const table = document.createElement('table');
+      table.className = 'jt-acc-values-table';
+
+      // Use 4-column layout (2 pairs per row) only if more than 5 leaf nodes
+      const usePairLayout = leafValues.length > 5;
+
+      if (usePairLayout) {
+        // Process pairs of key-value pairs per row
+        for (let i = 0; i < leafValues.length; i += 2) {
+          const row = document.createElement('tr');
+
+          // First pair
+          const [k1, v1] = leafValues[i];
+          const keyCell1 = document.createElement('td');
+          keyCell1.textContent = k1;
+          row.appendChild(keyCell1);
+
+          const valueCell1 = document.createElement('td');
+          renderValueSpan(v1, valueCell1);
+          row.appendChild(valueCell1);
+
+          // Second pair (if exists)
+          if (i + 1 < leafValues.length) {
+            const [k2, v2] = leafValues[i + 1];
+            const keyCell2 = document.createElement('td');
+            keyCell2.textContent = k2;
+            row.appendChild(keyCell2);
+
+            const valueCell2 = document.createElement('td');
+            renderValueSpan(v2, valueCell2);
+            row.appendChild(valueCell2);
+          } else {
+            // Add empty cells to maintain alignment
+            const emptyKey = document.createElement('td');
+            row.appendChild(emptyKey);
+            const emptyValue = document.createElement('td');
+            row.appendChild(emptyValue);
+          }
+
+          table.appendChild(row);
+        }
+      } else {
+        // Single pair per row for 5 or fewer leaf nodes
+        leafValues.forEach(([k, v]) => {
+          const row = document.createElement('tr');
+
+          const keyCell = document.createElement('td');
+          keyCell.textContent = k;
+          row.appendChild(keyCell);
+
+          const valueCell = document.createElement('td');
+          renderValueSpan(v, valueCell);
+          row.appendChild(valueCell);
+
+          table.appendChild(row);
+        });
+      }
+
+      container.appendChild(table);
+    }
+
+    function renderValueSpan(v, container) {
+      if (v === null) {
+        const span = document.createElement('span');
+        span.className = 'jt-acc-value null';
+        span.textContent = 'null';
+        container.appendChild(span);
+      } else if (typeof v === 'boolean') {
+        const span = document.createElement('span');
+        span.className = 'jt-acc-value boolean';
+        span.textContent = String(v);
+        container.appendChild(span);
+      } else if (typeof v === 'number') {
+        const span = document.createElement('span');
+        span.className = 'jt-acc-value number';
+        span.textContent = String(v);
+        container.appendChild(span);
+      } else if (typeof v === 'string') {
+        const span = document.createElement('span');
+        span.className = 'jt-acc-value string';
+        span.textContent = `"${escapeHtml(v)}"`;
+        container.appendChild(span);
+      }
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, c => map[c]);
+    }
+  </script>
+</body>
+</html>
