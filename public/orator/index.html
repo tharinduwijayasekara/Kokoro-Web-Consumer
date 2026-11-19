@@ -179,6 +179,9 @@
                     </button>
                 </div>
                 <div class="library-logout-wrapper">
+                    <button class="btn btn-sm" onclick="LoginService.checkForRemoteSessionUpdate(true)">
+                        <i class="bi bi-arrow-repeat"></i> Force Sync
+                    </button>
                     <button class="btn btn-sm" onclick="LoginService.logout()">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>

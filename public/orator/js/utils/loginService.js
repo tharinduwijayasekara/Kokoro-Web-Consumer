@@ -117,7 +117,8 @@ const LoginService = {
         }
     },
 
-    async checkForRemoteSessionUpdate() {
+    // force = true syncs the session even when the remote reading progress isn't further ahead.
+    async checkForRemoteSessionUpdate(force = false) {
         try {
             const orator = await StorageService.getOratorJson();
             const token = orator?.login_token;
@@ -149,9 +150,11 @@ const LoginService = {
                 return remoteChapterIdx === localChapterIdx && remoteParagraphIdx > localParagraphIdx;
             });
 
-            if (!hasFurtherRemoteProgress) return;
+            if (!hasFurtherRemoteProgress && !force) return;
 
-            console.log("Remote orator json has further reading progress, syncing session");
+            console.log(force
+                ? "Force sync requested, syncing session"
+                : "Remote orator json has further reading progress, syncing session");
 
             App.showMessageBoard("Orator", "Syncing your session...", 70);
 
