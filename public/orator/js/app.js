@@ -150,8 +150,28 @@ const App = {
     },
 
     showView(viewName) {
+        const $target = this.$app.find(`.orator-view-${viewName}`);
+        const changed = !$target.hasClass('active');
+
         this.$app.find(".orator-view").removeClass('active');
-        this.$app.find(`.orator-view-${viewName}`).addClass('active');
+        $target.addClass('active');
+
+        if (changed) this.playViewTransition(viewName);
+    },
+
+    playViewTransition(viewName) {
+        const direction = { library: 'vt-down', reader: 'vt-left' }[viewName];
+        const el = document.getElementById('view-transition');
+        if (!direction || !el) return;
+
+        el.className = '';
+        void el.offsetWidth; // force reflow so the animation restarts mid-sweep
+        el.className = direction;
+
+        clearTimeout(this._viewTransitionTimer);
+        this._viewTransitionTimer = setTimeout(() => {
+            el.className = '';
+        }, 1000);
     },
 
     getImportedDate(book) {

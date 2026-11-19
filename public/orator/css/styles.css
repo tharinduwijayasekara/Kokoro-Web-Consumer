@@ -994,6 +994,82 @@ img.book-cover-thumb[src="null"], img.book-cover-thumb[src=""] {
     margin-left: 5px;
 }
 
+/* View transition: Nothing-style dot grid sweep, played by App.playViewTransition() */
+#view-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    display: none;
+}
+
+#view-transition .vt-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, currentColor 0.5px, transparent 2px);
+    background-size: 16px 16px;
+    background-position: center;
+}
+
+#view-transition .vt-base {
+    color: rgba(255, 255, 255, 0.08);
+}
+
+#view-transition .vt-glow {
+    color: #ffffff;
+    will-change: mask-position;
+}
+
+#view-transition.vt-down,
+#view-transition.vt-left {
+    display: block;
+    animation: vtFade 1000ms linear forwards;
+}
+
+/* Library: band travels top -> bottom */
+#view-transition.vt-down .vt-glow {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 20%, #000 50%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 20%, #000 50%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
+    -webkit-mask-size: 100% 300%;
+    mask-size: 100% 300%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: vtSweepDown 1000ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Reader: band travels right -> left */
+#view-transition.vt-left .vt-glow {
+    -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.1) 20%, #000 50%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
+    mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.1) 20%, #000 50%, rgba(0, 0, 0, 0.1) 80%, transparent 100%);
+    -webkit-mask-size: 300% 100%;
+    mask-size: 300% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: vtSweepLeft 1000ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* With a 300% mask, position p puts the band centre at (1.5 - 2p) * screen size.
+   Start: glow just entering the leading edge. End: band centre just past the far
+   edge, so its tail still glows there while the overlay fades out. */
+@keyframes vtSweepDown {
+    from { -webkit-mask-position: 0 120%; mask-position: 0 120%; }
+    to { -webkit-mask-position: 0 10%; mask-position: 0 10%; }
+}
+
+@keyframes vtSweepLeft {
+    from { -webkit-mask-position: -20% 0; mask-position: -20% 0; }
+    to { -webkit-mask-position: 90% 0; mask-position: 90% 0; }
+}
+
+@keyframes vtFade {
+    0%, 80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #view-transition { display: none !important; }
+}
+
 div#message-board-wrapper {
     position: fixed;
     top: 0;
