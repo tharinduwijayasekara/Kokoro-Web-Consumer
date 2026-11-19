@@ -1009,7 +1009,7 @@ const ReaderService = {
             return this.useHtml5Player ? 5 : 100;
         }
 
-        if (!this.hasLettersOrNumbers(text) && text.includes('*')) {
+        if (!this.hasLettersOrNumbers(text) && (text.includes('*') || text.includes('•'))) {
             this.currentFullParagraphDuration = 0;
             return 2000;
         }
