@@ -38,6 +38,10 @@ python -m http.server 8000
 
 Dev mode: append `?isProd=false` to the URL to bust cache and reload assets on every page load.
 
+## Versioning
+
+Whenever any JS or CSS file changes, bump `CURRENT_VERSION` in `js/default/defaults.js` by 1 in the same commit. The version busts the asset cache (including in the Android WebView), so without a bump users keep loading stale files. Don't double-bump if the version was already bumped in work that hasn't been pushed yet.
+
 ## The API
 
 The Orator project has a Laravel backend (`D:\Apps\orator-api`, package `com.oratoraudio.oratorapi`, runs in Docker) for auth (Sanctum), orator-json sync, book uploads, and TTS. When this readme refers to "the api," that project is what's meant. Key services accessible from this frontend:
