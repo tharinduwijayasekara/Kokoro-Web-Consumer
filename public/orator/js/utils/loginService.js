@@ -416,7 +416,8 @@ const LoginService = {
         location.reload();
     },
 
-    async updateUserOratorJson(oratorJson, {syncBooks = false} = {}) {
+    // force = true skips the rate limit (used when playback stops). An in-progress sync still wins.
+    async updateUserOratorJson(oratorJson, {syncBooks = false, force = false} = {}) {
 
         const now = Date.now();
 
@@ -425,7 +426,7 @@ const LoginService = {
             return;
         }
 
-        if ((now - this.lastOratorSyncAt < this.SYNC_INTERVAL) && !syncBooks) {
+        if ((now - this.lastOratorSyncAt < this.SYNC_INTERVAL) && !syncBooks && !force) {
             console.log("Orator sync skipped (rate limited)");
             return;
         }

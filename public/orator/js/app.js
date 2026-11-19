@@ -518,6 +518,12 @@ const App = {
 
             if (ReaderService.isPlaying) {
                 ReaderService.stop();
+
+                // Push the latest progress now, without waiting for the 5-minute sync interval.
+                // Not awaited, so the UI doesn't wait on the network.
+                StorageService.getOratorJson().then(orator => {
+                    LoginService.updateUserOratorJson(orator, {force: true});
+                });
                 return;
             }
 
