@@ -160,7 +160,7 @@ const App = {
     },
 
     playViewTransition(viewName) {
-        const direction = { library: 'vt-down', reader: 'vt-left' }[viewName];
+        const direction = { library: 'vt-up', reader: 'vt-up' }[viewName];
         const el = document.getElementById('view-transition');
         if (!direction || !el) return;
 
@@ -171,7 +171,7 @@ const App = {
         clearTimeout(this._viewTransitionTimer);
         this._viewTransitionTimer = setTimeout(() => {
             el.className = '';
-        }, 1000);
+        }, 500);
     },
 
     getImportedDate(book) {
