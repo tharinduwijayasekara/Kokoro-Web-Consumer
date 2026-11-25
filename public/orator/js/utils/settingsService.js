@@ -99,6 +99,10 @@ const SettingsService = {
             this.monitorConfig();
         });
 
+        this.$settings.find('.check-box-group-voice.supertonic').on('change', 'input[type="radio"]', () => {
+            this.monitorConfig();
+        });
+
         this.$speechService.on('change', () => {
             const selectedService = this.$speechService.val();
             if (selectedService === DEFAULT_EDGE_TTS_URL) {
@@ -110,6 +114,11 @@ const SettingsService = {
                 const $pocketVoices = this.$settings.find('.check-box-group-voice.pockettts input[type="radio"]');
                 if ($pocketVoices.length > 0 && !this.$settings.find('.check-box-group-voice.pockettts input[type="radio"]:checked').length) {
                     $pocketVoices.first().prop('checked', true);
+                }
+            } else if (selectedService === DEFAULT_SUPERTONIC_URL) {
+                const $supertonicVoices = this.$settings.find('.check-box-group-voice.supertonic input[type="radio"]');
+                if ($supertonicVoices.length > 0 && !this.$settings.find('.check-box-group-voice.supertonic input[type="radio"]:checked').length) {
+                    $supertonicVoices.first().prop('checked', true);
                 }
             }
             this.monitorConfig();
@@ -152,6 +161,21 @@ const SettingsService = {
                 <div class="form-check">
                     <input class="form-check-input" type="radio" value="${referenceId}" id="fav_${referenceId}" name="radio_fishaudio_voice">
                     <label class="form-check-label" for="fav_${referenceId}">
+                        ${displayName}
+                    </label>
+                </div>
+                `
+            )
+
+        });
+
+        Object.entries(SUPERTONIC_VOICES).forEach(([displayName, voiceId]) => {
+
+            this.$settings.find('.check-box-group-voice.supertonic').append(
+                `
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" value="${voiceId}" id="stv_${voiceId}" name="radio_supertonic_voice">
+                    <label class="form-check-label" for="stv_${voiceId}">
                         ${displayName}
                     </label>
                 </div>
@@ -250,6 +274,8 @@ const SettingsService = {
         } else if (config.ttsUrl === DEFAULT_ZONOS_URL) {
             // No voice group for Zonos yet, so no group is shown
             selectedSpeechService = "zonos";
+        } else if (config.ttsUrl === DEFAULT_SUPERTONIC_URL) {
+            selectedSpeechService = "supertonic";
         }
 
         this.$settings.find('.check-box-group-voice').removeClass('active');
@@ -300,6 +326,19 @@ const SettingsService = {
 
             this.$settings.find(`.check-box-group-voice.fishaudio #fav_${referenceId}`).prop('checked', true);
             this.$speechVoice.val(displayName);
+        }
+
+        if (selectedSpeechService === 'supertonic') {
+            // Fall back to the first voice when the saved one isn't a Supertonic voice
+            // (e.g. right after switching from another service).
+            if (Object.values(SUPERTONIC_VOICES).indexOf(config.voice) < 0) {
+                config.voice = Object.values(SUPERTONIC_VOICES)[0];
+                this.saveSettings(config);
+                ReaderService.updateTempOratorConfig(config);
+            }
+
+            this.$settings.find(`.check-box-group-voice.supertonic #stv_${config.voice}`).prop('checked', true);
+            this.$speechVoice.val(config.voice);
         }
 
         this.$speechSpeed.val(config.speed);
@@ -453,6 +492,8 @@ const SettingsService = {
             speechVoice = $('.check-box-group-voice.fishaudio input:checked').val() || '';
         } else if (selectedService === DEFAULT_ZONOS_URL) {
             speechVoice = ZONOS_VOICE;
+        } else if (selectedService === DEFAULT_SUPERTONIC_URL) {
+            speechVoice = $('.check-box-group-voice.supertonic input:checked').val() || '';
         } else {
             speechVoice = this.$speechVoice.val();
         }

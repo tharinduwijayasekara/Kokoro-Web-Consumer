@@ -423,20 +423,24 @@
                                             <option selected value="https://kokoro.orator-audio.com/v1/audio/speech">
                                                 Kokoro
                                             </option>
-                                            <option value="https://remsky-fastkoko.hf.space/v1/audio/speech">
+                                            <option value="https://supertonic.orator-audio.com/v1/audio/speech">
+                                                Supertonic
+                                            </option>
+                                            <!-- Hidden (not removed) so users who already saved these services keep working -->
+                                            <option hidden value="https://remsky-fastkoko.hf.space/v1/audio/speech">
                                                 Kokoro (Public)
                                             </option>
-                                            <option value="https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech">
+                                            <option hidden value="https://kokoroapp.orator-audio.com/edgetts/v1/audio/speech">
                                                 EdgeTTS
                                             </option>
-                                            <option value="https://pockettts.orator-audio.com/v1/audio/speech">
+                                            <option hidden value="https://pockettts.orator-audio.com/v1/audio/speech">
                                                 Pocket TTS
                                             </option>
                                             <option value="https://api.fish.audio/v1/tts">
                                                 Fish Audio
                                             </option>
-                                            <option value="https://zonos.orator-audio.com/v1/audio/speech">
-                                                Zonos (login required)
+                                            <option hidden value="https://zonos.orator-audio.com/v1/audio/speech">
+                                                Zonos
                                             </option>
                                         </select>
                                         <label for="speech-service-input">Speech Service URL</label>
@@ -461,6 +465,9 @@
                                             <!-- rendered at runtime -->
                                         </div>
                                         <div class="check-box-group check-box-group-voice fishaudio">
+                                            <!-- rendered at runtime -->
+                                        </div>
+                                        <div class="check-box-group check-box-group-voice supertonic">
                                             <!-- rendered at runtime -->
                                         </div>
 

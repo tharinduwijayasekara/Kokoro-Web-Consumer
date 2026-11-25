@@ -662,7 +662,7 @@ const ReaderService = {
         };
 
         if (this.tempOratorConfig && this.tempOratorConfig.updatedAt) {
-            if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL, DEFAULT_ZONOS_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
+            if ([DEFAULT_KOKORO_URL, DEFAULT_KOKORO_PUBLIC_URL, DEFAULT_EDGE_TTS_URL, DEFAULT_POCKET_TTS_URL, DEFAULT_FISH_AUDIO_URL, DEFAULT_ZONOS_URL, DEFAULT_SUPERTONIC_URL].indexOf(this.tempOratorConfig.ttsUrl) < 0) {
                 this.$banner.text("We found a problem in your speech settings, please contact Tharindu to fix it").addClass('active');
                 this.stop();
                 return false;
@@ -715,6 +715,7 @@ const ReaderService = {
         if (!blob) {
             const isFishAudio = ttsUrl === DEFAULT_FISH_AUDIO_URL;
             const isZonos = ttsUrl === DEFAULT_ZONOS_URL;
+            const isSupertonic = ttsUrl === DEFAULT_SUPERTONIC_URL;
 
             let fetchUrl = ttsUrl;
             let params;
@@ -738,6 +739,19 @@ const ReaderService = {
                     "input": text,
                     "voice": ZONOS_VOICE,
                     "response_format": "mp3"
+                };
+            } else if (isSupertonic) {
+                // Supertonic is reached through the orator API (login required).
+                // It speaks the OpenAI speech schema and returns MP3 directly.
+                fetchUrl = 'https://api.orator-audio.com/api/speech/generate';
+                params = {
+                    "speech_service": "supertonic",
+                    "model": SUPERTONIC_MODEL,
+                    "input": text,
+                    "voice": voice,
+                    "response_format": "mp3",
+                    "speed": parseFloat(speed) || 1,
+                    "lang": "en"
                 };
             } else if (ttsUrl === DEFAULT_POCKET_TTS_URL) {
                 params = {
@@ -776,12 +790,12 @@ const ReaderService = {
                 'Content-Type': 'application/json'
             };
 
-            // Fish Audio and Zonos go through the orator API, which requires login
-            if (isFishAudio || isZonos) {
+            // Fish Audio, Zonos and Supertonic go through the orator API, which requires login
+            if (isFishAudio || isZonos || isSupertonic) {
                 const orator = await StorageService.getOratorJson();
                 const token = orator?.login_token;
-                if (!token && isZonos) {
-                    this.$banner.text("Log in to use the Zonos voice").addClass('active');
+                if (!token && (isZonos || isSupertonic)) {
+                    this.$banner.text(`Log in to use the ${isZonos ? 'Zonos' : 'Supertonic'} voice`).addClass('active');
                     this.stop();
                     return false;
                 }

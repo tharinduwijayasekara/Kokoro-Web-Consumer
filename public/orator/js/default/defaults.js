@@ -146,6 +146,28 @@ const DEFAULT_ZONOS_URL = 'https://zonos.orator-audio.com/v1/audio/speech';
 const ZONOS_MODEL = 'zonos3';
 const ZONOS_VOICE = 'default_de4d191ca7574982';
 
+// Supertonic 3 runs on the docker host and is reached through the orator API, which requires login.
+// DEFAULT_SUPERTONIC_URL is only the key stored for this engine; requests go to the API.
+const DEFAULT_SUPERTONIC_URL = 'https://supertonic.orator-audio.com/v1/audio/speech';
+const SUPERTONIC_MODEL = 'tts-1';
+
+// Display name => Supertonic preset voice id
+const SUPERTONIC_VOICES = {
+    'Alloy (F, calm, clear)': 'alloy',
+    'Nova (F, bright, professional)': 'nova',
+    'Shimmer (F, soft, expressive)': 'shimmer',
+    'Ash (F, energetic, versatile)': 'ash',
+    'Ballad (F, melodic, smooth)': 'ballad',
+    'Coral (F, airy, warm)': 'coral',
+    'Marin (F, gentle, natural)': 'marin',
+    'Echo (M, lively, upbeat)': 'echo',
+    'Fable (M, warm, narrative)': 'fable',
+    'Onyx (M, deep, authoritative)': 'onyx',
+    'Cedar (M, measured, resonant)': 'cedar',
+    'Sage (M, calm, steady)': 'sage',
+    'Verse (M, dynamic, dramatic)': 'verse',
+};
+
 const DEFAULT_FISH_AUDIO_URL = 'https://api.fish.audio/v1/tts';
 
 const FISH_AUDIO_VOICES = {
@@ -300,7 +322,7 @@ const DEFAULT_REPLACEMENTS = {
 
 const TEXT_INPUT_AUTHOR = 'You';
 
-const CURRENT_VERSION = 60;
+const CURRENT_VERSION = 61;
 const INVALIDATE_AUDIOS_GENERATED_AFTER = 1774155893945;
 
 const DEFAULT_BOOK_COVER = 'images/default-cover-2.jpg';
