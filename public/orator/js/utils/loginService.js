@@ -77,28 +77,8 @@ const LoginService = {
             await StorageService.writeSuperuserReplacements(replacements);
             ReaderService.superuserReplacements = replacements;
 
-            if (Object.keys(orator.reading).length === 1) {
-
-                console.log("Only one book (default placeholder) is available in the local orator reading list, need to check remote");
-
-                const remoteOratorJson = await this.fetchUserOratorJson();
-
-                if (
-                    remoteOratorJson
-                    && remoteOratorJson.reading
-                    && (Object.keys(remoteOratorJson.reading).length !== Object.keys(orator.reading).length)
-                ) {
-                    console.log("Remote orator reading list is not the same, merging them");
-
-                    const merged = {...orator, ...remoteOratorJson, login_token: token, user: user,};
-
-                    console.log("Merging remote orator json");
-
-                    await StorageService.writeOratorJson(merged, {skipSync: true});
-
-                    await this.importRemoteBooks();
-                }
-            }
+            // Pulling the server copy (including on a fresh install) is handled by
+            // checkForRemoteSessionUpdate, which runs after a successful auth check.
 
             return {
                 isAuthenticated: true,
@@ -117,7 +97,88 @@ const LoginService = {
         }
     },
 
-    // force = true syncs the session even when the remote reading progress isn't further ahead.
+    // Every upload stamps the server copy with lastSentToServerAt, and this device remembers the
+    // value it last uploaded or pulled (StorageService.getLastSentToServerAt). If the server's value
+    // differs, another device has uploaded since. Values are only compared for equality, so device
+    // clocks don't matter. A server copy uploaded before this existed has no value and reads as 'none'.
+    getRemoteVersion(remoteOratorJson) {
+        return remoteOratorJson?.lastSentToServerAt ?? 'none';
+    },
+
+    // Parses "chapterIdx::paragraphIdx::percent". Returns null if it isn't a real position.
+    parseProgress(progress) {
+        if (typeof progress !== 'string') return null;
+        const [chapterIdx, paragraphIdx] = progress.split('::').map(v => parseInt(v));
+        if (isNaN(chapterIdx) || isNaN(paragraphIdx)) return null;
+        return {chapterIdx, paragraphIdx};
+    },
+
+    // Returns whichever reading position is further into the book.
+    furtherProgress(localProgress, remoteProgress) {
+        const local = this.parseProgress(localProgress);
+        const remote = this.parseProgress(remoteProgress);
+
+        if (!local) return remoteProgress ?? localProgress;
+        if (!remote) return localProgress;
+
+        if (remote.chapterIdx !== local.chapterIdx) {
+            return remote.chapterIdx > local.chapterIdx ? remoteProgress : localProgress;
+        }
+        return remote.paragraphIdx > local.paragraphIdx ? remoteProgress : localProgress;
+    },
+
+    // The server copy wins for everything except reading progress and timers, which are merged
+    // book by book (further position, larger timer) so a pull can never move a book backwards.
+    mergeRemoteOratorJson(localOratorJson, remoteOratorJson) {
+        const merged = {
+            ...localOratorJson,
+            ...remoteOratorJson,
+            login_token: localOratorJson.login_token,
+            user: this.user ?? localOratorJson.user,
+        };
+
+        const localReading = localOratorJson.reading ?? {};
+        const remoteReading = remoteOratorJson.reading ?? {};
+        merged.reading = {};
+        new Set([...Object.keys(localReading), ...Object.keys(remoteReading)]).forEach(bookId => {
+            merged.reading[bookId] = this.furtherProgress(localReading[bookId], remoteReading[bookId]);
+        });
+
+        const localTimers = localOratorJson.timers ?? {};
+        const remoteTimers = remoteOratorJson.timers ?? {};
+        merged.timers = {};
+        new Set([...Object.keys(localTimers), ...Object.keys(remoteTimers)]).forEach(bookId => {
+            merged.timers[bookId] = Math.max(localTimers[bookId] ?? 0, remoteTimers[bookId] ?? 0);
+        });
+
+        // The version marker lives in its own key, never in the local orator json.
+        delete merged.lastSentToServerAt;
+
+        return merged;
+    },
+
+    // Merges the server copy into the current local copy and records the server version as synced.
+    async pullRemoteOratorJson(remoteOratorJson) {
+        const merged = this.mergeRemoteOratorJson(await StorageService.getOratorJson(), remoteOratorJson);
+        await StorageService.writeOratorJson(merged, {skipSync: true});
+        await StorageService.writeLastSentToServerAt(this.getRemoteVersion(remoteOratorJson));
+        return merged;
+    },
+
+    // Books in the reading list that aren't stored on this device (skips news and the placeholder).
+    async hasMissingBooks(oratorJson) {
+        const bookIds = Object.keys(oratorJson.reading ?? {})
+            .filter(bookId => bookId !== 'bookId' && !bookId.startsWith('news/'));
+
+        for (const bookId of bookIds) {
+            if (!(await StorageService.db.books.get(bookId))) return true;
+        }
+        return false;
+    },
+
+    // Runs once at startup. Pulls the server copy when this device has never synced, or when another
+    // device has uploaded since this one last synced. force = true (Force Sync button) always pulls
+    // and re-imports the library.
     async checkForRemoteSessionUpdate(force = false) {
         try {
             const orator = await StorageService.getOratorJson();
@@ -125,44 +186,35 @@ const LoginService = {
             if (!token) return;
 
             const remoteOratorJson = await this.fetchUserOratorJson({silent: true});
-            if (!remoteOratorJson || !remoteOratorJson.reading) return;
+            if (!remoteOratorJson) return;
 
-            const localReading = orator.reading ?? {};
-            const remoteReading = remoteOratorJson.reading;
+            const localVersion = await StorageService.getLastSentToServerAt();
+            const remoteVersion = this.getRemoteVersion(remoteOratorJson);
 
-            const allBookIds = new Set([
-                ...Object.keys(localReading),
-                ...Object.keys(remoteReading),
-            ]);
-
-            const hasFurtherRemoteProgress = [...allBookIds].some(bookId => {
-                const localProgress = localReading[bookId];
-                const remoteProgress = remoteReading[bookId];
-
-                if (!localProgress && remoteProgress) return true;
-                if (!localProgress || !remoteProgress) return false;
-
-                const [localChapterIdx, localParagraphIdx] = localProgress.split('::').map(v => parseInt(v));
-                const [remoteChapterIdx, remoteParagraphIdx] = remoteProgress.split('::').map(v => parseInt(v));
-                if (isNaN(localChapterIdx) || isNaN(remoteChapterIdx)) return false;
-
-                if (remoteChapterIdx > localChapterIdx) return true;
-                return remoteChapterIdx === localChapterIdx && remoteParagraphIdx > localParagraphIdx;
-            });
-
-            if (!hasFurtherRemoteProgress && !force) return;
+            if (!force && localVersion !== null && localVersion === remoteVersion) {
+                console.log("Server orator json unchanged since last sync");
+                return;
+            }
 
             console.log(force
                 ? "Force sync requested, syncing session"
-                : "Remote orator json has further reading progress, syncing session");
+                : localVersion === null
+                    ? "Never synced on this device, pulling server orator json"
+                    : "Another device uploaded since last sync, pulling server orator json");
 
             App.showMessageBoard("Orator", "Syncing your session...", 70);
 
-            const merged = {...orator, ...remoteOratorJson, login_token: token, user: this.user};
+            const merged = await this.pullRemoteOratorJson(remoteOratorJson);
 
-            await StorageService.writeOratorJson(merged, {skipSync: true});
+            // importRemoteBooks downloads the whole library and reloads, so only do it when needed.
+            if (force || await this.hasMissingBooks(merged)) {
+                await this.importRemoteBooks();
+                return;
+            }
 
-            await this.importRemoteBooks();
+            // The library and settings were already rendered from the old copy. The stored
+            // version now matches the server, so this reload doesn't pull again.
+            window.location.reload();
 
         } catch (e) {
             console.log("Background session sync check failed", e);
@@ -411,6 +463,8 @@ const LoginService = {
 
         // Logged-out users don't get the superuser replacements
         await StorageService.writeSuperuserReplacements([]);
+        // The next login (possibly another account) starts as "never synced" and pulls.
+        await StorageService.writeLastSentToServerAt(null);
         await StorageService.writeOratorJson(orator, {skipSync: true});
 
         location.reload();
@@ -444,6 +498,20 @@ const LoginService = {
 
         try {
 
+            // Pre-upload check: if another device uploaded since this one last synced, merge the
+            // server copy in first so this upload doesn't overwrite it with stale data. No reload
+            // here; the merged data shows from the next app start.
+            const remoteOratorJson = await this.fetchUserOratorJson({silent: true});
+            if (remoteOratorJson) {
+                const localVersion = await StorageService.getLastSentToServerAt();
+                if (localVersion !== this.getRemoteVersion(remoteOratorJson)) {
+                    console.log("Server orator json changed since last sync, merging before upload");
+                    oratorJson = await this.pullRemoteOratorJson(remoteOratorJson);
+                }
+            }
+
+            const version = Date.now();
+
             const fetchTasks = [
                 fetch('https://api.orator-audio.com/api/orator', {
                     method: 'POST',
@@ -452,7 +520,7 @@ const LoginService = {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        orator_json: oratorJson,
+                        orator_json: {...oratorJson, lastSentToServerAt: version},
                     })
                 })
             ];
@@ -470,6 +538,9 @@ const LoginService = {
             }
 
             this.lastOratorSyncAt = now;
+
+            // Only recorded once the server has confirmed the save.
+            await StorageService.writeLastSentToServerAt(version);
 
             console.log("Orator json synced");
 
@@ -602,7 +673,7 @@ const LoginService = {
 
         } catch (e) {
             console.log("Error fetching user orator json", e);
-            return [null, null];
+            return null;
 
         } finally {
             if (!silent) App.hideMessageBoard();

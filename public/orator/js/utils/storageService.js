@@ -83,6 +83,26 @@ const StorageService = {
         }
     },
 
+    // The server version this device last uploaded or pulled (the server copy's lastSentToServerAt).
+    // Kept in its own key, outside the orator json, so it is never synced. null = never synced.
+    async getLastSentToServerAt() {
+        try {
+            const row = await this.db.data.get('last_sent_to_server_at');
+            return row?.value ?? null;
+        } catch (e) {
+            console.log("Failed to read last sent to server at", e);
+            return null;
+        }
+    },
+
+    async writeLastSentToServerAt(value) {
+        try {
+            await this.db.data.put({key: 'last_sent_to_server_at', value});
+        } catch (e) {
+            console.log("Failed to save last sent to server at", e);
+        }
+    },
+
     async getBooks() {
         return await this.db.books.toArray();
     },
